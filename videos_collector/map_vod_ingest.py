@@ -132,7 +132,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--catalog-db-path",
-        default="yt-stats/algs_tournaments.sqlite",
+        default="videos_collector/algs_tournaments.sqlite",
         help="SQLite with tournament catalog used for fuzzy matching.",
     )
     parser.add_argument(

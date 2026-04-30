@@ -1,4 +1,4 @@
-# Smoke E2E (ingest -> detect -> analysis -> api)
+﻿# Smoke E2E (ingest -> detect -> analysis -> api)
 
 ## 1) Verify runtime paths
 
@@ -14,7 +14,7 @@ npm run dev -w @apex/api
 ## 3) Run map-start enrichment (optional but recommended)
 
 ```bash
-python yt-stats/detect_map_start.py --records-dir ffmpeg_downloader/records --db-path output/map_start_detection.sqlite
+python videos_collector/detect_map_start.py --records-dir ffmpeg_downloader/records --db-path output/map_start_detection.sqlite
 ```
 
 ## 4) Run batch analysis for one video
@@ -51,3 +51,4 @@ Open UI and validate:
 - map list loads
 - team names match `/catalog/maps/:mapId/teams`
 - tracks render for selected map
+

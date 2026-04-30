@@ -1,4 +1,4 @@
-# Hard Reset and Unified Ingest Pipeline
+﻿# Hard Reset and Unified Ingest Pipeline
 
 ## SQLite schema (single source of truth)
 
@@ -91,7 +91,7 @@ CREATE TABLE video_marks (
 ### Ingest on VPS (normal run)
 
 ```bash
-python yt-stats/map_vod_ingest.py \
+python videos_collector/map_vod_ingest.py \
   --channel-url "https://www.youtube.com/@algs_vods/videos" \
   --db-path "output/youtube_ingest/tournaments.sqlite" \
   --output-dir "ffmpeg_downloader/records"
@@ -100,7 +100,7 @@ python yt-stats/map_vod_ingest.py \
 ### Ingest on VPS with hard reset
 
 ```bash
-python yt-stats/map_vod_ingest.py \
+python videos_collector/map_vod_ingest.py \
   --hard-reset \
   --channel-url "https://www.youtube.com/@algs_vods/videos" \
   --db-path "output/youtube_ingest/tournaments.sqlite" \
@@ -110,7 +110,7 @@ python yt-stats/map_vod_ingest.py \
 ### Continuous sync from VPS to local
 
 ```bash
-python yt-stats/vps_records_sync.py \
+python videos_collector/vps_records_sync.py \
   --host "user@your-vps" \
   --remote-dir "~/www/wi-us.ru/apex-stats/ffmpeg_downloader/records" \
   --remote-db "~/www/wi-us.ru/apex-stats/output/youtube_ingest/tournaments.sqlite" \
@@ -128,3 +128,4 @@ python yt-stats/vps_records_sync.py \
 - Download progress from `yt-dlp` is single-line style.
 - Remote already-synced files are deleted when `--delete-remote` is enabled.
 - `_sources/{video_id}.mp4` gets removed after all related clips are transferred and remote clips are gone.
+

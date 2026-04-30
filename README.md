@@ -1,4 +1,4 @@
-# Apex Stats Platform
+﻿# Apex Stats Platform
 
 Production-oriented monorepo for Apex Legends competitive match processing:
 
@@ -14,8 +14,9 @@ Production-oriented monorepo for Apex Legends competitive match processing:
 - `services/analysis` - Python batch tracking pipeline
 - `packages/shared` - shared DTO contracts
 - `infra` - PostgreSQL + Redis bootstrap
+- `Server` - minimal VPS production contour (api/web/postgres/redis + runbook)
 - `team_tracking` - retained core CV modules used by analysis pipeline
-- `yt-stats` - ALGS YouTube ingest + map start/rings enrichment utilities
+- `videos_collector` - ALGS YouTube ingest + map start/rings enrichment utilities
 
 Active architecture target is documented in `docs/ARCHITECTURE_TARGET.md`.
 Runtime source paths are centralized in `config/runtime_paths.json`.
@@ -64,6 +65,10 @@ python services/analysis/app/batch_analyze.py --video <path_to_video.mp4> --map 
 
 See `.env.example` for required variables.
 
+Data source flags:
+- `CATALOG_SOURCE=sqlite|postgres|hybrid`
+- `JOBS_SOURCE=sqlite|postgres|hybrid`
+
 ## Legacy Notice
 
 The root `main.py` + `src/*` flow is legacy and kept for backward compatibility only.
@@ -74,3 +79,4 @@ All new development should go into `apps/*` and `services/*`.
 - End-to-end skeleton for ingest -> analysis -> web
 - Centralized map/team settings and frame skip usage for tracking
 - API and UI contract for tournament/match/map/team track exploration
+

@@ -1,4 +1,4 @@
-# Output and Artifact Policy
+﻿# Output and Artifact Policy
 
 This repository treats local runtime data as **derived artifacts**, not source code.
 
@@ -15,7 +15,7 @@ This repository treats local runtime data as **derived artifacts**, not source c
 - `output/**`
 - `apps/web/.next/**`
 - `apps/api/dist/**`
-- local Python envs (`.venv`, `yt-stats/.venv`)
+- local Python envs (`.venv`, `videos_collector/.venv`)
 - ad-hoc copied artifacts like `*копия*.json`
 
 ## Runtime cleanup recommendations
@@ -23,3 +23,4 @@ This repository treats local runtime data as **derived artifacts**, not source c
 - Periodically clear stale `output/tracks/test_*.json`.
 - Keep only canonical DB file (or document when fallback DB is intentionally used).
 - Clean local build folders before release snapshots (`.next`, `dist`).
+

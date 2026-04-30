@@ -1,10 +1,13 @@
-import { Injectable } from "@nestjs/common";
+﻿import { Injectable, Logger } from "@nestjs/common";
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { Pool } from "pg";
 import { MapAdminConfig, MapEntry, Match, RingPoint, Team, TeamTrack, TextRectZone, TextZonesPayload, Tournament, ZonesPayload } from "./catalog.types";
 import { TEAM_DISPLAY_COLORS_BGR } from "./team-colors.constants";
 import { loadRuntimePaths } from "../runtime-paths";
+import { getPostgresPool } from "../postgres";
+import { DataSourceMode, resolveDataSourceMode } from "../data-source-mode";
 
 interface AnalysisRecord {
   filePath: string;
@@ -108,7 +111,10 @@ class PythonSqliteDb {
 
 @Injectable()
 export class CatalogService {
+  private readonly logger = new Logger(CatalogService.name);
   private readonly projectRoot = path.resolve(__dirname, "../../../../..");
+  private readonly postgresPool: Pool = getPostgresPool();
+  private readonly catalogSourceMode: DataSourceMode = resolveDataSourceMode(process.env.CATALOG_SOURCE, "postgres");
   private readonly runtimePaths = loadRuntimePaths(this.projectRoot);
   private readonly tracksFilePath = this.runtimePaths.artifacts.tracksFile;
   private readonly tracksDirPath = this.runtimePaths.artifacts.tracksDir;
@@ -218,6 +224,169 @@ export class CatalogService {
         // ignore close errors
       }
     }
+  }
+
+  private isPostgresEnabled(): boolean {
+    return this.catalogSourceMode === "postgres" || this.catalogSourceMode === "hybrid";
+  }
+
+  private async pgQuery<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
+    const result = await this.postgresPool.query(sql, params);
+    return result.rows as T[];
+  }
+
+  private async getTournamentsFromPostgres(): Promise<Tournament[]> {
+    const rows = await this.pgQuery<{ id: string; name: string; season: string }>(
+      "SELECT id, name, season FROM tournaments ORDER BY season DESC, name ASC"
+    );
+    return rows.map((row) => ({ id: row.id, name: row.name, season: row.season }));
+  }
+
+  private async getMatchesFromPostgres(tournamentId: string): Promise<Match[]> {
+    const rows = await this.pgQuery<{
+      id: string;
+      tournament_id: string;
+      faceit_match_id: string;
+      title: string;
+      played_at: string;
+    }>(
+      `SELECT id, tournament_id, faceit_match_id, title, played_at
+       FROM matches
+       WHERE tournament_id = $1
+       ORDER BY played_at ASC, id ASC`,
+      [tournamentId]
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      tournamentId: row.tournament_id,
+      faceitMatchId: row.faceit_match_id,
+      title: row.title,
+      playedAt: row.played_at,
+    }));
+  }
+
+  private async getMapsFromPostgres(matchId: string): Promise<MapEntry[]> {
+    const rows = await this.pgQuery<{
+      id: string;
+      match_id: string;
+      map_name: string;
+      video_url: string;
+      work_fragment_start_sec: number;
+      work_fragment_end_sec: number;
+      ring1_start_sec: number;
+      ring2_start_sec: number;
+    }>(
+      `SELECT id, match_id, map_name, video_url, work_fragment_start_sec, work_fragment_end_sec, ring1_start_sec, ring2_start_sec
+       FROM maps
+       WHERE match_id = $1
+       ORDER BY id ASC`,
+      [matchId]
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      matchId: row.match_id,
+      mapName: row.map_name,
+      videoUrl: row.video_url,
+      backgroundUrl: `/catalog/maps/${encodeURIComponent(row.id)}/background`,
+      workFragmentStartSec: Number(row.work_fragment_start_sec),
+      workFragmentEndSec: Number(row.work_fragment_end_sec),
+      ring1StartSec: Number(row.ring1_start_sec),
+      ring2StartSec: Number(row.ring2_start_sec),
+    }));
+  }
+
+  private async getTeamsForMapFromPostgres(mapId: string): Promise<Team[]> {
+    const rows = await this.pgQuery<{ team_id: string; team_name: string }>(
+      `SELECT team_id, team_name
+       FROM map_teams
+       WHERE map_id = $1
+       ORDER BY team_id ASC`,
+      [mapId]
+    );
+    if (!rows.length) return [];
+    return rows.map((row) => ({
+      id: row.team_id,
+      name: row.team_name,
+      colorBgr: this.colorByTeamId(row.team_id),
+    }));
+  }
+
+  private async getTracksFromPostgres(mapId: string, teamIds?: string[], fromSec?: number, toSec?: number): Promise<TeamTrack[]> {
+    const teamFilterSql = teamIds?.length ? "AND team_id = ANY($2)" : "";
+    const params: unknown[] = teamIds?.length ? [mapId, teamIds] : [mapId];
+    const rows = await this.pgQuery<{
+      team_id: string;
+      timestamp_sec: number;
+      x: number;
+      y: number;
+      confidence: number;
+      eliminated: boolean | null;
+      elimination_timestamp_sec: number | null;
+      elimination_frame: number | null;
+      elimination_confidence: number | null;
+      elimination_method: string | null;
+    }>(
+      `SELECT team_id, timestamp_sec, x, y, confidence, eliminated, elimination_timestamp_sec, elimination_frame, elimination_confidence, elimination_method
+       FROM team_tracks
+       WHERE map_id = $1 ${teamFilterSql}
+       ORDER BY team_id ASC, timestamp_sec ASC`,
+      params
+    );
+    if (!rows.length) return [];
+
+    const byTeam = new Map<string, TeamTrack>();
+    for (const row of rows) {
+      const sec = Number(row.timestamp_sec);
+      if (fromSec !== undefined && sec < fromSec) continue;
+      if (toSec !== undefined && sec > toSec) continue;
+      if (!byTeam.has(row.team_id)) {
+        byTeam.set(row.team_id, {
+          mapId,
+          teamId: row.team_id,
+          points: [],
+          eliminated: Boolean(row.eliminated),
+          eliminationTimestampSec: row.elimination_timestamp_sec !== null ? Number(row.elimination_timestamp_sec) : undefined,
+          eliminationFrame: row.elimination_frame !== null ? Number(row.elimination_frame) : undefined,
+          eliminationConfidence: row.elimination_confidence !== null ? Number(row.elimination_confidence) : undefined,
+          eliminationMethod: row.elimination_method ?? undefined,
+        });
+      }
+      byTeam.get(row.team_id)!.points.push({
+        timestampSec: sec,
+        x: Number(row.x),
+        y: Number(row.y),
+        confidence: Number(row.confidence ?? 1),
+      });
+    }
+    return Array.from(byTeam.values());
+  }
+
+  private async getRingsFromPostgres(mapId: string, fromSec?: number, toSec?: number): Promise<RingPoint[]> {
+    const rows = await this.pgQuery<{
+      timestamp_sec: number;
+      x: number;
+      y: number;
+      radius: number;
+      segment: number;
+      confidence: number;
+    }>(
+      `SELECT timestamp_sec, x, y, radius, segment, confidence
+       FROM map_rings
+       WHERE map_id = $1
+       ORDER BY timestamp_sec ASC`,
+      [mapId]
+    );
+    return rows
+      .map((row) => ({
+        mapId,
+        timestampSec: Number(row.timestamp_sec),
+        x: Number(row.x),
+        y: Number(row.y),
+        radius: Number(row.radius),
+        segment: Number(row.segment),
+        confidence: Number(row.confidence ?? 1),
+      }))
+      .filter((row) => (fromSec === undefined || row.timestampSec >= fromSec) && (toSec === undefined || row.timestampSec <= toSec));
   }
 
   private mapIdToVideoName(mapId: string): string | null {
@@ -443,7 +612,15 @@ export class CatalogService {
     return this.buildTwentySlotTeamList(bySlot);
   }
 
-  getTournaments() {
+  async getTournaments() {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgRows = await this.getTournamentsFromPostgres();
+        if (pgRows.length) return pgRows;
+      } catch {
+        this.logger.warn("Postgres tournaments read failed, fallback to sqlite/file.");
+      }
+    }
     const fromDb = this.withSqlite(
       this.tournamentsDbPath,
       (db) => {
@@ -478,7 +655,15 @@ export class CatalogService {
     return ids.map((id) => ({ id, name: id, season: "test" }));
   }
 
-  getMatches(tournamentId: string) {
+  async getMatches(tournamentId: string) {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgRows = await this.getMatchesFromPostgres(tournamentId);
+        if (pgRows.length) return pgRows;
+      } catch {
+        this.logger.warn("Postgres matches read failed, fallback to sqlite/file.");
+      }
+    }
     const fromDb = this.withSqlite(
       this.tournamentsDbPath,
       (db) => {
@@ -531,7 +716,15 @@ export class CatalogService {
     }));
   }
 
-  getMaps(matchId: string) {
+  async getMaps(matchId: string) {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgRows = await this.getMapsFromPostgres(matchId);
+        if (pgRows.length) return pgRows;
+      } catch {
+        this.logger.warn("Postgres maps read failed, fallback to sqlite/file.");
+      }
+    }
     const fromDb = this.withSqlite(
       this.tournamentsDbPath,
       (db) => {
@@ -625,7 +818,15 @@ export class CatalogService {
   }
 
   /** Display names TEAM_1..TEAM_20 for this map's game row in map_start_detection (teams JSON). */
-  getTeamsForMap(mapId: string): Team[] {
+  async getTeamsForMap(mapId: string): Promise<Team[]> {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgTeams = await this.getTeamsForMapFromPostgres(mapId);
+        if (pgTeams.length) return pgTeams;
+      } catch {
+        this.logger.warn("Postgres map teams read failed, fallback to sqlite/file.");
+      }
+    }
     const videoName = this.mapIdToVideoName(mapId);
     if (videoName) {
       const teamsColumn = this.withSqlite(
@@ -652,7 +853,15 @@ export class CatalogService {
     return this.buildTwentySlotTeamList(new Map());
   }
 
-  getTracks(mapId: string, teamIds?: string[], fromSec?: number, toSec?: number) {
+  async getTracks(mapId: string, teamIds?: string[], fromSec?: number, toSec?: number) {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgTracks = await this.getTracksFromPostgres(mapId, teamIds, fromSec, toSec);
+        if (pgTracks.length) return pgTracks;
+      } catch {
+        this.logger.warn("Postgres tracks read failed, fallback to sqlite/file.");
+      }
+    }
     const record = this.findAnalysisRecordByMapId(mapId);
     if (!record) return [];
     const picked = record.teams
@@ -691,7 +900,15 @@ export class CatalogService {
     }));
   }
 
-  getRings(mapId: string, fromSec?: number, toSec?: number) {
+  async getRings(mapId: string, fromSec?: number, toSec?: number) {
+    if (this.isPostgresEnabled()) {
+      try {
+        const pgRings = await this.getRingsFromPostgres(mapId, fromSec, toSec);
+        if (pgRings.length) return pgRings;
+      } catch {
+        this.logger.warn("Postgres rings read failed, fallback to sqlite/file.");
+      }
+    }
     const fromDb = this.withSqlite(
       this.mapStartDbPath,
       (db) => {
@@ -1098,3 +1315,4 @@ export class CatalogService {
     return withoutPrefix.toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 }
+

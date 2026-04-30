@@ -44,3 +44,13 @@ This API maps to SQL schema in `infra/postgres/init.sql`:
 ## Runtime paths
 
 Filesystem/SQLite paths are resolved from `config/runtime_paths.json` (with safe defaults).
+
+## Data source modes (B -> C)
+
+- `CATALOG_SOURCE=sqlite|postgres|hybrid` (default: `postgres`)
+- `JOBS_SOURCE=sqlite|postgres|hybrid` (default: `postgres`)
+
+Recommended transition:
+1. `hybrid` (validate PG reads)
+2. `postgres` (cutover)
+3. fallback to `sqlite` only for rollback/debug.

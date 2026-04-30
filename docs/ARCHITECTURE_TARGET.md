@@ -1,11 +1,13 @@
-# Architecture Target
+﻿# Architecture Target
 
 ## Chosen Direction
 
-Selected strategy: **Variant B ("Unified data-contract layer")**.
+Selected strategy: **B -> C**:
+- B: unified data-contract/runtime paths and clean module boundaries
+- C: PostgreSQL as primary Source of Truth for API catalog/jobs
 
 Goals for this stage:
-- Keep active runtime in `apps/*`, `services/*`, `team_tracking/*`, `yt-stats/*`.
+- Keep active runtime in `apps/*`, `services/*`, `team_tracking/*`, `videos_collector/*`.
 - Centralize runtime paths and data source priorities in one config.
 - Reduce drift between API, ingest, and analysis defaults.
 - Mark root `main.py` + `src/*` as legacy flow (frozen, not removed yet).
@@ -23,7 +25,7 @@ Goals for this stage:
 - `apps/api`: read/write catalog + admin + jobs through configured runtime paths.
 - `services/ingest`: update jobs ledger through configured runtime paths.
 - `services/analysis`: write tracks/jobs/admin artifacts through configured runtime paths.
-- `yt-stats`: writes ingest/enrichment SQLite files consumed by API/analysis.
+- `videos_collector`: writes ingest/enrichment SQLite files consumed by API/analysis.
 
 ## Legacy Policy
 
@@ -31,3 +33,4 @@ Goals for this stage:
 - No new features.
 - Bugfix-only if needed for old flows.
 - New development goes to `services/*` + `apps/*`.
+
