@@ -1,0 +1,9 @@
+Example upload commands from your local machine (PowerShell):
+
+scp "yt-stats/map_vod_ingest.py" root@31.13.248.102:~/apex-stats/yt-stats/
+scp "yt-stats/requirements.txt" root@31.13.248.102:~/apex-stats/yt-stats/
+scp "yt-stats/youtube_cookies.txt" root@31.13.248.102:~/apex-stats/yt-stats/
+
+Optional: create target folders first on server:
+
+ssh root@31.13.248.102 "mkdir -p ~/apex-stats/yt-stats ~/apex-stats/output/youtube_ingest/videos"

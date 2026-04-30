@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "databases": {
+    "tournaments": [
+      "output/youtube_ingest/tournaments.sqlite",
+      "output/tournaments.sqlite"
+    ],
+    "mapStartDetection": "output/map_start_detection.sqlite"
+  },
+  "artifacts": {
+    "jobsStore": "output/jobs.json",
+    "tracksDir": "output/tracks",
+    "tracksFile": "output/tracks.json",
+    "mapAdminSettings": "output/admin_map_settings.json",
+    "zonesDir": "output/zones",
+    "textZonesDir": "output/text_zones"
+  },
+  "media": {
+    "recordsDir": "ffmpeg_downloader/records",
+    "mapsDir": "maps"
+  },
+  "legacy": {
+    "faceitCliEnabled": false,
+    "note": "Root main.py + src are archived as legacy flow."
+  }
+}
