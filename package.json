@@ -1,0 +1,25 @@
+{
+  "name": "apex-stats-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FACEIT ingest, Apex video analysis, and web visualization platform.",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -ws --if-present",
+    "dev": "npm run dev -ws --if-present",
+    "dev:api-web": "concurrently -n API,WEB -c cyan,magenta \"npm run dev -w @apex/api\" \"npm run dev -w @apex/web\"",
+    "lint": "npm run lint -ws --if-present",
+    "test": "npm run test -ws --if-present",
+    "format": "npm run format -ws --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

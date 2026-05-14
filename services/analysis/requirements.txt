@@ -1,0 +1,7 @@
+opencv-python
+numpy
+fastapi
+uvicorn
+pydantic
+psutil
+nvidia-ml-py3

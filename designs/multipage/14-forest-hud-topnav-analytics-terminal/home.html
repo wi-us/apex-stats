@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home — 14-forest-hud-topnav-analytics-terminal</title>
+  <style>
+:root {
+  --bg: #0c1f16;
+  --surface: #153126;
+  --text: #d8f8e1;
+  --muted: #75b68a;
+  --a1: #4ade80;
+  --a2: #eab308;
+  --card-r: 0px;
+  --btn-r: 0px;
+  --b: color-mix(in srgb, var(--text) 14%, transparent);
+}
+* { box-sizing:border-box; margin:0; }
+body { font-family: Inter, system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.4; }
+a { color:var(--a1); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+  .shell { min-height:100vh; display:flex; flex-direction:column; }
+  .nav { border-bottom:1px solid var(--b); padding:12px 16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .main { padding:14px; display:grid; grid-template-columns: 2fr 1fr; gap:12px; }
+  .main > .full { grid-column: 1 / -1; }
+  @media (max-width: 980px){ .main{ grid-template-columns: 1fr; } }
+
+.card { background:var(--surface); border:1px solid var(--b); border-radius:var(--card-r); padding:12px; }
+.logo { font-weight:700; color:var(--a1); letter-spacing:.02em; }
+.muted { color:var(--muted); font-size:12px; }
+.tree { display:grid; gap:6px; margin-top:10px; }
+.item { padding:6px 8px; border:1px solid var(--b); border-radius:calc(var(--card-r) / 1.5); color:var(--muted); }
+.item.active { color:var(--text); background:color-mix(in srgb, var(--a1) 20%, transparent); border-color:var(--a1); }
+.map { min-height:300px; border:1px dashed color-mix(in srgb, var(--a1) 40%, var(--b)); border-radius:var(--card-r); display:grid; place-items:center;
+  background:repeating-linear-gradient(0deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px),
+             repeating-linear-gradient(90deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px);
+}
+.hud { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+.timer { font-size:26px; color:var(--a1); font-weight:700; font-variant-numeric: tabular-nums; }
+.ring { font-size:12px; padding:4px 10px; border:1px solid var(--b); border-radius:999px; }
+.btn { border:1px solid var(--b); border-radius:var(--btn-r); padding:6px 10px; background:color-mix(in srgb, var(--surface) 75%, transparent); color:var(--text); cursor:pointer; }
+.btn.primary { background:var(--a1); border-color:transparent; color:#0a0a0a; font-weight:600; }
+.controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.filters { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; }
+label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:4px; }
+select, input[type="range"] { width:100%; }
+select { background:var(--surface); color:var(--text); border:1px solid var(--b); border-radius:calc(var(--btn-r)); padding:7px; }
+.tabs { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+.tab { border:1px solid var(--b); border-radius:calc(var(--btn-r)); padding:5px 8px; font-size:12px; color:var(--muted); }
+.tab.on { color:var(--text); border-color:var(--a2); background: color-mix(in srgb, var(--a2) 22%, transparent); }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="nav card">
+      <div class="logo">Apex Stats · 14-forest-hud-topnav-analytics-terminal</div>
+      <p class="muted">Турнир → матч → карта · 5 карт · пресеты · сохранить</p>
+      
+<div class="tree">
+  <div class="item active">ALGS Split 2</div>
+  <div class="item">Day 3 — Match 1</div>
+  <div class="item">Map 2 / 6</div>
+  <div class="item"><a href="home.html">Home</a></div>
+  <div class="item"><a href="match.html">Match Room</a></div>
+  <div class="item"><a href="admin.html">Admin Panel</a></div>
+</div>
+
+    </nav>
+    <main class="main">
+<section class="card full">
+  <div class="hud">
+    <div><div class="timer">14:09</div><div class="ring">Кольцо: R3 · closing</div></div>
+    <div class="controls">
+      <button class="btn">Play</button><button class="btn">Stop</button>
+      <label class="muted">Скорость <input type="range" min="0.25" max="2" step="0.25" value="1" /></label>
+      <button class="btn primary">Полный экран</button>
+    </div>
+  </div>
+</section>
+<section class="card"><div class="map">Интерактивная карта (пустышка)</div></section>
+<section class="card">
+  <div class="filters">
+    <div><label>Команды</label><select><option>Все</option><option>TSM</option><option>NRG</option></select></div>
+    <div><label>Остановки: длительность</label><input type="range" /></div>
+    <div><label>Остановки: сглаживание</label><input type="range" /></div>
+  </div>
+</section>
+</main>
+  </div>
+</body>
+</html>

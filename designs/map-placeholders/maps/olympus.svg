@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Olympus — tactical map placeholder">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#g)"/>
+  <circle cx="540" cy="520" r="320" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="540" cy="520" r="180" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3"/>
+</svg>

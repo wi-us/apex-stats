@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Макет 18 — Бумажные карточки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #e5e5e5;
+      --surface: #fafafa;
+      --text: #171717;
+      --muted: #525252;
+      --accent: #171717;
+      --accent2: #737373;
+      --radius: 20px;
+      --shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+      --border: color-mix(in srgb, var(--text) 12%, transparent);
+      --font: "DM Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background-color: var(--bg);
+      min-height: 100vh;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+
+    .shell { min-height: 100vh; padding: 20px; position: relative; }
+    .viewer-rail-stack {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      z-index: 5;
+      width: min(452px, 94vw);
+      max-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .viewer-rail-stack .rail {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 100%;
+      margin: 0;
+      padding: 16px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      max-height: none;
+      overflow: visible;
+      animation: rail-slide-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .viewer-rail-stack .rail--tools {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+    @keyframes rail-slide-in {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .main { margin-left: 499px; display: flex; flex-direction: column; gap: 16px; min-height: calc(100vh - 40px); }
+    @media (max-width: 900px) {
+      .viewer-rail-stack {
+        position: relative;
+        left: auto;
+        top: auto;
+        width: auto;
+        max-height: none;
+      }
+      .viewer-rail-stack .rail--tools {
+        overflow: visible;
+      }
+      .main { margin-left: 0; }
+    }
+
+    .rail-user-card {
+      padding: 12px 14px;
+      border-radius: calc(var(--radius) - 6px);
+      background: color-mix(in srgb, var(--bg) 42%, var(--surface));
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 20px -10px rgba(0, 0, 0, 0.14);
+    }
+    .rail-user-card .rail-user {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      border-bottom: none;
+      gap: 10px;
+    }
+    .rail-account-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .rail-action-btn {
+      width: 100%;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 90%, var(--bg));
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+    }
+    .rail-action-btn:hover {
+      background: color-mix(in srgb, var(--accent2) 12%, var(--surface));
+      border-color: var(--accent2);
+    }
+    .rail-action-btn img {
+      display: block;
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+    a.rail-action-btn { color: var(--text); }
+    .rail-user {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .rail-user-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .rail-user-logout {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      font: inherit;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 90%, var(--bg));
+      color: var(--text);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .rail-user-logout:hover {
+      background: color-mix(in srgb, var(--accent2) 12%, var(--surface));
+      border-color: var(--accent2);
+    }
+    .rail-user-logout img {
+      display: block;
+      flex-shrink: 0;
+    }
+
+    details.nest {
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) / 1.5);
+      margin-top: 8px;
+      background: color-mix(in srgb, var(--surface) 96%, var(--bg));
+      overflow: hidden;
+    }
+    details.nest summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-weight: 600;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    details.nest summary::-webkit-details-marker { display: none; }
+    details.nest summary::after {
+      content: "▸";
+      font-size: 12px;
+      color: var(--muted);
+      transition: transform 0.25s ease;
+    }
+    details.nest[open] summary::after { transform: rotate(90deg); }
+    .nest-body { padding: 0 12px 12px; font-size: 14px; color: var(--muted); }
+    .nest-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 10px;
+      padding: 6px 0;
+      min-height: 48px;
+      border-top: 1px dashed var(--border);
+    }
+    .nest-row:first-child { border-top: none; }
+    .map-row-label {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: var(--text);
+      padding-right: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+    .map-row-thumb {
+      flex-shrink: 0;
+      width: 80px;
+      min-height: 44px;
+      align-self: stretch;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 60%, var(--surface));
+    }
+    .map-row-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .tournament-picker .map-tree-root { margin-top: 12px; }
+    .map-tree-card {
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) / 1.5);
+      background: color-mix(in srgb, var(--surface) 96%, var(--bg));
+      padding: 8px 12px 12px;
+    }
+    .map-tree-heading {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      animation: badge-soft 3s ease-in-out infinite;
+    }
+    @keyframes badge-soft {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; }
+    }
+    .live-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+      animation: live-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes live-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      animation: panel-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .main > .panel:nth-child(1) { animation-delay: 0.05s; }
+    @keyframes panel-rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Квадратная карта: сторона = min(ширина колонки, доступная высота окна).
+       Координаты точек в % относительно квадрата — пропорции игровой карты не ломаются. */
+    .map-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .map-stage-teams-row {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      /* До ~350px «полезной» высоты — масштаб 1; ниже линейно ужимаем блок команд */
+      --team-pack-h: max(0px, calc(100vh - 280px));
+      --team-pack-scale: min(1, calc(var(--team-pack-h) / 350px));
+      gap: calc(20px * var(--team-pack-scale));
+      --broadcast-team-col: clamp(234px, 17vw, 468px);
+      --broadcast-map-side: min(
+        min(100%, calc(100vw - 2 * var(--broadcast-team-col) - 520px)),
+        calc(100vh - 280px)
+      );
+    }
+    .map-stage-center {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .broadcast-teams-col {
+      flex: 0 0 var(--broadcast-team-col);
+      width: var(--broadcast-team-col);
+      align-self: stretch;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: calc(6px * var(--team-pack-scale));
+      overflow: hidden;
+      padding: calc(4px * var(--team-pack-scale));
+      scrollbar-width: thin;
+    }
+    .broadcast-teams-col::-webkit-scrollbar {
+      width: 5px;
+    }
+    .broadcast-teams-col::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--muted) 38%, transparent);
+      border-radius: 999px;
+    }
+    .broadcast-team-card {
+      font: inherit;
+      cursor: pointer;
+      flex: 1 1 0;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      border-radius: calc(8px * var(--team-pack-scale));
+      overflow: hidden;
+      text-align: left;
+      color: #f4f4f5;
+      background: rgba(12, 12, 14, 0.78);
+      border: 1px solid var(--bc, #444);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      transition: opacity 0.18s ease, transform 0.14s ease, filter 0.18s ease, box-shadow 0.18s ease;
+      --bc: #737373;
+      -webkit-text-stroke: 0 transparent;
+      paint-order: normal;
+    }
+    .broadcast-team-card:hover {
+      transform: translateY(calc(-2px * var(--team-pack-scale)));
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    }
+    .broadcast-team-card.is-off {
+      opacity: 0.42;
+      filter: saturate(0.35) brightness(0.92);
+    }
+    .broadcast-team-accent-bar {
+      flex: 0 0 auto;
+      width: calc(10px * var(--team-pack-scale));
+      align-self: stretch;
+      background: var(--bc);
+      border-radius: calc(4px * var(--team-pack-scale)) 0 0 calc(4px * var(--team-pack-scale));
+    }
+    .broadcast-team-body {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: calc(10px * var(--team-pack-scale));
+      padding: calc(12px * var(--team-pack-scale)) calc(16px * var(--team-pack-scale))
+        calc(12px * var(--team-pack-scale)) calc(14px * var(--team-pack-scale));
+    }
+    .broadcast-team-brand {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      align-self: center;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: calc(11px * var(--team-pack-scale));
+    }
+    .broadcast-team-logo {
+      width: calc(48px * var(--team-pack-scale));
+      height: calc(48px * var(--team-pack-scale));
+      object-fit: contain;
+      flex-shrink: 0;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+    }
+    .broadcast-team-logo--placeholder {
+      display: inline-block;
+      width: calc(48px * var(--team-pack-scale));
+      height: calc(48px * var(--team-pack-scale));
+      flex-shrink: 0;
+      border-radius: calc(8px * var(--team-pack-scale));
+      border: 1px dashed color-mix(in srgb, var(--bc) 55%, #666);
+      background: color-mix(in srgb, var(--bc) 12%, transparent);
+    }
+    .broadcast-team-name {
+      font-size: calc(18px * var(--team-pack-scale));
+      font-weight: 700;
+      line-height: 1.25;
+      color: #f4f4f5;
+      flex: 1 1 auto;
+      min-width: 0;
+      text-align: left;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+      -webkit-text-stroke: 0 transparent;
+      paint-order: normal;
+    }
+    .broadcast-team-elim-ribbon {
+      flex: 0 0 auto;
+      align-self: stretch;
+      width: calc(36px * var(--team-pack-scale));
+      min-width: calc(36px * var(--team-pack-scale));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: calc(-12px * var(--team-pack-scale)) calc(-16px * var(--team-pack-scale)) calc(-12px * var(--team-pack-scale)) 0;
+      padding: calc(8px * var(--team-pack-scale)) 0;
+      background: #000;
+      border-left: 1px solid #262626;
+      border-radius: 0;
+      -webkit-text-stroke: 0 transparent;
+      paint-order: normal;
+    }
+    .broadcast-team-elim-text {
+      margin: 0;
+      padding: 0;
+      font-size: calc(18px * var(--team-pack-scale));
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      color: #fff;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      -webkit-text-stroke: calc(1.2px * var(--team-pack-scale)) #fff;
+      paint-order: stroke fill;
+    }
+    .broadcast-team-card.is-eliminated {
+      filter: brightness(0.94) saturate(0.88);
+    }
+    .broadcast-team-card.is-eliminated.is-off {
+      opacity: 0.42;
+      filter: saturate(0.32) brightness(0.86);
+    }
+    @media (max-width: 900px) {
+      .map-stage-teams-row {
+        flex-wrap: wrap;
+        --broadcast-map-side: min(100%, calc(100vh - 320px));
+        --team-pack-h: max(0px, calc(100vh - 320px));
+        --team-pack-scale: min(1, calc(var(--team-pack-h) / 350px));
+      }
+      .map-stage-center {
+        flex: 1 1 100%;
+        order: 1;
+      }
+      .broadcast-teams-col--left {
+        order: 2;
+        width: calc(50% - 12px);
+        flex: 0 0 calc(50% - 12px);
+        align-self: stretch;
+        min-height: min(400px, var(--broadcast-map-side));
+        max-height: min(400px, var(--broadcast-map-side));
+      }
+      .broadcast-teams-col--right {
+        order: 3;
+        width: calc(50% - 12px);
+        flex: 0 0 calc(50% - 12px);
+        align-self: stretch;
+        min-height: min(400px, var(--broadcast-map-side));
+        max-height: min(400px, var(--broadcast-map-side));
+      }
+    }
+    .map-wrap {
+      --map-side: min(100%, var(--broadcast-map-side, calc(100vh - 280px)));
+      position: relative;
+      width: var(--map-side);
+      max-width: 100%;
+      margin-inline: auto;
+      aspect-ratio: 1 / 1;
+      height: auto;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      touch-action: pan-y;
+    }
+    .map-zoom-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    .map-background {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 0;
+      pointer-events: none;
+      background: #141414;
+    }
+    .map-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 5%, transparent) 20px),
+        repeating-linear-gradient(90deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 5%, transparent) 20px),
+        radial-gradient(circle at 45% 42%, color-mix(in srgb, var(--accent2) 12%, var(--surface)) 0%, var(--surface) 62%);
+    }
+    .map-wrap.has-game-map .map-canvas {
+      background: rgba(20, 20, 20, 0.12);
+    }
+    .map-wrap.has-game-map .map-pan { opacity: 0.07; }
+    .map-pan {
+      position: absolute;
+      inset: -8%;
+      z-index: 1;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='none' stroke='%23d4d4d4' stroke-width='0.5' d='M0 60h120M60 0v120'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      animation: map-drift 28s linear infinite;
+    }
+    @keyframes map-drift {
+      from { transform: translate(0, 0) rotate(0deg); }
+      to { transform: translate(-24px, -18px) rotate(0.5deg); }
+    }
+
+    .map-overlay-hud {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      animation: hud-float 4s ease-in-out infinite;
+    }
+    @keyframes hud-float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-3px); }
+    }
+    .map-overlay-inner {
+      pointer-events: auto;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 28px rgba(0,0,0,.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .timer {
+      font-variant-numeric: tabular-nums;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+    .ring-pill {
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--surface) 70%, transparent);
+    }
+    .ring-pill b { color: var(--accent2); font-weight: 600; }
+    .ring-pill.ring-closing #ring-phase {
+      animation: ring-emphasis 1.6s ease-in-out infinite;
+    }
+    @keyframes ring-emphasis {
+      0%, 100% { color: var(--accent2); }
+      50% { color: #b45309; }
+    }
+
+    .team-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      transform: translate(-50%, -50%);
+      animation: dot-breathe 2.4s ease-in-out infinite;
+    }
+    .team-dot::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translate(-50%, -4px);
+      font-size: 11px;
+      white-space: nowrap;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--text);
+      color: var(--surface);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .map-wrap:hover .team-dot:not(.is-hidden)::after { opacity: 1; }
+    @keyframes dot-breathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.12); }
+    }
+    .team-dot.is-hidden {
+      animation: none;
+    }
+
+    .transport-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .transport-lead {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .transport-time {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .transport-time-sep {
+      opacity: 0.45;
+      font-weight: 500;
+    }
+    .play-toggle {
+      font: inherit;
+      cursor: pointer;
+      min-width: 44px;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: calc(var(--radius) / 1.2);
+      border: 1px solid var(--border);
+      background: var(--accent);
+      color: #fafafa;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+    .play-toggle img {
+      display: block;
+      flex-shrink: 0;
+      filter: brightness(0) invert(1);
+    }
+    .play-toggle [hidden] { display: none !important; }
+    .play-toggle:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,.15); }
+    .play-toggle:active { transform: scale(0.98); }
+    .play-toggle.is-playing { background: color-mix(in srgb, var(--accent2) 55%, var(--accent)); }
+
+    .timeline-wrap {
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .timeline-rings-ticks {
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .timeline-rings-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: end;
+      width: 100%;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 2px;
+      user-select: none;
+    }
+    .timeline-rings-row span {
+      text-align: center;
+      min-width: 0;
+    }
+    .timeline-track-wrap {
+      position: relative;
+      width: 100%;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .timeline-ticks {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: flex-end;
+      width: 100%;
+      height: 10px;
+      margin-bottom: 2px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .timeline-ticks span {
+      width: 2px;
+      height: 8px;
+      background: color-mix(in srgb, var(--text) 30%, transparent);
+      border-radius: 1px;
+      justify-self: center;
+    }
+    input[type="range"].timeline {
+      width: 100%;
+      height: 6px;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .speed-select-wrap { position: relative; flex: 0 0 auto; width: 88px; max-width: 50%; }
+    .speed-select {
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      padding: 8px 26px 8px 8px;
+      border-radius: calc(var(--radius) / 1.2);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23525252' d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      transition: box-shadow 0.2s ease;
+    }
+    .speed-select:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+
+    .btn-fs {
+      font: inherit;
+      cursor: pointer;
+      min-width: 44px;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: calc(var(--radius) / 1.2);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      transition: background 0.2s ease;
+    }
+    .btn-fs img { display: block; }
+    .btn-fs:hover { background: color-mix(in srgb, var(--accent2) 15%, var(--surface)); }
+
+    .tournament-picker {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: calc(var(--radius) / 1.5);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 97%, var(--bg));
+    }
+    .picker-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .custom-select-wrap { position: relative; margin-top: 6px; }
+    .picker-trigger {
+      width: 100%;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 10px 36px 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--text);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .picker-trigger:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .picker-trigger:focus-visible {
+      outline: 2px solid #2160c4;
+      outline-offset: 2px;
+    }
+    .picker-trigger-text {
+      flex: 1;
+      min-width: 0;
+      line-height: 1.3;
+    }
+    .picker-trigger-stack {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      text-align: left;
+    }
+    .picker-trigger-main {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .picker-trigger-kind {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .picker-chevron {
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23525252' d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+    .picker-options {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 4px);
+      margin: 0;
+      padding: 4px 0;
+      list-style: none;
+      border: 1px solid var(--text);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: 0 16px 40px rgba(0,0,0,.14);
+      max-height: 260px;
+      overflow-y: auto;
+      z-index: 30;
+    }
+    .picker-options[hidden] { display: none !important; }
+    .picker-options li { margin: 0; padding: 0; list-style: none; }
+    .picker-option {
+      display: block;
+      width: 100%;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .picker-option:hover,
+    .picker-option:focus-visible,
+    .picker-option[aria-selected="true"] {
+      background: #2160c4;
+      color: #fff;
+    }
+    .picker-option--stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      text-align: left;
+    }
+    .picker-option-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .picker-option-kind {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.9;
+    }
+    .picker-option:hover .picker-option-kind,
+    .picker-option:focus-visible .picker-option-kind,
+    .picker-option[aria-selected="true"] .picker-option-kind {
+      color: inherit;
+      opacity: 1;
+    }
+    .picker-hint {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .rail-filters { margin-top: 12px; }
+    details.filter-spoiler {
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) / 1.5);
+      margin-top: 8px;
+      background: color-mix(in srgb, var(--surface) 97%, var(--bg));
+      overflow: hidden;
+    }
+    details.filter-spoiler:first-of-type { margin-top: 0; }
+    details.filter-spoiler summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    details.filter-spoiler summary::-webkit-details-marker { display: none; }
+    details.filter-spoiler summary::after {
+      content: "▸";
+      font-size: 12px;
+      color: var(--muted);
+      transition: transform 0.25s ease;
+    }
+    details.filter-spoiler[open] summary::after { transform: rotate(90deg); }
+    details.filter-spoiler[open] summary { color: var(--text); }
+    .filter-spoiler-body { padding: 0 12px 12px; }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    select, .field input[type="range"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: calc(var(--radius) / 2);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+    .stops-stack .field { margin-top: 10px; }
+    .stops-stack .field:first-child { margin-top: 0; }
+    .slider-row { margin-top: 6px; }
+    .slider-row span {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    footer { font-size: 14px; color: var(--muted); padding: 8px 0; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="viewer-rail-stack">
+    <aside class="rail rail--account" aria-label="Профиль и админка">
+      <div class="rail-user-card">
+        <div class="rail-user">
+          <span class="rail-user-name" id="rail-user-name">operator</span>
+          <button type="button" class="rail-user-logout" id="btn-rail-logout">
+            <img src="assets/icon-logout.png" width="14" height="14" alt="" />
+            Выйти
+          </button>
+        </div>
+      </div>
+      <nav class="rail-account-actions" aria-label="Админка">
+        <a href="design-18-paper-cards-admin.html" class="rail-action-btn">Админка</a>
+      </nav>
+    </aside>
+    <aside class="rail rail--tools" id="rail" aria-label="Турнир и настройки">
+    <div class="tournament-picker">
+      <span class="picker-label">Выбор турнира</span>
+      <div class="custom-select-wrap">
+        <button type="button" class="picker-trigger" id="tour-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Турнир">
+          <span class="picker-trigger-stack" id="tour-trigger-stack">
+            <span class="picker-trigger-main" id="tour-trigger-main"></span>
+            <span class="picker-trigger-kind" id="tour-trigger-kind"></span>
+          </span>
+          <span class="picker-chevron" aria-hidden="true"></span>
+        </button>
+        <ul class="picker-options" id="tour-options" role="listbox" hidden></ul>
+      </div>
+      <span class="picker-label" style="display:block;margin-top:12px">День · матч</span>
+      <div class="custom-select-wrap">
+        <button type="button" class="picker-trigger" id="match-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="День или группа">
+          <span class="picker-trigger-text" id="match-trigger-text"></span>
+          <span class="picker-chevron" aria-hidden="true"></span>
+        </button>
+        <ul class="picker-options" id="match-options" role="listbox" hidden></ul>
+      </div>
+      <div id="tree-root" class="map-tree-root" aria-label="Карты выбранного матча"></div>
+      <p class="picker-hint">Выберите турнир и матч — список карт и интерактивная карта обновятся.</p>
+    </div>
+
+    <div class="rail-filters" aria-label="Фильтры">
+      <details class="filter-spoiler">
+        <summary>Остановки · длительность и сглаживание</summary>
+        <div class="filter-spoiler-body stops-stack">
+          <div class="field" style="margin:0">
+            <label for="dwell">Длительность</label>
+            <div class="slider-row"><span><span>короче</span><span>дольше</span></span><input type="range" id="dwell" min="0" max="100" value="40" /></div>
+          </div>
+          <div class="field" style="margin:0">
+            <label for="smooth">Сглаживание</label>
+            <div class="slider-row"><span><span>резче</span><span>мягче</span></span><input type="range" id="smooth" min="0" max="100" value="55" /></div>
+          </div>
+        </div>
+      </details>
+    </div>
+    <p style="margin-top:14px;font-size:14px;color:var(--muted)">Макет 18 · Бумажные карточки</p>
+    </aside>
+  </div>
+  <div class="main">
+    <section class="map-stage panel">
+      <div class="map-stage-teams-row">
+        <div
+          class="broadcast-teams-col broadcast-teams-col--left"
+          id="team-chips-left"
+          role="group"
+          aria-label="Команды слева от карты"
+        ></div>
+        <div class="map-stage-center">
+          <div class="map-wrap has-game-map" id="map-wrap">
+            <div class="map-zoom-layer" id="map-zoom-layer">
+              <img class="map-background" id="map-background" alt="" width="1080" height="1080" decoding="async" />
+              <div class="map-canvas" aria-hidden="true"></div>
+              <div class="map-pan" aria-hidden="true"></div>
+              <div id="team-layer" style="position:absolute;inset:0;z-index:2;pointer-events:none"></div>
+            </div>
+
+            <div class="map-overlay-hud" aria-live="polite">
+              <div class="map-overlay-inner">
+                <div class="timer" id="timer-display">00:00</div>
+                <div class="ring-pill ring-closing" id="ring-pill">Round <b id="ring-round">1</b> · <span id="ring-phase">обратный отсчёт</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="broadcast-teams-col broadcast-teams-col--right"
+          id="team-chips-right"
+          role="group"
+          aria-label="Команды справа от карты"
+        ></div>
+      </div>
+
+      <div class="panel transport-bar" style="box-shadow:0 8px 24px rgba(0,0,0,.08)">
+        <div class="transport-lead">
+          <button type="button" class="play-toggle" id="play-toggle" aria-pressed="false" aria-label="Воспроизведение">
+            <img class="icon-play" src="assets/icon-play.png" width="22" height="22" alt="" />
+            <img class="icon-pause" src="assets/icon-pause.png" width="22" height="22" alt="" hidden />
+          </button>
+          <div class="transport-time">
+            <span id="time-elapsed">0:00</span>
+            <span class="transport-time-sep" aria-hidden="true">/</span>
+            <span id="time-end">20:00</span>
+          </div>
+        </div>
+        <div class="timeline-wrap">
+          <div class="timeline-rings-ticks">
+            <div class="timeline-rings-row" aria-hidden="true">
+              <span>Ring 1</span><span>Ring 2</span><span>Ring 3</span><span>Ring 4</span><span>Ring 5</span><span>Ring 6</span>
+            </div>
+            <div class="timeline-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          </div>
+          <div class="timeline-track-wrap">
+            <input type="range" class="timeline" id="timeline" min="0" max="1200" value="0" step="1" aria-label="Позиция на таймлайне" />
+          </div>
+        </div>
+        <div class="speed-select-wrap">
+          <select class="speed-select" id="speed" aria-label="Скорость воспроизведения">
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </div>
+        <button type="button" class="btn-fs" id="btn-fullscreen" aria-label="На весь экран" title="На весь экран">
+          <img src="assets/icon-fullscreen.png" width="22" height="22" alt="" />
+        </button>
+      </div>
+    </section>
+
+    <footer>Интерактивная заглушка: таймер, таймлайн и точки команд синхронизированы для превью · <a href="design-18-paper-cards-admin.html">Админ-панель</a></footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  var DEMO_DATA = {
+    tournaments: [
+      {
+        id: "algs-s2-emea",
+        name: "ALGS Year 4 · Split 2",
+        region: "EMEA",
+        pickerKind: "EMEA",
+        week: 3,
+        matches: [
+          {
+            id: "m-d3-b",
+            label: "Day 3 · Group B",
+            playedAt: "2026-05-02T18:00:00Z",
+            status: "live",
+            maps: [
+              { id: "em-sp", gameIndex: 1, arena: "Storm Point", durationSec: 1200, ringPhase: "countdown", ringNumber: 2, teams: [] },
+              { id: "em-op", gameIndex: 2, arena: "Olympus", durationSec: 1180, ringPhase: "closing", ringNumber: 3, teams: [] },
+              { id: "em-we", gameIndex: 3, arena: "World's Edge", durationSec: 1220, ringPhase: "countdown", ringNumber: 1, teams: [] },
+            ],
+          },
+          {
+            id: "m-d3-a",
+            label: "Day 3 · Group A",
+            playedAt: "2026-05-02T14:00:00Z",
+            status: "done",
+            maps: [
+              { id: "em-ed", gameIndex: 1, arena: "E-District", durationSec: 900, ringPhase: "closing", ringNumber: 4, teams: [] },
+            ],
+          },
+        ],
+      },
+      {
+        id: "algs-s2-na",
+        name: "ALGS Year 4 · Split 2",
+        region: "NA",
+        pickerKind: "AMERICAS",
+        week: 4,
+        matches: [
+          {
+            id: "m-na-sf",
+            label: "Day 4 · Semi-finals",
+            playedAt: "2026-05-10T20:00:00Z",
+            status: "live",
+            maps: [
+              { id: "na-1", gameIndex: 1, arena: "Storm Point", durationSec: 1150, ringPhase: "closing", ringNumber: 2, teams: [] },
+              { id: "na-2", gameIndex: 2, arena: "Broken Moon", durationSec: 1190, ringPhase: "countdown", ringNumber: 4, teams: [] },
+            ],
+          },
+          {
+            id: "m-na-lb",
+            label: "Day 4 · Lower bracket",
+            playedAt: "2026-05-10T16:00:00Z",
+            status: "done",
+            maps: [
+              { id: "na-lb1", gameIndex: 1, arena: "Olympus", durationSec: 1080, ringPhase: "countdown", ringNumber: 1, teams: [] },
+              { id: "na-lb2", gameIndex: 2, arena: "World's Edge", durationSec: 1100, ringPhase: "closing", ringNumber: 3, teams: [] },
+              { id: "na-lb3", gameIndex: 3, arena: "E-District", durationSec: 1050, ringPhase: "countdown", ringNumber: 2, teams: [] },
+            ],
+          },
+        ],
+      },
+      {
+        id: "algs-apac",
+        name: "ALGS Year 4 · Split 2",
+        region: "APAC North",
+        pickerKind: "LAN",
+        week: 2,
+        matches: [
+          {
+            id: "m-apac-a",
+            label: "Group stage · A",
+            playedAt: "2026-04-28T12:00:00Z",
+            status: "live",
+            maps: [
+              { id: "ap-we", gameIndex: 1, arena: "World's Edge", durationSec: 1210, ringPhase: "closing", ringNumber: 2, teams: [] },
+              { id: "ap-bm", gameIndex: 2, arena: "Broken Moon", durationSec: 1175, ringPhase: "countdown", ringNumber: 1, teams: [] },
+            ],
+          },
+          {
+            id: "m-apac-b",
+            label: "Group stage · B",
+            playedAt: "2026-04-28T15:00:00Z",
+            status: "scheduled",
+            maps: [
+              { id: "ap-sp", gameIndex: 1, arena: "Storm Point", durationSec: 1200, ringPhase: "countdown", ringNumber: 3, teams: [] },
+            ],
+          },
+        ],
+      },
+      {
+        id: "champ-26",
+        name: "ALGS Championship 2026",
+        region: "Global finals",
+        pickerKind: "LAN",
+        week: 1,
+        matches: [
+          {
+            id: "m-ch-semi",
+            label: "Semi-finals · BO6",
+            playedAt: "2026-07-15T17:00:00Z",
+            status: "live",
+            maps: [
+              { id: "ch-1", gameIndex: 1, arena: "Storm Point", durationSec: 1180, ringPhase: "countdown", ringNumber: 2, teams: [] },
+              { id: "ch-2", gameIndex: 2, arena: "Olympus", durationSec: 1160, ringPhase: "closing", ringNumber: 3, teams: [] },
+              { id: "ch-3", gameIndex: 3, arena: "World's Edge", durationSec: 1195, ringPhase: "countdown", ringNumber: 1, teams: [] },
+              { id: "ch-4", gameIndex: 4, arena: "E-District", durationSec: 1140, ringPhase: "closing", ringNumber: 4, teams: [] },
+            ],
+          },
+          {
+            id: "m-ch-final",
+            label: "Grand final",
+            playedAt: "2026-07-16T19:00:00Z",
+            status: "scheduled",
+            maps: [
+              { id: "ch-gf", gameIndex: 1, arena: "Broken Moon", durationSec: 1200, ringPhase: "countdown", ringNumber: 1, teams: [] },
+            ],
+          },
+        ],
+      },
+      {
+        id: "scrims-pack",
+        name: "Broadcast · Scrims",
+        region: "Analysis",
+        pickerKind: "OFFLINE",
+        week: 0,
+        matches: [
+          {
+            id: "m-scrim-12",
+            label: "Custom scrims #12",
+            playedAt: "2026-05-01T19:00:00Z",
+            status: "done",
+            maps: [
+              { id: "sc-we", gameIndex: 1, arena: "World's Edge", durationSec: 1320, ringPhase: "closing", ringNumber: 5, teams: [] },
+              { id: "sc-op", gameIndex: 2, arena: "Olympus", durationSec: 1280, ringPhase: "countdown", ringNumber: 2, teams: [] },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  /** Данные из output/teams_name_tag_logo.sqlite (листинг + логотипы см. extract-team-logos.py, teams-manifest.json). */
+  var TEAMS_MANIFEST = [
+    {"name":"Al Qadsiah","tag":"QAD","logo":"team-logos/00_QAD.png"},
+    {"name":"CIMJ","tag":"CIMJ","logo":"team-logos/01_CIMJ.png"},
+    {"name":"DINOS","tag":"DINO","logo":"team-logos/02_DINO.png"},
+    {"name":"DSK","tag":"DSK","logo":"team-logos/03_DSK.png"},
+    {"name":"FaZe Clan","tag":"FAZE","logo":"team-logos/04_FAZE.png"},
+    {"name":"Five Fears","tag":"5F","logo":"team-logos/05_5F.png"},
+    {"name":"Flat","tag":"FLAT","logo":"team-logos/06_FLAT.png"},
+    {"name":"FreeAgents","tag":"FREE","logo":"team-logos/07_FREE.png"},
+    {"name":"FUL","tag":"FUL","logo":"team-logos/08_FUL.png"},
+    {"name":"Gen.G Esports","tag":"GEN","logo":"team-logos/09_GEN.png"},
+    {"name":"HbM","tag":"HBM","logo":"team-logos/10_HBM.png"},
+    {"name":"HM","tag":"HM","logo":"team-logos/11_HM.png"},
+    {"name":"HUSS","tag":"HUSS","logo":"team-logos/12_HUSS.png"},
+    {"name":"JD Gaming","tag":"JDG","logo":"team-logos/13_JDG.png"},
+    {"name":"LEGACY (Mexican team)","tag":"LGCY","logo":"team-logos/14_LGCY.png"},
+    {"name":"Made In Heaven","tag":"MIH","logo":"team-logos/15_MIH.png"},
+    {"name":"Men Of Culture","tag":"MOC","logo":"team-logos/16_MOC.png"},
+    {"name":"Nice Guys","tag":"NICE","logo":"team-logos/17_NICE.png"},
+    {"name":"Ninjas in Pyjamas","tag":"NIP","logo":"team-logos/18_NIP.png"},
+    {"name":"Oblivion","tag":"OBVN","logo":"team-logos/19_OBVN.png"}
+  ];
+
+  /** Демо: слоты 0..19 — у части команд статус eliminated (для плашки). */
+  var DEMO_ELIMINATED_SLOTS = [2, 5, 9, 12, 15, 17];
+
+  /** Цвета слотов как на трансляции: слева 1–10, справа 11–20 (сверху вниз). */
+  var BROADCAST_TEAM_COLORS = [
+    "#14b8a6",
+    "#38bdf8",
+    "#a855f7",
+    "#1d4ed8",
+    "#1e40af",
+    "#2563eb",
+    "#1e3a8a",
+    "#ef4444",
+    "#dc2626",
+    "#b91c1c",
+    "#c05621",
+    "#78350f",
+    "#ea580c",
+    "#84cc16",
+    "#65a30d",
+    "#4d7c0f",
+    "#166534",
+    "#15803d",
+    "#14532d",
+    "#717c3a",
+  ];
+
+  function generateTeams(mapUid) {
+    var list = [];
+    var golden = Math.PI * (3 - Math.sqrt(5));
+    var hash = 2166136261 >>> 0;
+    for (var c = 0; c < mapUid.length; c++) {
+      hash ^= mapUid.charCodeAt(c);
+      hash = Math.imul(hash, 16777619) >>> 0;
+    }
+    var twist = (hash % 628) / 100;
+    for (var i = 0; i < 20; i++) {
+      var r = Math.sqrt((i + 0.5) / 20) * 0.44;
+      var theta = i * golden + twist;
+      var x = 0.5 + r * Math.cos(theta);
+      var y = 0.5 + r * Math.sin(theta);
+      x = Math.min(0.93, Math.max(0.07, x));
+      y = Math.min(0.93, Math.max(0.07, y));
+      var src = TEAMS_MANIFEST.length ? TEAMS_MANIFEST[i % TEAMS_MANIFEST.length] : null;
+      var logoUrl = src && src.logo ? designAssetUrl(src.logo) : "";
+      var bc = BROADCAST_TEAM_COLORS[i] || "#525252";
+      list.push({
+        id: mapUid + "-u" + String(i + 1).padStart(2, "0"),
+        name: src ? src.name : "Team " + (i + 1),
+        tag: src ? src.tag : "",
+        logo: logoUrl,
+        color: bc,
+        eliminated: DEMO_ELIMINATED_SLOTS.indexOf(i) !== -1,
+        norm: { x: x, y: y },
+      });
+    }
+    return list;
+  }
+
+  function hydrateDemoTeams() {
+    var tours = DEMO_DATA.tournaments;
+    for (var ti = 0; ti < tours.length; ti++) {
+      var tour = tours[ti];
+      for (var i = 0; i < tour.matches.length; i++) {
+        var m = tour.matches[i];
+        for (var j = 0; j < m.maps.length; j++) {
+          var mp = m.maps[j];
+          var uid = tour.id + "/" + m.id + "/" + j + "/" + mp.id;
+          mp.teams = generateTeams(uid);
+        }
+      }
+    }
+  }
+
+  var activeTournamentId = "algs-s2-emea";
+  var activeMatchId = "m-d3-b";
+  var activeMapIndex = 1;
+
+  function getCurrentTournament() {
+    var list = DEMO_DATA.tournaments;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === activeTournamentId) return list[i];
+    }
+    return list[0];
+  }
+
+  function formatMMSS(sec) {
+    var t = Math.max(0, Math.floor(sec));
+    var m = Math.floor(t / 60);
+    var s = t % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+
+  /**
+   * Имя без расширения = kebab-case слаг. Карты: PNG в maps/ и map-previews/;
+   * если файла нет — SVG из map-placeholders/maps и map-placeholders/map-previews.
+   * kings-canyon в репозитории нет → тот же слаг, что у запасной карты.
+   */
+  function arenaSlug(arena) {
+    var key = String(arena)
+      .toLowerCase()
+      .replace(/\u2019/g, "'")
+      .replace(/'/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    var aliases = {
+      "storm-point": "storm-point",
+      olympus: "olympus",
+      "worlds-edge": "worlds-edge",
+      "e-district": "e-district",
+      "broken-moon": "broken-moon",
+      "kings-canyon": "storm-point",
+    };
+    return aliases[key] || "storm-point";
+  }
+
+  function mapImageBase(arena) {
+    return arenaSlug(String(arena).trim());
+  }
+
+  function designAssetUrl(relPath) {
+    try {
+      return new URL(relPath, document.baseURI || window.location.href).href;
+    } catch (err) {
+      return relPath;
+    }
+  }
+
+  /**
+   * Страница с URL …/designs/page.html + сервер с cwd=designs (без кастомного handler):
+   * браузер запрашивает /designs/maps/…, а на диске лежит maps/… → 404. Убираем один ведущий сегмент /designs из пути.
+   */
+  function assetUrlStripOneDesignsPrefix(href) {
+    try {
+      var u = new URL(href);
+      if (u.pathname.indexOf("/designs/") !== 0) return null;
+      u.pathname = u.pathname.replace(/^\/designs\/?/, "/") || "/";
+      if (u.href === href) return null;
+      return u.href;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function installImgStripDesignsDupOnError(img) {
+    if (!img) return;
+    var fallback = assetUrlStripOneDesignsPrefix(img.src);
+    if (!fallback) return;
+    img.addEventListener(
+      "error",
+      function once() {
+        img.removeEventListener("error", once);
+        img.src = fallback;
+      },
+      false
+    );
+  }
+
+  function dedupeHrefChain(raw) {
+    var out = [];
+    var seen = Object.create(null);
+    for (var i = 0; i < raw.length; i++) {
+      var h = raw[i];
+      if (!h || seen[h]) continue;
+      seen[h] = true;
+      out.push(h);
+    }
+    return out;
+  }
+
+  function mapRasterCandidates(subdir, arena) {
+    var base = mapImageBase(arena);
+    var png = designAssetUrl(subdir + "/" + base + ".png");
+    var svgPh = designAssetUrl("map-placeholders/" + subdir + "/" + base + ".svg");
+    return dedupeHrefChain([
+      png,
+      assetUrlStripOneDesignsPrefix(png),
+      svgPh,
+      assetUrlStripOneDesignsPrefix(svgPh),
+    ]);
+  }
+
+  function setImgRasterCandidates(img, candidates) {
+    if (!img || !candidates.length) return;
+    var idx = 0;
+    img.onerror = function () {
+      idx++;
+      if (idx < candidates.length) img.src = candidates[idx];
+      else img.onerror = null;
+    };
+    img.src = candidates[0];
+  }
+
+  function mapPreviewUrl(arena) {
+    return designAssetUrl("map-previews/" + mapImageBase(arena) + ".png");
+  }
+
+  function tournamentDisplayLabel(tour) {
+    if (tour.id === "champ-26") return "ALGS Championship 2026 — Finals";
+    if (tour.id === "scrims-pack") return "Broadcast · Scrims analysis pack";
+    if (tour.id === "algs-s2-emea") return "ALGS Year 4 · Split 2 — EMEA Pro League";
+    if (tour.id === "algs-s2-na") return "ALGS Year 4 · Split 2 — NA Pro League";
+    if (tour.id === "algs-apac") return "ALGS Year 4 · Split 2 — APAC North";
+    return tour.name + " · " + tour.region;
+  }
+
+  function getActiveMatch() {
+    var t = getCurrentTournament();
+    for (var i = 0; i < t.matches.length; i++) {
+      if (t.matches[i].id === activeMatchId) return t.matches[i];
+    }
+    return t.matches[0];
+  }
+
+  var mapZoom = { scale: 1, tx: 0, ty: 0 };
+
+  function applyMapZoomTransform() {
+    var zl = document.getElementById("map-zoom-layer");
+    if (!zl) return;
+    zl.style.transform = "translate(" + mapZoom.tx + "px," + mapZoom.ty + "px) scale(" + mapZoom.scale + ")";
+  }
+
+  function clampMapPan() {
+    var wrap = document.getElementById("map-wrap");
+    if (!wrap) return;
+    var rect = wrap.getBoundingClientRect();
+    var W = rect.width;
+    var H = rect.height;
+    var s = mapZoom.scale;
+    if (s <= 1) {
+      mapZoom.scale = 1;
+      mapZoom.tx = 0;
+      mapZoom.ty = 0;
+      return;
+    }
+    var minTx = W * (1 - s);
+    var minTy = H * (1 - s);
+    mapZoom.tx = Math.min(0, Math.max(minTx, mapZoom.tx));
+    mapZoom.ty = Math.min(0, Math.max(minTy, mapZoom.ty));
+  }
+
+  function resetMapViewport() {
+    mapZoom.scale = 1;
+    mapZoom.tx = 0;
+    mapZoom.ty = 0;
+    applyMapZoomTransform();
+  }
+
+  function applyMapBackground() {
+    var m = getActiveMap();
+    var img = document.getElementById("map-background");
+    if (!img || !m) return;
+    setImgRasterCandidates(img, mapRasterCandidates("maps", m.arena));
+    resetMapViewport();
+  }
+
+  function closePickers() {
+    var opts = ["tour-options", "match-options"];
+    for (var i = 0; i < opts.length; i++) {
+      var el = document.getElementById(opts[i]);
+      if (el) el.hidden = true;
+    }
+    var trigs = ["tour-trigger", "match-trigger"];
+    for (var j = 0; j < trigs.length; j++) {
+      var t = document.getElementById(trigs[j]);
+      if (t) t.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function openTourPicker() {
+    closePickers();
+    var p = document.getElementById("tour-options");
+    var tr = document.getElementById("tour-trigger");
+    if (p && tr) {
+      p.hidden = false;
+      tr.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  function openMatchPicker() {
+    closePickers();
+    var p = document.getElementById("match-options");
+    var tr = document.getElementById("match-trigger");
+    if (p && tr) {
+      p.hidden = false;
+      tr.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  function syncPlayToggleIcon(playing) {
+    var pt = document.getElementById("play-toggle");
+    if (!pt) return;
+    var iPl = pt.querySelector(".icon-play");
+    var iPa = pt.querySelector(".icon-pause");
+    if (iPl) iPl.hidden = !!playing;
+    if (iPa) iPa.hidden = !playing;
+    pt.setAttribute("aria-label", playing ? "Пауза" : "Воспроизведение");
+  }
+
+  function fillTourOptions() {
+    var ul = document.getElementById("tour-options");
+    if (!ul) return;
+    ul.innerHTML = "";
+    var tours = DEMO_DATA.tournaments;
+    for (var ti = 0; ti < tours.length; ti++) {
+      (function (tour) {
+        var li = document.createElement("li");
+        li.setAttribute("role", "none");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "picker-option picker-option--stack";
+        btn.setAttribute("role", "option");
+        btn.setAttribute("aria-selected", tour.id === activeTournamentId ? "true" : "false");
+        btn.dataset.value = tour.id;
+        var optTitle = document.createElement("span");
+        optTitle.className = "picker-option-title";
+        optTitle.textContent = tournamentDisplayLabel(tour);
+        var optKind = document.createElement("span");
+        optKind.className = "picker-option-kind";
+        optKind.textContent = tour.pickerKind || "";
+        btn.appendChild(optTitle);
+        btn.appendChild(optKind);
+        btn.addEventListener("click", function () {
+          activeTournamentId = tour.id;
+          closePickers();
+          applyTournamentChange();
+        });
+        li.appendChild(btn);
+        ul.appendChild(li);
+      })(tours[ti]);
+    }
+  }
+
+  function fillMatchOptions() {
+    var ul = document.getElementById("match-options");
+    if (!ul) return;
+    ul.innerHTML = "";
+    var tour = getCurrentTournament();
+    for (var i = 0; i < tour.matches.length; i++) {
+      (function (m) {
+        var li = document.createElement("li");
+        li.setAttribute("role", "none");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "picker-option";
+        btn.setAttribute("role", "option");
+        btn.setAttribute("aria-selected", m.id === activeMatchId ? "true" : "false");
+        btn.dataset.value = m.id;
+        btn.textContent = m.label + " · " + m.status;
+        btn.addEventListener("click", function () {
+          activeMatchId = m.id;
+          activeMapIndex = 0;
+          closePickers();
+          applyMatchChange();
+        });
+        li.appendChild(btn);
+        ul.appendChild(li);
+      })(tour.matches[i]);
+    }
+  }
+
+  function syncPickerTriggerLabels() {
+    var tour = getCurrentTournament();
+    var tMain = document.getElementById("tour-trigger-main");
+    var tKind = document.getElementById("tour-trigger-kind");
+    var mt = document.getElementById("match-trigger-text");
+    if (tMain) tMain.textContent = tournamentDisplayLabel(tour);
+    if (tKind) tKind.textContent = tour.pickerKind || "";
+    var match = getActiveMatch();
+    if (mt && match) mt.textContent = match.label + " · " + match.status;
+  }
+
+  function wirePickerTriggers() {
+    var tourTrig = document.getElementById("tour-trigger");
+    var matchTrig = document.getElementById("match-trigger");
+    if (tourTrig) {
+      tourTrig.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var p = document.getElementById("tour-options");
+        if (p && !p.hidden) closePickers();
+        else openTourPicker();
+      });
+    }
+    if (matchTrig) {
+      matchTrig.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var p = document.getElementById("match-options");
+        if (p && !p.hidden) closePickers();
+        else openMatchPicker();
+      });
+    }
+    document.addEventListener("click", closePickers);
+  }
+
+  function renderMapList() {
+    var root = document.getElementById("tree-root");
+    var match = getActiveMatch();
+    if (!root || !match || !match.maps) return;
+    var html = "";
+    html += "<div class=\"map-tree-card\">";
+    html += "<div class=\"map-tree-heading\">Карты</div>";
+    for (var j = 0; j < match.maps.length; j++) {
+      var mp = match.maps[j];
+      var isSel = j === activeMapIndex;
+      var prev = mapPreviewUrl(mp.arena);
+      html += "<div class=\"nest-row map-row" + (isSel ? " active-map" : "") + "\" data-map-index=\"" + j + "\" data-map-arena=\"" + esc(mp.arena) + "\" role=\"button\" tabindex=\"0\">";
+      html += "<span class=\"map-row-label\">Game " + mp.gameIndex + " · " + esc(mp.arena) + "</span>";
+      html += "<span class=\"map-row-thumb\"><img src=\"" + esc(prev) + "\" alt=\"\" width=\"80\" height=\"45\" loading=\"lazy\" decoding=\"async\" /></span>";
+      html += "</div>";
+    }
+    html += "</div>";
+    root.innerHTML = html;
+
+    root.querySelectorAll(".map-row").forEach(function (row) {
+      var arenaAttr = row.getAttribute("data-map-arena");
+      var im = row.querySelector(".map-row-thumb img");
+      if (!im || !arenaAttr) return;
+      setImgRasterCandidates(im, mapRasterCandidates("map-previews", arenaAttr));
+    });
+
+    root.querySelectorAll(".map-row").forEach(function (el) {
+      function activate() {
+        activeMapIndex = parseInt(el.getAttribute("data-map-index"), 10);
+        currentSec = 0;
+        playing = false;
+        syncPlayToggleIcon(false);
+        if (playToggle) {
+          playToggle.setAttribute("aria-pressed", "false");
+          playToggle.classList.remove("is-playing");
+        }
+        cancelAnimationFrame(raf);
+        lastTs = 0;
+        syncFromData();
+        applyMapBackground();
+        renderMapList();
+        renderTeamDots();
+        renderTeamChips();
+        updatePickerHint();
+      }
+      el.addEventListener("click", function (e) {
+        e.stopPropagation();
+        activate();
+      });
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          activate();
+        }
+      });
+    });
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function getActiveMap() {
+    var t = getCurrentTournament();
+    for (var i = 0; i < t.matches.length; i++) {
+      if (t.matches[i].id === activeMatchId) {
+        var maps = t.matches[i].maps;
+        var idx = activeMapIndex;
+        if (!maps || !maps.length) return null;
+        if (idx < 0 || idx >= maps.length) idx = 0;
+        return maps[idx] || null;
+      }
+    }
+    return null;
+  }
+
+  var visibilityByMapKey = {};
+
+  function getVisKey() {
+    return activeTournamentId + "|" + activeMatchId + "|" + activeMapIndex;
+  }
+
+  function ensureVisibilityDefaults() {
+    var m = getActiveMap();
+    var key = getVisKey();
+    if (!visibilityByMapKey[key]) {
+      var o = {};
+      if (m && m.teams) {
+        for (var i = 0; i < m.teams.length; i++) o[m.teams[i].id] = true;
+      }
+      visibilityByMapKey[key] = o;
+    }
+  }
+
+  function syncDotVisibility() {
+    ensureVisibilityDefaults();
+    var vis = visibilityByMapKey[getVisKey()];
+    teamLayer.querySelectorAll(".team-dot").forEach(function (dot) {
+      var id = dot.getAttribute("data-team-id");
+      var on = !!vis[id];
+      dot.classList.toggle("is-hidden", !on);
+      dot.style.visibility = on ? "visible" : "hidden";
+      dot.style.opacity = on ? "1" : "0";
+    });
+  }
+
+  function renderTeamChips() {
+    var left = document.getElementById("team-chips-left");
+    var right = document.getElementById("team-chips-right");
+    var m = getActiveMap();
+    ensureVisibilityDefaults();
+    var vis = visibilityByMapKey[getVisKey()];
+    if (left) left.innerHTML = "";
+    if (right) right.innerHTML = "";
+    if (!m || !m.teams) return;
+    var mid = Math.ceil(m.teams.length / 2);
+    m.teams.forEach(function (tm, idx) {
+      var root = idx < mid ? left : right;
+      if (!root) return;
+      var on = !!vis[tm.id];
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "broadcast-team-card" +
+        (on ? " is-on" : " is-off") +
+        (tm.eliminated ? " is-eliminated" : "");
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.setAttribute("data-team-id", tm.id);
+      btn.style.setProperty("--bc", tm.color);
+      btn.title =
+        (on ? "Скрыть" : "Показать") +
+        " «" +
+        tm.name +
+        "» на карте" +
+        (tm.eliminated ? " · Eliminated" : "");
+
+      var bar = document.createElement("span");
+      bar.className = "broadcast-team-accent-bar";
+      bar.setAttribute("aria-hidden", "true");
+
+      var body = document.createElement("span");
+      body.className = "broadcast-team-body";
+
+      var brandCol = document.createElement("span");
+      brandCol.className = "broadcast-team-brand";
+
+      if (tm.logo) {
+        var im = document.createElement("img");
+        im.className = "broadcast-team-logo";
+        im.src = tm.logo;
+        im.alt = "";
+        im.decoding = "async";
+        installImgStripDesignsDupOnError(im);
+        brandCol.appendChild(im);
+      } else {
+        var ph = document.createElement("span");
+        ph.className = "broadcast-team-logo broadcast-team-logo--placeholder";
+        ph.setAttribute("aria-hidden", "true");
+        brandCol.appendChild(ph);
+      }
+
+      var nameEl = document.createElement("span");
+      nameEl.className = "broadcast-team-name";
+      nameEl.textContent = tm.name;
+      brandCol.appendChild(nameEl);
+
+      body.appendChild(brandCol);
+      if (tm.eliminated) {
+        var elim = document.createElement("span");
+        elim.className = "broadcast-team-elim-ribbon";
+        elim.setAttribute("aria-label", "Eliminated");
+        var elimTxt = document.createElement("span");
+        elimTxt.className = "broadcast-team-elim-text";
+        elimTxt.textContent = "ELIM";
+        elim.appendChild(elimTxt);
+        body.appendChild(elim);
+      }
+      btn.appendChild(bar);
+      btn.appendChild(body);
+
+      btn.addEventListener("click", function () {
+        vis[tm.id] = !vis[tm.id];
+        syncDotVisibility();
+        renderTeamChips();
+      });
+      root.appendChild(btn);
+    });
+  }
+
+  var timeline = document.getElementById("timeline");
+  var timerDisplay = document.getElementById("timer-display");
+  var timeElapsed = document.getElementById("time-elapsed");
+  var timeEnd = document.getElementById("time-end");
+  var ringRound = document.getElementById("ring-round");
+  var ringPhaseEl = document.getElementById("ring-phase");
+  var ringPill = document.getElementById("ring-pill");
+  var playToggle = document.getElementById("play-toggle");
+  var speedEl = document.getElementById("speed");
+  var mapWrap = document.getElementById("map-wrap");
+  var teamLayer = document.getElementById("team-layer");
+  var playing = false;
+  var currentSec = 0;
+  var lastTs = 0;
+  var raf = 0;
+
+  if (mapWrap) {
+    mapWrap.addEventListener(
+      "wheel",
+      function (e) {
+        e.preventDefault();
+        var rect = mapWrap.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        var oldScale = mapZoom.scale;
+        var delta = e.deltaY > 0 ? -0.12 : 0.12;
+        var newScale = Math.min(4, Math.max(1, oldScale + delta));
+        if (newScale === oldScale) return;
+        var worldX = (mx - mapZoom.tx) / oldScale;
+        var worldY = (my - mapZoom.ty) / oldScale;
+        mapZoom.scale = newScale;
+        mapZoom.tx = mx - worldX * newScale;
+        mapZoom.ty = my - worldY * newScale;
+        clampMapPan();
+        applyMapZoomTransform();
+      },
+      { passive: false }
+    );
+  }
+
+  function syncFromData() {
+    var m = getActiveMap();
+    if (!m) return;
+    if (timeline) timeline.max = String(m.durationSec);
+    if (timeEnd) timeEnd.textContent = formatMMSS(m.durationSec).replace(/^0/, "");
+    if (ringRound) ringRound.textContent = String(m.ringNumber);
+    if (ringPhaseEl) ringPhaseEl.textContent = m.ringPhase === "closing" ? "закрывается" : "обратный отсчёт";
+    if (ringPill) ringPill.classList.toggle("ring-closing", m.ringPhase === "closing");
+    currentSec = Math.min(currentSec, m.durationSec);
+    if (timeline) timeline.value = String(Math.floor(currentSec));
+    updateDisplays();
+  }
+
+  function updateDisplays() {
+    var m = getActiveMap();
+    var max = m ? m.durationSec : 1200;
+    var sec = Math.min(Math.max(0, currentSec), max);
+    if (timerDisplay) timerDisplay.textContent = formatMMSS(sec);
+    if (timeElapsed) timeElapsed.textContent = formatMMSS(sec).replace(/^0/, "");
+    if (timeline) timeline.value = String(Math.floor(sec));
+  }
+
+  function renderTeamDots() {
+    var m = getActiveMap();
+    if (!teamLayer) return;
+    teamLayer.innerHTML = "";
+    if (!m || !m.teams) return;
+    for (var i = 0; i < m.teams.length; i++) {
+      var tm = m.teams[i];
+      var d = document.createElement("div");
+      d.className = "team-dot";
+      d.setAttribute("data-team-id", tm.id);
+      d.style.background = tm.color;
+      d.style.left = tm.norm.x * 100 + "%";
+      d.style.top = tm.norm.y * 100 + "%";
+      d.style.animationDelay = i * 0.12 + "s";
+      d.setAttribute("data-label", tm.name);
+      teamLayer.appendChild(d);
+    }
+    ensureVisibilityDefaults();
+    syncDotVisibility();
+  }
+
+  function tick(ts) {
+    if (!playing) return;
+    if (!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    var sp = speedEl ? parseFloat(speedEl.value, 10) || 1 : 1;
+    var m = getActiveMap();
+    var max = m ? m.durationSec : 1200;
+    currentSec = Math.min(currentSec + dt * sp, max);
+    updateDisplays();
+    if (currentSec >= max) {
+      playing = false;
+      syncPlayToggleIcon(false);
+      if (playToggle) {
+        playToggle.setAttribute("aria-pressed", "false");
+        playToggle.classList.remove("is-playing");
+      }
+      lastTs = 0;
+      return;
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  if (playToggle) {
+    playToggle.addEventListener("click", function () {
+      playing = !playing;
+      playToggle.setAttribute("aria-pressed", playing ? "true" : "false");
+      syncPlayToggleIcon(playing);
+      playToggle.classList.toggle("is-playing", playing);
+      if (playing) {
+        lastTs = 0;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(raf);
+        lastTs = 0;
+      }
+    });
+  }
+
+  if (timeline) {
+    timeline.addEventListener("input", function () {
+      currentSec = parseInt(timeline.value, 10) || 0;
+      updateDisplays();
+    });
+  }
+
+  var btnFs = document.getElementById("btn-fullscreen");
+  if (btnFs && mapWrap) {
+    btnFs.addEventListener("click", function () {
+      if (!document.fullscreenElement) {
+        mapWrap.requestFullscreen().catch(function () {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+  }
+
+  var style = document.createElement("style");
+  style.textContent = ".nest-row.active-map { background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 6px; margin: 0 -6px; padding-left: 6px; padding-right: 6px; }";
+  document.head.appendChild(style);
+
+  function updatePickerHint() {
+    var pickerHintEl = document.querySelector(".picker-hint");
+    if (!pickerHintEl) return;
+    var tour = getCurrentTournament();
+    var match = getActiveMatch();
+    var m = getActiveMap();
+    var mapLabel = m ? "Game " + m.gameIndex + " · " + m.arena : "—";
+    pickerHintEl.textContent =
+      "«" +
+      tournamentDisplayLabel(tour) +
+      "» · " +
+      (match ? match.label : "—") +
+      ". Интерактивная карта: " +
+      mapLabel +
+      ".";
+  }
+
+  function applyTournamentChange() {
+    var tour = getCurrentTournament();
+    var found = false;
+    for (var i = 0; i < tour.matches.length; i++) {
+      if (tour.matches[i].id === activeMatchId) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      activeMatchId = tour.matches[0].id;
+      activeMapIndex = 0;
+    } else {
+      for (var j = 0; j < tour.matches.length; j++) {
+        if (tour.matches[j].id === activeMatchId) {
+          if (activeMapIndex >= tour.matches[j].maps.length) activeMapIndex = 0;
+          break;
+        }
+      }
+    }
+    currentSec = 0;
+    playing = false;
+    syncPlayToggleIcon(false);
+    if (playToggle) {
+      playToggle.setAttribute("aria-pressed", "false");
+      playToggle.classList.remove("is-playing");
+    }
+    cancelAnimationFrame(raf);
+    lastTs = 0;
+    syncFromData();
+    applyMapBackground();
+    fillTourOptions();
+    fillMatchOptions();
+    syncPickerTriggerLabels();
+    renderMapList();
+    renderTeamDots();
+    renderTeamChips();
+    updatePickerHint();
+  }
+
+  function applyMatchChange() {
+    var tour = getCurrentTournament();
+    var found = false;
+    for (var i = 0; i < tour.matches.length; i++) {
+      if (tour.matches[i].id === activeMatchId) {
+        found = true;
+        if (activeMapIndex >= tour.matches[i].maps.length) activeMapIndex = 0;
+        break;
+      }
+    }
+    if (!found) {
+      activeMatchId = tour.matches[0].id;
+      activeMapIndex = 0;
+    }
+    currentSec = 0;
+    playing = false;
+    syncPlayToggleIcon(false);
+    if (playToggle) {
+      playToggle.setAttribute("aria-pressed", "false");
+      playToggle.classList.remove("is-playing");
+    }
+    cancelAnimationFrame(raf);
+    lastTs = 0;
+    syncFromData();
+    applyMapBackground();
+    fillMatchOptions();
+    syncPickerTriggerLabels();
+    renderMapList();
+    renderTeamDots();
+    renderTeamChips();
+    updatePickerHint();
+  }
+
+  var btnRailLogout = document.getElementById("btn-rail-logout");
+  if (btnRailLogout) {
+    btnRailLogout.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+  }
+
+  function bootPaperCardsUi() {
+    hydrateDemoTeams();
+    fillTourOptions();
+    fillMatchOptions();
+    syncPickerTriggerLabels();
+    wirePickerTriggers();
+    renderMapList();
+    applyMapBackground();
+    syncFromData();
+    renderTeamDots();
+    renderTeamChips();
+    updatePickerHint();
+  }
+
+  function loadTeamsManifestThen(done) {
+    if (typeof fetch !== "function") {
+      done();
+      return;
+    }
+    var candidates = [];
+    try {
+      var base = document.baseURI || window.location.href;
+      var origin = (typeof window !== "undefined" && window.location && window.location.origin) || new URL(base).origin;
+      candidates.push(new URL("teams-manifest.json", base).href);
+      candidates.push(origin + "/teams-manifest.json");
+      candidates.push(origin + "/designs/teams-manifest.json");
+    } catch (e) {
+      done();
+      return;
+    }
+    var seen = Object.create(null);
+    var uniq = [];
+    for (var c = 0; c < candidates.length; c++) {
+      var h = candidates[c];
+      if (!h || seen[h]) continue;
+      seen[h] = true;
+      uniq.push(h);
+    }
+    function attempt(idx) {
+      if (idx >= uniq.length) {
+        done();
+        return;
+      }
+      fetch(uniq[idx], { cache: "no-store" })
+        .then(function (res) {
+          if (!res.ok) throw new Error("manifest http");
+          return res.json();
+        })
+        .then(function (data) {
+          if (Array.isArray(data) && data.length) TEAMS_MANIFEST = data;
+          done();
+        })
+        .catch(function () {
+          attempt(idx + 1);
+        });
+    }
+    attempt(0);
+  }
+
+  bootPaperCardsUi();
+  loadTeamsManifestThen(function () {
+    hydrateDemoTeams();
+    renderTeamDots();
+    renderTeamChips();
+    updatePickerHint();
+  });
+})();
+</script>
+</body>
+</html>

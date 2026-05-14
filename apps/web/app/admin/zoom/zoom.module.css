@@ -1,0 +1,157 @@
+.zoomRoot {
+  position: relative;
+  min-height: 100vh;
+}
+
+/*
+ * Скоуп через локальный .zoomRoot (требование CSS Modules — в селекторе есть hashed-класс).
+ * Два блока — одинаковые квадраты; сторона = min(высота окна, половина ширины ряда).
+ */
+
+.zoomRoot :global(.map-stage-teams-row--map-only) {
+  --zoom-twin-gap: max(10px, min(20px, calc(0.04 * (100vw - var(--viewer-rail-width, 300px)))));
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+  --broadcast-map-side: min(
+    calc(100vh - 300px),
+    calc((100% - var(--zoom-twin-gap)) / 2)
+  );
+}
+
+.zoomRoot :global(.map-stage-teams-row--map-only .map-stage-center) {
+  flex: 0 0 var(--broadcast-map-side);
+  width: var(--broadcast-map-side);
+  max-width: var(--broadcast-map-side);
+  min-width: 0;
+}
+
+.zoomRoot :global(.map-stage-teams-row--map-only .map-wrap) {
+  max-width: 100%;
+  width: 100%;
+}
+
+.zoomRoot :global(.broadcast-media-pane) {
+  flex: 0 0 var(--broadcast-map-side);
+  width: var(--broadcast-map-side);
+  min-width: 0;
+  max-width: var(--broadcast-map-side);
+  height: var(--broadcast-map-side);
+  aspect-ratio: 1 / 1;
+  align-self: flex-start;
+}
+
+/* Уменьшение квадратов под график — только в полноэкранной студии (см. ниже .shell--camera-studio-open) */
+
+.toolBtn {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: rgba(250, 250, 250, 0.95);
+  color: #171717;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toolBtn:hover {
+  background: #ffffff;
+}
+
+.videoPanel {
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+ * Квадратный вьюпорт: центральная полоса 16:9 (1920×1080 → центр 1080×1080).
+ */
+.videoCrop {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 13px;
+}
+
+.video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #0d121a;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .zoomRoot :global(.map-stage-teams-row--map-only) {
+    flex-direction: column;
+    align-items: center;
+    --broadcast-map-side: min(calc(100vw - 24px), calc((100dvh - 400px) / 2));
+  }
+
+  /* Уменьшение под график на узком экране — только полноэкран студии */
+  .zoomRoot :global(.shell.shell--camera-studio-open .map-stage.panel.map-stage--with-camera-charts .map-stage-teams-row--map-only) {
+    --zoom-charts-layout-reserve: min(32vh, 340px);
+    --broadcast-map-side: min(
+      calc(100vw - 24px),
+      calc((100dvh - 400px - var(--zoom-charts-layout-reserve)) / 2)
+    );
+  }
+
+  .zoomRoot :global(.map-stage-teams-row--map-only .map-stage-center) {
+    flex: 0 0 auto;
+    max-width: min(100%, var(--broadcast-map-side));
+  }
+}
+
+/* Полноэкран студии */
+.zoomRoot :global(.shell.shell--camera-studio-open .map-stage-teams-row--map-only) {
+  justify-content: center;
+  align-items: flex-start;
+  --broadcast-map-side: min(calc(100dvh - 240px), calc((100dvw - 48px) / 2));
+}
+
+/* В студии + видимые графики — ужимаем квадраты под высоту экрана */
+.zoomRoot :global(.shell.shell--camera-studio-open .map-stage.panel.map-stage--with-camera-charts .map-stage-teams-row--map-only) {
+  --zoom-charts-layout-reserve: min(38vh, 460px);
+  --broadcast-map-side: min(
+    calc(100dvh - 220px - var(--zoom-charts-layout-reserve)),
+    calc((100dvw - 48px) / 2)
+  );
+}
+
+.zoomRoot :global(.shell.shell--camera-studio-open .map-stage-teams-row--map-only .map-stage-center) {
+  flex: 0 0 var(--broadcast-map-side) !important;
+  width: var(--broadcast-map-side) !important;
+  max-width: var(--broadcast-map-side) !important;
+  height: var(--broadcast-map-side) !important;
+  align-self: flex-start !important;
+}
+
+.zoomRoot :global(.shell.shell--camera-studio-open .broadcast-media-pane) {
+  flex: 0 0 var(--broadcast-map-side) !important;
+  width: var(--broadcast-map-side) !important;
+  min-width: 0 !important;
+  max-width: var(--broadcast-map-side) !important;
+  height: var(--broadcast-map-side) !important;
+  aspect-ratio: 1 / 1 !important;
+  align-self: flex-start !important;
+}

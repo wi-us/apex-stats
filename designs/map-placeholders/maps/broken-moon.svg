@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Broken Moon — tactical map placeholder">
+  <defs>
+    <linearGradient id="g" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#172554"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#g)"/>
+  <ellipse cx="540" cy="520" rx="480" ry="200" fill="rgba(255,255,255,0.04)"/>
+  <path fill="rgba(0,0,0,0.28)" d="M260 460c120-100 380-120 560 20s220 280 140 360-440 80-620-60S160 520 260 460z"/>
+  <circle cx="540" cy="520" r="64" fill="rgba(255,255,255,0.06)"/>
+</svg>

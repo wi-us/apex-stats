@@ -1,0 +1,58 @@
+.shellRoot {
+  box-sizing: border-box;
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+/* Полноэкранный iframe: режимы только внутри legacy rail--account */
+.shellEmbed {
+  min-height: 100vh;
+  padding: 0;
+  position: relative;
+}
+
+.legacyFrameFull {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  border: 0;
+  vertical-align: top;
+}
+
+.railScrollAccount {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editorMain {
+  margin-left: calc(var(--viewer-rail-width) + 12px);
+  margin-right: 24px;
+  box-sizing: border-box;
+  width: calc(100% - var(--viewer-rail-width) - 12px - 24px);
+  min-width: 0;
+  min-height: calc(100vh - 40px);
+  padding: 0;
+  gap: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.legacyFrame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .editorMain {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    margin-top: 12px;
+    min-height: 70vh;
+  }
+}

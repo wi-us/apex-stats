@@ -1,0 +1,636 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+.section {
+  background: rgba(20, 26, 38, 0.92);
+  border: 1px solid #2a3447;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.section h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sectionSummary {
+  cursor: pointer;
+  color: #c5d0e6;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.section p.hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9aa8c4;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 16px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #3d4d6a;
+  background: #1c2636;
+  color: #e8eef8;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #243044;
+}
+
+.btnPrimary {
+  border-color: #4a6fa5;
+  background: #2a4070;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #242e40;
+  vertical-align: top;
+}
+
+.table th {
+  background: #121923;
+  color: #b8c6de;
+  font-weight: 600;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.errBox {
+  margin-top: 8px;
+  padding: 8px;
+  background: #2a1518;
+  border: 1px solid #5c2a32;
+  border-radius: 6px;
+  color: #f0c4c8;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.statusOk {
+  color: #8fd49a;
+}
+
+.statusWarn {
+  color: #e6c48a;
+}
+
+.statusIdle {
+  color: #9aa8c4;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modalBackdropTop {
+  z-index: 1100;
+}
+
+.modalPanel {
+  background: #141a26;
+  border: 1px solid #3d4d6a;
+  border-radius: 12px;
+  max-width: 960px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #2a3447;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.modalBody {
+  padding: 14px 16px;
+  overflow: auto;
+  flex: 1;
+}
+
+.modalColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .modalColumns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modalColTitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b8c6de;
+}
+
+.clickRow {
+  cursor: pointer;
+}
+
+.clickRow:hover {
+  background: rgba(42, 64, 112, 0.2);
+}
+
+.closeBtn {
+  flex-shrink: 0;
+}
+
+.statusBad {
+  color: #f0a0a8;
+}
+
+.detectFieldset {
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+}
+
+.detectLegend {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 6px;
+  color: #c5d0e6;
+}
+
+.detectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px 14px;
+  margin-top: 10px;
+}
+
+.detectGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #9aa8c4;
+  margin: 0;
+}
+
+.detectGrid input,
+.detectGrid select {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.detectCheck {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.detectCheck input {
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.detectActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #2a3447;
+}
+
+.thinBtn {
+  padding: 4px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9aa8c4;
+}
+
+.detectModalShell {
+  max-width: min(1280px, calc(100vw - 32px));
+}
+
+.detectPipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2a3447;
+  background: rgba(10, 14, 22, 0.55);
+}
+
+.modalHeader + .detectPipeline {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  padding: 12px 16px;
+}
+
+.detectPipelineInner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detectPipeStep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  border: 1px solid #3d4d6a;
+  padding: 8px 12px;
+  min-width: 76px;
+  text-align: center;
+  background: #1a2332;
+}
+
+.detectPipeStep input {
+  width: auto;
+  margin: 0;
+}
+
+.detectPipeStepLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #c5d0e6;
+}
+
+.detectPipeStepDim {
+  opacity: 0.42;
+  border-color: #2d384c;
+  background: #141a24;
+}
+
+.detectPipeStepHot {
+  border-color: #4a6fa5;
+  background: rgba(42, 64, 112, 0.35);
+}
+
+.detectPipeArrow {
+  color: #6b7c9a;
+  font-size: 12px;
+  user-select: none;
+}
+
+.detectModePill {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detectModePillFull {
+  border: 1px solid #4a7a9e;
+  background: rgba(40, 90, 130, 0.35);
+  color: #a8d4f0;
+}
+
+.detectModePillRings {
+  border: 1px solid #7a6a4a;
+  background: rgba(120, 100, 50, 0.3);
+  color: #e6d49a;
+}
+
+.detectCallout {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #3d5a7a;
+  background: rgba(30, 50, 80, 0.35);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b8c6de;
+  margin-bottom: 14px;
+}
+
+.detectCallout code {
+  font-size: 11px;
+}
+
+.detectCard {
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: rgba(18, 22, 34, 0.5);
+}
+
+.detectCardTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c5d0e6;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.detectDetails {
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: rgba(18, 22, 34, 0.4);
+}
+
+.detectDetails > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c5d0e6;
+  list-style: none;
+}
+
+.detectDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.detectDetails[open] > summary {
+  border-bottom: 1px solid #2a3447;
+}
+
+.detectDetailsBody {
+  padding: 12px 14px 6px;
+}
+
+.detectTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.detectTab {
+  appearance: none;
+  border: 1px solid #2a3447;
+  background: rgba(18, 24, 36, 0.85);
+  color: #9aa8c4;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.detectTab:hover,
+.detectTabActive {
+  color: #e8eef8;
+  border-color: #4a6fa5;
+  background: rgba(42, 64, 112, 0.5);
+}
+
+.detectPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.detectPresetCard {
+  appearance: none;
+  text-align: left;
+  border: 1px solid #2a3447;
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(18, 22, 34, 0.58);
+  color: #c5d0e6;
+  cursor: pointer;
+}
+
+.detectPresetCard:hover {
+  border-color: #4a6fa5;
+  background: rgba(42, 64, 112, 0.32);
+}
+
+.detectPresetCard strong,
+.detectPresetCard span,
+.detectPresetCard small {
+  display: block;
+}
+
+.detectPresetCard strong {
+  font-size: 13px;
+  color: #e8eef8;
+}
+
+.detectPresetCard span {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #aebbd3;
+}
+
+.detectPresetCard small {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #8fa4c8;
+}
+
+.detectGuideGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detectGuideCard {
+  border: 1px solid #2a3447;
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(18, 22, 34, 0.5);
+}
+
+.detectGuideCard h4 {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  color: #e8eef8;
+}
+
+.detectGuideCard p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #aebbd3;
+}
+
+.detectGuideGroup {
+  color: #8aa4d0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #2a3447;
+  background: rgba(10, 14, 22, 0.75);
+  margin: 10px 0;
+}
+
+.progressBar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #385a9a, #7ea0d8);
+}
+
+.detectLog {
+  max-height: 220px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #2a3447;
+  background: rgba(5, 8, 14, 0.65);
+  color: #b8c6de;
+  font: 11px/1.45 ui-monospace, monospace;
+  white-space: pre-wrap;
+}
+
+.taskProgressGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.teamProgressGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+
+.teamProgressCard {
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(18, 22, 34, 0.38);
+}
+
+.taskProgressCard {
+  border: 1px solid #2a3447;
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(18, 22, 34, 0.45);
+}
+
+.taskProgressHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #c5d0e6;
+  font-size: 12px;
+}
+
+.taskProgressHead span {
+  color: #8fa4c8;
+  font-size: 11px;
+}
+
+.progressConsole {
+  margin-top: 12px;
+}
+
+.progressConsole summary {
+  cursor: pointer;
+  color: #c5d0e6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detectorProgressCompact .taskProgressGrid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.managementProgressList {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}

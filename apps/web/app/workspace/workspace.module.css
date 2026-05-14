@@ -1,0 +1,203 @@
+.page {
+  min-height: 100vh;
+  padding: 20px;
+  background: transparent;
+  color: var(--text);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  color: var(--text);
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tabBtn {
+  background: color-mix(in srgb, var(--surface) 55%, var(--bg));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tabBtnActive {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(270px, 320px) 1fr;
+  gap: 14px;
+}
+
+.message {
+  margin: 8px 0 12px;
+  color: var(--accent2);
+}
+
+.tableWrap {
+  overflow: auto;
+  max-height: 70vh;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--border);
+  padding: 6px;
+  vertical-align: top;
+}
+
+.table th {
+  background: color-mix(in srgb, var(--bg) 65%, var(--surface));
+  position: sticky;
+  top: 0;
+}
+
+.page :global(.panel) textarea,
+.page :global(.panel) select,
+.inlineForm input,
+.page :global(.panel) input[type="text"] {
+  width: 100%;
+  background: color-mix(in srgb, var(--bg) 72%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 8px;
+  font: inherit;
+}
+
+.page :global(.panel) label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.actionBtn,
+.dangerBtn {
+  background: color-mix(in srgb, var(--surface) 72%, var(--accent));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dangerBtn {
+  background: color-mix(in srgb, #3a0a14 35%, var(--surface));
+  border-color: color-mix(in srgb, #f87171 40%, var(--border));
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.newRow td {
+  background: color-mix(in srgb, var(--surface) 88%, var(--bg));
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+
+.fileToolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.metaPath {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.fileList {
+  max-height: 58vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  background: color-mix(in srgb, var(--bg) 55%, var(--surface));
+  margin-bottom: 8px;
+}
+
+.fileItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.fileBtn {
+  text-align: left;
+  background: color-mix(in srgb, var(--bg) 70%, var(--surface));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.inlineForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.editor {
+  min-height: 62vh;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: color-mix(in srgb, var(--bg) 80%, var(--surface));
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

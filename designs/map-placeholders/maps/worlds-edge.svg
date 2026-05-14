@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="World's Edge — tactical map placeholder">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#450a0a"/>
+      <stop offset="50%" stop-color="#9a3412"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#g)"/>
+  <path fill="rgba(0,0,0,0.22)" d="M0 640 L280 260 L620 440 L1080 300 L1080 1080 L0 1080 Z"/>
+  <path fill="rgba(255,255,255,0.05)" d="M140 1080 L340 520 L760 700 L980 1080 Z"/>
+</svg>

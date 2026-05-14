@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Storm Point — tactical map placeholder">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a2f2f"/>
+      <stop offset="55%" stop-color="#145a4e"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#g)"/>
+  <path fill="rgba(255,255,255,0.06)" d="M120 720 Q400 200 700 480 T980 360 L980 1080 L120 1080 Z"/>
+  <path fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" d="M540 80v920M80 540h920"/>
+</svg>

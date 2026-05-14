@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Al Qadsiah",
+    "tag": "QAD",
+    "logo": "team-logos/00_QAD.png"
+  },
+  {
+    "name": "CIMJ",
+    "tag": "CIMJ",
+    "logo": "team-logos/01_CIMJ.png"
+  },
+  {
+    "name": "DINOS",
+    "tag": "DINO",
+    "logo": "team-logos/02_DINO.png"
+  },
+  {
+    "name": "DSK",
+    "tag": "DSK",
+    "logo": "team-logos/03_DSK.png"
+  },
+  {
+    "name": "FaZe Clan",
+    "tag": "FAZE",
+    "logo": "team-logos/04_FAZE.png"
+  },
+  {
+    "name": "Five Fears",
+    "tag": "5F",
+    "logo": "team-logos/05_5F.png"
+  },
+  {
+    "name": "Flat",
+    "tag": "FLAT",
+    "logo": "team-logos/06_FLAT.png"
+  },
+  {
+    "name": "FreeAgents",
+    "tag": "FREE",
+    "logo": "team-logos/07_FREE.png"
+  },
+  {
+    "name": "FUL",
+    "tag": "FUL",
+    "logo": "team-logos/08_FUL.png"
+  },
+  {
+    "name": "Gen.G Esports",
+    "tag": "GEN",
+    "logo": "team-logos/09_GEN.png"
+  },
+  {
+    "name": "HbM",
+    "tag": "HBM",
+    "logo": "team-logos/10_HBM.png"
+  },
+  {
+    "name": "HM",
+    "tag": "HM",
+    "logo": "team-logos/11_HM.png"
+  },
+  {
+    "name": "HUSS",
+    "tag": "HUSS",
+    "logo": "team-logos/12_HUSS.png"
+  },
+  {
+    "name": "JD Gaming",
+    "tag": "JDG",
+    "logo": "team-logos/13_JDG.png"
+  },
+  {
+    "name": "LEGACY (Mexican team)",
+    "tag": "LGCY",
+    "logo": "team-logos/14_LGCY.png"
+  },
+  {
+    "name": "Made In Heaven",
+    "tag": "MIH",
+    "logo": "team-logos/15_MIH.png"
+  },
+  {
+    "name": "Men Of Culture",
+    "tag": "MOC",
+    "logo": "team-logos/16_MOC.png"
+  },
+  {
+    "name": "Nice Guys",
+    "tag": "NICE",
+    "logo": "team-logos/17_NICE.png"
+  },
+  {
+    "name": "Ninjas in Pyjamas",
+    "tag": "NIP",
+    "logo": "team-logos/18_NIP.png"
+  },
+  {
+    "name": "Oblivion",
+    "tag": "OBVN",
+    "logo": "team-logos/19_OBVN.png"
+  }
+]

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Макет 20 — Медь и металл</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <style>
+    :root {
+      --bg: #1c1917;
+      --surface: #292524;
+      --text: #fafaf9;
+      --muted: #a8a29e;
+      --accent: #d97706;
+      --accent2: #78716c;
+      --radius: 0;
+      --shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      --border: color-mix(in srgb, var(--text) 12%, transparent);
+      --font: 'Oswald', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background-color:#1c1917;
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+    
+    .shell { display:grid; grid-template-columns:260px 1fr; min-height:100vh; }
+    .rail { border-right:1px solid var(--border); padding:16px; }
+    .main { display:flex; flex-direction:column; min-width:0; }
+    @media (max-width:900px){ .shell{ grid-template-columns:1fr; } .rail{ border-right:none;border-bottom:1px solid var(--border);} }
+    
+    .logo { font-weight: 700; letter-spacing: .02em; color: var(--accent); }
+    .crumb { font-size: 12px; color: var(--muted); }
+    .crumb strong { color: var(--text); }
+    .tree h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 12px 0 6px; }
+    .tree-item { padding: 6px 8px; border-radius: calc(var(--radius) / 2); cursor: default; color: var(--muted); }
+    .tree-item.active { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); }
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+    }
+    .map-stage {
+      flex: 1;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .map-canvas {
+      flex: 1;
+      border-radius: var(--radius);
+      border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--border));
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px),
+        repeating-linear-gradient(90deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px),
+        color-mix(in srgb, var(--surface) 85%, var(--bg));
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-canvas::after {
+      content: "Интерактивная карта (пустышка)";
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .hud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .timer { font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; color: var(--accent); }
+    .ring-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .ring-pill b { color: var(--accent2); }
+    .transport {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button, .btn {
+      font: inherit;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: calc(var(--radius) / 1.5);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 80%, transparent);
+      color: var(--text);
+    }
+    button.primary, .btn.primary {
+      background: var(--accent);
+      color: #0a0a0a;
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .speed { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    input[type="range"] { width: 100px; accent-color: var(--accent); }
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+    select { width: 100%; padding: 8px; border-radius: calc(var(--radius) / 2); border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; }
+    .slider-row { margin-top: 8px; }
+    .slider-row span { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+    .admin {
+      border-left: 3px solid var(--accent2);
+    }
+    .admin h2 { font-size: 14px; margin-bottom: 10px; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .tab { padding: 4px 10px; border-radius: 4px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
+    .tab.on { background: color-mix(in srgb, var(--accent2) 22%, transparent); color: var(--text); border-color: var(--accent2); }
+    .preset-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 8px; }
+    footer { font-size: 11px; color: var(--muted); padding: 8px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="logo">Apex Stats</div>
+      <p class="crumb" style="margin-top:8px"><strong>Турнир</strong> → Матч → Карта</p>
+      <div class="tree">
+        <h3>Турнир</h3>
+        <div class="tree-item">ALGS Split 2</div>
+        <h3>Матчи</h3>
+        <div class="tree-item active">Day 3 — Group B</div>
+        <div class="tree-item">Day 3 — Group A</div>
+        <h3>Карты матча</h3>
+        <div class="tree-item active">Карта 2 / 6</div>
+        <div class="tree-item">Карта 3 / 6</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted)">Макет 20 · Медь и металл</p>
+      <p style="margin-top:8px"><a href="index.html">← Все макеты</a></p>
+    </aside>
+    <div class="main">
+      <header class="panel hud">
+        <div>
+          <div class="timer">12:47</div>
+          <div class="ring-pill">Кольцо: <b>сужение · R3</b></div>
+        </div>
+        <div class="transport">
+          <button type="button">Play</button>
+          <button type="button">Stop</button>
+          <label class="speed">Скорость <input type="range" min="0.25" max="2" step="0.25" value="1" /></label>
+          <button type="button" class="primary">Полный экран</button>
+        </div>
+      </header>
+
+      <section class="map-stage panel">
+        <div class="map-canvas"></div>
+      </section>
+
+      <section class="panel filters">
+        <div class="field">
+          <label>Команды</label>
+          <select><option>Все</option><option>TSM</option><option>NRG</option><option>Furia</option></select>
+        </div>
+        <div class="field">
+          <label>Остановки · длительность</label>
+          <div class="slider-row"><span><span>короче</span><span>дольше</span></span><input type="range" /></div>
+        </div>
+        <div class="field">
+          <label>Остановки · сглаживание</label>
+          <div class="slider-row"><span><span>резче</span><span>мягче</span></span><input type="range" /></div>
+        </div>
+      </section>
+
+      <section class="panel admin">
+        <h2>Админ-панель</h2>
+        <div class="field">
+          <label>Игровая карта (1 из 5)</label>
+          <select>
+            <option>Storm Point</option><option>Olympus</option><option>E-District</option><option>World's Edge</option><option>Broken Moon</option>
+          </select>
+        </div>
+        <div class="tabs">
+          <span class="tab on">HSV</span>
+          <span class="tab">Zones</span>
+          <span class="tab">Polygons</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted)">Настройки привязаны к выбранной карте. Пресеты загружают эталон.</p>
+        <div class="preset-row">
+          <div class="field" style="flex:1;min-width:160px">
+            <label>Пресет</label>
+            <select><option>Default</option><option>Evening light</option><option>Broadcast</option></select>
+          </div>
+          <button type="button" class="btn primary">Сохранить</button>
+        </div>
+      </section>
+
+      <footer>Заглушка для выбора визуального направления · не подключена к API</footer>
+    </div>
+  </div>
+</body>
+</html>

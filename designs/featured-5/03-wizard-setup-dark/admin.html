@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wizard Setup · Admin</title>
+  <style>
+:root {
+  --bg: #0b1020;
+  --surface: #121a30;
+  --text: #e7edf7;
+  --muted: #8ea0c0;
+  --a1: #00d4aa;
+  --a2: #ff4d6d;
+  --b: color-mix(in srgb, var(--text) 14%, transparent);
+}
+* { box-sizing: border-box; margin: 0; }
+body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.45; }
+a { color: var(--a1); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.card { background: var(--surface); border: 1px solid var(--b); border-radius: 10px; padding: 12px; }
+.logo { color: var(--a1); font-weight: 700; letter-spacing: .02em; }
+.muted { color: var(--muted); font-size: 12px; }
+.timer { color: var(--a1); font-size: 24px; font-variant-numeric: tabular-nums; font-weight: 700; }
+.ring { font-size: 12px; border: 1px solid var(--b); border-radius: 999px; padding: 3px 10px; }
+.btn { border: 1px solid var(--b); color: var(--text); background: color-mix(in srgb, var(--surface) 78%, transparent); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.btn.primary { background: var(--a1); border-color: transparent; color: #0a0a0a; font-weight: 600; }
+.map {
+  min-height: 280px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--a1) 38%, var(--b));
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, color-mix(in srgb, var(--text) 6%, transparent) 20px);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+select, input[type="range"] { width: 100%; }
+select { background: var(--surface); color: var(--text); border: 1px solid var(--b); border-radius: 8px; padding: 7px; }
+label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: block; margin-bottom: 4px; }
+
+.shell { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; gap: 12px; padding: 12px; }
+.steps { display: grid; gap: 8px; }
+.step { border: 1px solid var(--b); border-radius: 8px; padding: 8px; color: var(--muted); }
+.step.active { color: var(--text); border-color: var(--a1); background: color-mix(in srgb, var(--a1) 14%, transparent); }
+@media (max-width:1100px){ .shell { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+<div class="card">
+  <div class="logo">Apex Stats · Wizard Setup</div>
+  <p class="muted">Пошаговая настройка матч -> карта -> фильтры -> админ</p>
+  <p class="muted" style="margin-top:8px"><a href="./home.html">Home</a> · <a href="./match.html">Match</a> · <a href="./admin.html">Admin</a> · <a href="../index.html">Все 5</a></p>
+</div>
+</aside>
+  <main>
+<div class="card">
+  <h3>Админ панель</h3>
+  <p class="muted">HSV / Zones / Polygons, карта + пресеты + сохранить.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:8px">
+    <div><label>Карта (1 из 5)</label><select><option>Storm Point</option><option>Olympus</option><option>E-District</option><option>World's Edge</option><option>Broken Moon</option></select></div>
+    <div><label>Пресет</label><select><option>Default</option><option>Broadcast</option><option>Training</option></select></div>
+    <div><label>Режим</label><select><option>Auto</option><option>Manual</option></select></div>
+  </div>
+  <div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap">
+    <span class="btn">HSV</span><span class="btn">Zones</span><span class="btn">Polygons</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    <div><label>HSV lower</label><input type="range" /></div>
+    <div><label>HSV upper</label><input type="range" /></div>
+    <div><label>Сглаживание зон</label><input type="range" /></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn primary">Сохранить</button></div>
+</div>
+</main>
+  <section><div class="card"><div class="map">Область редактирования HSV / Zones / Polygons</div></div></section>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Админ — перенаправление</title>
+  <script>
+    (function () {
+      try {
+        var t = new URLSearchParams(location.search).get("tab");
+        if (t === "zones") {
+          location.replace("/admin/editor?tab=zones");
+          return;
+        }
+        if (t === "poly") {
+          location.replace("/admin/editor?tab=poly");
+          return;
+        }
+      } catch (e) {}
+      location.replace("/admin/editor");
+    })();
+  </script>
+  <meta http-equiv="refresh" content="0;url=/admin/editor" />
+</head>
+<body>
+  <p><a href="/admin/editor">Открыть админку</a></p>
+</body>
+</html>

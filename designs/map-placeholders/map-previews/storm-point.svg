@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90" viewBox="0 0 160 90" role="img" aria-label="Storm Point">
+  <defs>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d3d3d"/>
+      <stop offset="100%" stop-color="#1a6b5c"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="90" rx="4" fill="url(#a)"/>
+  <path fill="rgba(255,255,255,0.12)" d="M20 55 Q55 20 95 45 T140 38 L140 90 L20 90 Z"/>
+</svg>

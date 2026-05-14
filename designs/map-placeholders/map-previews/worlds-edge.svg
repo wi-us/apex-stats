@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90" viewBox="0 0 160 90" role="img" aria-label="World's Edge">
+  <defs>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="90" rx="4" fill="url(#a)"/>
+  <path fill="rgba(0,0,0,0.2)" d="M0 60 L45 25 L100 50 L160 30 L160 90 L0 90 Z"/>
+</svg>
