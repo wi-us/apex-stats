@@ -3,7 +3,7 @@ import Database = require("better-sqlite3");
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { loadRuntimePaths } from "../runtime-paths";
+import { loadRuntimePaths } from "../../core/runtime-paths";
 
 type SqliteRow = Record<string, unknown>;
 
@@ -74,7 +74,7 @@ export class WorkspaceService {
       known.add(this.toRelativePath(this.runtimePaths.databases.mapStartDetection));
     }
 
-    const scanRoots = ["output", "videos_collector"];
+    const scanRoots = ["output", "tools/algs-collector"];
     for (const root of scanRoots) {
       const absRoot = this.resolveSafePath(root);
       if (!fs.existsSync(absRoot)) continue;

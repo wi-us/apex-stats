@@ -82,8 +82,11 @@ export class CatalogController {
   }
 
   @Get("maps/:mapId/video")
-  getMapVideo(@Param("mapId") mapId: string, @Res() res: Response) {
-    const filePath = this.catalogService.getMapVideoPath(mapId);
+  async getMapVideo(@Param("mapId") mapId: string, @Res() res: Response) {
+    let filePath = this.catalogService.getMapVideoPath(mapId);
+    if (!filePath) {
+      filePath = await this.catalogService.resolveMapVideoFileAsync(mapId);
+    }
     if (!filePath) {
       throw new NotFoundException("Map video not found.");
     }

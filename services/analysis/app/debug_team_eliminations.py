@@ -15,8 +15,11 @@ from typing import Optional
 import cv2
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+APP_DIR = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
 
 from services.analysis.app.batch_analyze import (  # noqa: E402
     _build_panel_slots,
@@ -27,7 +30,7 @@ from services.analysis.app.batch_analyze import (  # noqa: E402
     detect_team_eliminations_timeline,
     normalize_map_name,
 )
-from team_tracking.tracking_settings import get_all_teams_for_map  # noqa: E402
+from core.tracking.tracking_settings import get_all_teams_for_map  # noqa: E402
 
 
 def _draw_slot(frame, slot, label: str, color, thickness: int = 2) -> None:

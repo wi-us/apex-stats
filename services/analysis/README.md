@@ -1,6 +1,6 @@
 # Analysis Service
 
-Python service that runs team tracking on a map fragment using the stabilized settings in `team_tracking/tracking_settings.py`.
+Python service that runs team tracking on a map fragment using the stabilized settings in `app/core/tracking/tracking_settings.py`.
 
 Runtime DB/artifact paths are resolved via `config/runtime_paths.json` (with built-in defaults).
 
@@ -46,7 +46,7 @@ python app/draw_zones.py --map mp_storm_point
 
 Optional params:
 
-- `--map-image maps/mp_storm_point.webp` - explicit source image.
+- `--map-image assets/maps/mp_storm_point.webp` - explicit source image.
 - `--output output/zones/mp_storm_point.zones.json` - output file path.
 - `--transient-max-dwell 8` - default dwell limit for transient zones.
 

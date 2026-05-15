@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "_comment": "Reference map assets under assets/maps (see media.mapsDir in runtime_paths.json).",
+  "mapsDir": "assets/maps",
+  "referenceFiles": [
+    "mp_Kings_Canyon_Chaos.png",
+    "mp_Olympus.png",
+    "mp_Worlds_Edge.png",
+    "mp_e_district.png",
+    "mp_storm_point.png",
+    "mp_storm_point.webp"
+  ]
+}

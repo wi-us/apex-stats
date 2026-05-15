@@ -17,10 +17,10 @@
   },
   "media": {
     "recordsDir": "ffmpeg_downloader/records",
-    "mapsDir": "maps"
+    "mapsDir": "assets/maps"
   },
   "legacy": {
     "faceitCliEnabled": false,
-    "note": "Legacy flow is stored in Archieve/legacy_flow."
+    "note": "Legacy flow is stored in archive/legacy (historical)."
   }
 }

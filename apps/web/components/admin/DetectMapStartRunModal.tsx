@@ -527,7 +527,7 @@ export function DetectMapStartRunModal({
             </p>
             <p className={styles.hint} style={{ margin: "8px 0 0" }}>
               Фоновый запуск{" "}
-              <code className={styles.mono}>videos_collector/detect_map_start.py</code> на хосте API. При необходимости
+              <code className={styles.mono}>tools/algs-collector/detect_map_start.py</code> на хосте API. При необходимости
               задайте <code className={styles.mono}>PYTHON</code> / <code className={styles.mono}>PYTHON_BIN</code>.
             </p>
           </div>

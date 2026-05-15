@@ -4,10 +4,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Pool } from "pg";
 import { CameraTrackPoint, MapAdminConfig, MapEntry, Match, RingPoint, Team, TeamTrack, TextRectZone, TextZonesPayload, Tournament, ZonesPayload } from "./catalog.types";
-import { TEAM_DISPLAY_COLORS_BGR } from "./team-colors.constants";
-import { loadRuntimePaths } from "../runtime-paths";
-import { getPostgresPool } from "../postgres";
-import { DataSourceMode, resolveDataSourceMode } from "../data-source-mode";
+import { loadRuntimePaths } from "../../core/runtime-paths";
+import { getPostgresPool } from "../../core/postgres";
+import { DataSourceMode, resolveDataSourceMode } from "../../core/data-source-mode";
 
 const DEFAULT_OBSERVER_ROI = {
   x: 420,
@@ -144,7 +143,21 @@ export class CatalogService {
   private readonly mapStartDbPath = this.runtimePaths.databases.mapStartDetection;
   private readonly cameraDbPath = path.join(this.projectRoot, "output", "camera.sqlite");
   private readonly tournamentsDbPath = this.resolvePreferredExistingPath(this.runtimePaths.databases.tournaments);
-  private readonly trackingSettingsPyPath = path.join(this.projectRoot, "team_tracking", "tracking_settings.py");
+  private readonly trackingSettingsPyPath = path.join(
+    this.projectRoot,
+    "services",
+    "analysis",
+    "app",
+    "core",
+    "tracking",
+    "tracking_settings.py"
+  );
+
+  private readonly teamDisplayColorsBgr: Record<string, [number, number, number]> = (() => {
+    const raw = fs.readFileSync(path.join(this.projectRoot, "config", "team_colors.json"), "utf-8");
+    const parsed = JSON.parse(raw) as { teams: Record<string, [number, number, number]> };
+    return parsed.teams;
+  })();
 
   private readonly tournaments: Tournament[] = [
     { id: "t1", name: "ALGS Pro League EMEA", season: "2026" }
@@ -495,25 +508,29 @@ export class CatalogService {
   }
 
   private mapIdToVideoName(mapId: string): string | null {
-    return this.withSqlite(
-      this.tournamentsDbPath,
-      (db) => {
-        const mapRow = db
-          .prepare("SELECT id, match_id, round_number FROM maps WHERE id = ?")
-          .get(mapId) as TournamentDbMapRow | undefined;
-        if (!mapRow) return null;
-        const matchRow = db
-          .prepare("SELECT id, youtube_video_id FROM matches WHERE id = ?")
-          .get(mapRow.match_id) as { id: string; youtube_video_id: string } | undefined;
-        if (!matchRow?.youtube_video_id) return null;
-        const gameRow = db
-          .prepare("SELECT output_filename FROM games WHERE youtube_video_id = ? AND game_number = ? LIMIT 1")
-          .get(matchRow.youtube_video_id, mapRow.round_number) as { output_filename: string | null } | undefined;
-        if (!gameRow?.output_filename) return null;
-        return path.basename(String(gameRow.output_filename));
-      },
-      null
-    );
+    for (const dbPath of this.runtimePaths.databases.tournaments) {
+      const found = this.withSqlite(
+        dbPath,
+        (db) => {
+          const mapRow = db
+            .prepare("SELECT id, match_id, round_number FROM maps WHERE id = ?")
+            .get(mapId) as TournamentDbMapRow | undefined;
+          if (!mapRow) return null;
+          const matchRow = db
+            .prepare("SELECT id, youtube_video_id FROM matches WHERE id = ?")
+            .get(mapRow.match_id) as { id: string; youtube_video_id: string } | undefined;
+          if (!matchRow?.youtube_video_id) return null;
+          const gameRow = db
+            .prepare("SELECT output_filename FROM games WHERE youtube_video_id = ? AND game_number = ? LIMIT 1")
+            .get(matchRow.youtube_video_id, mapRow.round_number) as { output_filename: string | null } | undefined;
+          if (!gameRow?.output_filename) return null;
+          return path.basename(String(gameRow.output_filename));
+        },
+        null
+      );
+      if (found) return found;
+    }
+    return null;
   }
 
   private mapIdToGameId(mapId: string): number | null {
@@ -655,7 +672,7 @@ export class CatalogService {
   }
 
   private colorByTeamId(teamId: string): [number, number, number] {
-    const fromTrackingSettings = TEAM_DISPLAY_COLORS_BGR[teamId];
+    const fromTrackingSettings = this.teamDisplayColorsBgr[teamId];
     if (fromTrackingSettings) return fromTrackingSettings;
 
     const teamNumber = Number(teamId.replace("TEAM_", ""));
@@ -1217,12 +1234,6 @@ export class CatalogService {
             if (toSec !== undefined && row.timestampSec > toSec) return false;
             return true;
           });
-        const focus = points.filter((point) => point.timestampSec >= 390 && point.timestampSec <= 430);
-        const zooms = focus.map((point) => Number(point.zoomRatio ?? 1)).filter(Number.isFinite);
-        const moves = focus.map((point) => Number(point.moveDist ?? 0)).filter(Number.isFinite);
-        // #region agent log
-        fetch('http://127.0.0.1:7664/ingest/0aa35fc0-93f5-4a7d-ae43-8a87e2b19087',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b91ec1'},body:JSON.stringify({sessionId:'b91ec1',runId:'pre-fix',hypothesisId:'H1,H2,H5',location:'apps/api/src/modules/catalog/catalog.service.ts:getCameraTracks',message:'camera_tracks_db_response',data:{mapId,gameId,fromSec,toSec,totalRows:rows.length,returned:points.length,firstTs:points[0]?.timestampSec,lastTs:points.at(-1)?.timestampSec,focusCount:focus.length,focusZoomMin:zooms.length?Math.min(...zooms):null,focusZoomMax:zooms.length?Math.max(...zooms):null,focusMoveMax:moves.length?Math.max(...moves):null,focusJumpFlags:focus.filter((point)=>Boolean(point.jumpFlag)).length},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         return points;
       },
       []
@@ -1277,12 +1288,23 @@ export class CatalogService {
       if (!raw) return;
       const s = String(raw).trim();
       if (!s) return;
+      // Catalog often stores Twitch/YouTube page URLs here; never treat them as local filenames.
+      if (/^https?:\/\//i.test(s)) {
+        return;
+      }
       if (path.isAbsolute(s) && fs.existsSync(s)) {
         candidates.add(s);
         return;
       }
-      const base = path.basename(s.replace(/\\/g, "/"));
-      if (base) candidates.add(path.join(recordsDir, base));
+      const norm = s.replace(/\\/g, "/");
+      const fromRoot = path.join(this.projectRoot, norm);
+      if (fs.existsSync(fromRoot)) {
+        candidates.add(fromRoot);
+      }
+      const base = path.basename(norm);
+      if (base && /\.(mp4|mkv|webm|mov|avi|m4v)$/i.test(base)) {
+        candidates.add(path.join(recordsDir, base));
+      }
     };
 
     pushCandidate(this.mapIdToVideoName(mapId));
@@ -1295,6 +1317,35 @@ export class CatalogService {
       if (fs.existsSync(candidate)) {
         return candidate;
       }
+    }
+    return null;
+  }
+
+  /**
+   * When catalog maps live in Postgres, `video_url` may hold a repo-relative path
+   * (from analysis upsert) even if SQLite ingest DBs do not contain the map row.
+   */
+  async resolveMapVideoFileAsync(mapId: string): Promise<string | null> {
+    if (!this.isPostgresEnabled()) return null;
+    try {
+      const rows = await this.pgQuery<{ video_url: string }>(
+        "SELECT video_url FROM maps WHERE id = $1 LIMIT 1",
+        [mapId]
+      );
+      const vu = String(rows[0]?.video_url ?? "").trim();
+      if (!vu || /^https?:\/\//i.test(vu)) return null;
+      const recordsDir = this.runtimePaths.media.recordsDir;
+      if (path.isAbsolute(vu) && fs.existsSync(vu)) return vu;
+      const norm = vu.replace(/\\/g, "/");
+      const fromRoot = path.join(this.projectRoot, norm);
+      if (fs.existsSync(fromRoot)) return fromRoot;
+      const base = path.basename(norm);
+      if (base && /\.(mp4|mkv|webm|mov|avi|m4v)$/i.test(base)) {
+        const p = path.join(recordsDir, base);
+        if (fs.existsSync(p)) return p;
+      }
+    } catch {
+      return null;
     }
     return null;
   }

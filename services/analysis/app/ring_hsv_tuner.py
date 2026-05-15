@@ -18,11 +18,14 @@ import numpy as np
 
 # Ensure project root is importable when script is run directly.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+APP_DIR = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
 
-from team_tracking import config
-from team_tracking.tracking_settings import get_round_windows
+from core.tracking import config
+from core.tracking.tracking_settings import get_round_windows
 
 
 WINDOW_VIZ = "Ring HSV Tuner"

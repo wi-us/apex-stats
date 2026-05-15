@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { loadRuntimePaths } from "../runtime-paths";
+import { loadRuntimePaths } from "../../core/runtime-paths";
 import { Pool } from "pg";
-import { getPostgresPool } from "../postgres";
-import { DataSourceMode, resolveDataSourceMode } from "../data-source-mode";
+import { getPostgresPool } from "../../core/postgres";
+import { DataSourceMode, resolveDataSourceMode } from "../../core/data-source-mode";
 
 type JobType = "ingest" | "analysis";
 type JobStatus = "queued" | "running" | "completed" | "failed";

@@ -22,6 +22,31 @@ tmp/
 data/
 *.sqlite3
 
+# TypeScript build cache
+*.tsbuildinfo
+
+# Local databases (patterns beyond *.sqlite3 above)
+*.sqlite
+*.db
+*.duckdb
+
+# Python/tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Browser/test artifacts
+playwright-report/
+test-results/
+
+# Local media/output artifacts
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+
 # Тяжёлые локальные каталоги (ffmpeg, архив/legacy)
 ffmpeg_downloader/
 Archieve/

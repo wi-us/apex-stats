@@ -46,6 +46,6 @@ def load_runtime_paths(project_root: Path) -> dict[str, Any]:
         },
         "media": {
             "records_dir": _resolve(project_root, str(media_cfg.get("recordsDir", "ffmpeg_downloader/records"))),
-            "maps_dir": _resolve(project_root, str(media_cfg.get("mapsDir", "maps"))),
+            "maps_dir": _resolve(project_root, str(media_cfg.get("mapsDir", "assets/maps"))),
         },
     }

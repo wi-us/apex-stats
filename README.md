@@ -4,24 +4,31 @@ Production-oriented monorepo for Apex Legends competitive match processing:
 
 1. FACEIT ingest and video preprocessing
 2. OpenCV tracking analysis
-3. Web visualization (tournaments -> matches -> maps -> timeline player)
+3. Web visualization (tournaments → matches → maps → timeline player)
 
-## Architecture
+PostgreSQL is the primary source of truth for catalog and jobs in normal operation. SQLite and hybrid modes remain available for local development and import/ETL fallbacks (see `deploy/vps` ETL scripts and environment flags below).
 
-- `apps/api` - NestJS API for catalog and job orchestration
-- `apps/web` - Next.js UI with team filters and time slider
-- `services/ingest` - Node worker for FACEIT metadata + VOD preprocessing
-- `services/analysis` - Python batch tracking pipeline
-- `packages/shared` - shared DTO contracts
-- `infra` - PostgreSQL + Redis bootstrap
-- `Server` - minimal VPS production contour (api/web/postgres/redis + runbook)
-- `team_tracking` - retained core CV modules used by analysis pipeline
-- `videos_collector` - ALGS YouTube ingest + map start/rings enrichment utilities
+## Repository layout
 
-Active architecture target is documented in `docs/ARCHITECTURE_TARGET.md`.
-Runtime source paths are centralized in `config/runtime_paths.json`.
+| Path | Role |
+|------|------|
+| `apps/api` | NestJS API: catalog, jobs, workspace, map-start orchestration |
+| `apps/web` | Next.js UI: tournament/match/map viewer and admin tools |
+| `services/analysis` | Python batch tracking pipeline (`app/` entry scripts) |
+| `services/ingest-faceit` | Node worker: FACEIT metadata + VOD preprocessing (BullMQ) |
+| `packages/shared` | Shared TypeScript contracts |
+| `config/` | `runtime_paths.json`, `maps.json`, `team_colors.json` — runtime configuration |
+| `infra/` | Local Docker Compose (Postgres, Redis, etc.) |
+| `deploy/vps/` | VPS-oriented compose + DB/ETL helper scripts |
+| `tools/algs-collector/` | ALGS VOD ingest, map-start enrichment, ring/camera utilities |
+| `tools/manual-clips/` | Manual clip job helpers (SQL + sync scripts) |
+| `assets/maps/` | Static reference map images for analysis and API backgrounds |
+| `archive/design-prototypes/` | HTML design prototypes and local static preview helpers |
+| `docs/` | Engineering docs, runbooks, specs, diploma materials — see `docs/README.md` |
 
-## Quick Start
+Further detail: [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md). Contributing rules: [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
+
+## Quick start
 
 ### 1) Infrastructure
 
@@ -36,7 +43,7 @@ npm install
 npm run dev -w @apex/api
 ```
 
-API docs: `http://localhost:4000/docs`
+Open `http://localhost:4000/docs` when configured.
 
 ### 3) Web
 
@@ -44,27 +51,35 @@ API docs: `http://localhost:4000/docs`
 npm run dev -w @apex/web
 ```
 
-Web app: `http://localhost:8004`
+Default dev URL: `http://localhost:8004` (see package scripts).
 
 ### 4) Ingest worker
 
 ```bash
-npm run dev -w @apex/ingest
+npm run dev -w @apex/ingest-faceit
 ```
 
 ### 5) Analysis batch
 
 ```bash
 python -m venv .venv
-. .venv/Scripts/activate
+.venv\Scripts\activate
 pip install -r services/analysis/requirements.txt
 python services/analysis/app/batch_analyze.py --video <path_to_video.mp4> --map mp_storm_point
 ```
 
-## ALGS Refresh Commands
+## Runtime configuration
+
+- Paths to databases, artifacts, and media roots: **`config/runtime_paths.json`** (see defaults in `apps/api/src/core/runtime-paths.ts` and `services/analysis/app/runtime_paths.py`).
+- Map asset filenames / directory: **`config/maps.json`** (maps live under **`assets/maps/`**).
+- Team display colors (BGR) for API fallbacks: **`config/team_colors.json`** (keep aligned with `services/analysis/app/core/tracking/tracking_settings.py`).
+
+## ALGS refresh (ingest + enrichment)
+
+From repo root:
 
 ```bash
-cd videos_collector
+cd tools/algs-collector
 
 python map_vod_ingest.py \
   --db-path ../output/youtube_ingest/tournaments.sqlite \
@@ -79,26 +94,23 @@ python build_algs_liquipedia_db.py \
   --tournament-url "https://liquipedia.net/apexlegends/Apex_Legends_Global_Series/2026/Split_1/Pro_League/APAC_North"
 ```
 
+Map-start detector (used by API admin flows and CLI): **`tools/algs-collector/detect_map_start.py`**.
+
 ## Environment
 
-See `.env.example` for required variables.
+See **`.env.example`**. Common flags:
 
-Data source flags:
 - `CATALOG_SOURCE=sqlite|postgres|hybrid`
 - `JOBS_SOURCE=sqlite|postgres|hybrid`
+- `DATABASE_URL` — Postgres connection string when using postgres/hybrid modes
 
-## Legacy Notice
+## Documentation index
 
-Legacy flow was moved to `Archieve/legacy_flow/` (`main.py`, `src/*`, old config files).
-All new development should go into `apps/*` and `services/*`.
+- Architecture target: [`docs/architecture/target.md`](docs/architecture/target.md)
+- Dev runbook: [`docs/runbooks/dev-runbook.md`](docs/runbooks/dev-runbook.md)
+- Smoke / E2E: [`docs/runbooks/smoke-e2e.md`](docs/runbooks/smoke-e2e.md)
+- Output policy: [`docs/runbooks/output-policy.md`](docs/runbooks/output-policy.md)
 
-## Archieve
+## Legacy
 
-Archived/legacy and local non-runtime materials are tracked in `Archieve/README.md`.
-
-## Scope implemented in this baseline
-
-- End-to-end skeleton for ingest -> analysis -> web
-- Centralized map/team settings and frame skip usage for tracking
-- API and UI contract for tournament/match/map/team track exploration
-
+Older one-off Python dependencies from early experiments live in **`archive/legacy/root-requirements.txt`**. Frozen HTML design exploration lives under **`archive/design-prototypes/`**. Use **`archive/`** (standard spelling) for historical material; active development belongs under `apps/`, `services/`, `tools/`, and `deploy/`.

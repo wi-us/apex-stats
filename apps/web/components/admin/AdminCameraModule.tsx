@@ -59,20 +59,44 @@ export function AdminCameraModule() {
     const filename = sanitized.split("/").filter(Boolean).pop() ?? "";
     const variants = new Set<string>();
     if (mapVideoByApi) variants.add(mapVideoByApi);
-    if (/^https?:\/\//i.test(sanitized)) variants.add(sanitized);
-    if (sanitized.startsWith("/")) {
+    if (/^https?:\/\//i.test(sanitized)) {
+      variants.add(sanitized);
+    } else if (sanitized.startsWith("/")) {
       variants.add(sanitized);
       variants.add(`${API_URL}${sanitized}`);
-    } else {
+    } else if (sanitized) {
       variants.add(`${API_URL}/${sanitized.replace(/^\/+/, "")}`);
       variants.add(`${API_URL}${sanitized.startsWith("/") ? sanitized : `/${sanitized}`}`);
     }
-    if (filename) {
+    if (filename && !/^https?:\/\//i.test(sanitized)) {
       variants.add(`${API_URL}/records/${filename}`);
       variants.add(`${API_URL}/ffmpeg_downloader/records/${filename}`);
       variants.add(`/ffmpeg_downloader/records/${filename}`);
     }
-    return Array.from(variants);
+    const list = Array.from(variants);
+    // #region agent log
+    fetch("http://127.0.0.1:7664/ingest/0aa35fc0-93f5-4a7d-ae43-8a87e2b19087", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "119440" },
+      body: JSON.stringify({
+        sessionId: "119440",
+        runId: "post-fix",
+        hypothesisId: "H1-H2",
+        location: "AdminCameraModule.tsx:videoCandidates",
+        message: "video_candidates_built",
+        data: {
+          API_URL,
+          mapVideoByApi,
+          rawCatalog: vm.selectedMap?.videoUrl ?? null,
+          sanitizedLen: sanitized.length,
+          isHttpAbs: /^https?:\/\//i.test(sanitized),
+          candidates: list,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    return list;
   }, [mapVideoByApi, vm.selectedMap?.videoUrl]);
   const videoSrc = videoCandidates[videoCandidateIdx] ?? "";
 
@@ -150,7 +174,29 @@ export function AdminCameraModule() {
                   const sec = Number((e.currentTarget as HTMLVideoElement).currentTime ?? 0);
                   vm.setTimeCursor(videoBaseSec + sec);
                 }}
-                onError={() => {
+                onError={(ev) => {
+                  const el = ev.currentTarget as HTMLVideoElement;
+                  // #region agent log
+                  fetch("http://127.0.0.1:7664/ingest/0aa35fc0-93f5-4a7d-ae43-8a87e2b19087", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "119440" },
+                    body: JSON.stringify({
+                      sessionId: "119440",
+                      runId: "post-fix",
+                      hypothesisId: "H2-H3",
+                      location: "AdminCameraModule.tsx:video.onError",
+                      message: "video_src_failed",
+                      data: {
+                        failedSrc: el.currentSrc || videoSrc,
+                        candidateIdx: videoCandidateIdx,
+                        totalCandidates: videoCandidates.length,
+                        mediaError: el.error?.code ?? null,
+                        networkState: el.networkState,
+                      },
+                      timestamp: Date.now(),
+                    }),
+                  }).catch(() => {});
+                  // #endregion
                   setVideoCandidateIdx((prev) => (prev + 1 < videoCandidates.length ? prev + 1 : prev));
                 }}
               />

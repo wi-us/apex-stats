@@ -37,15 +37,18 @@ try:
 except ImportError:  # Optional dependency for performance reporting only.
     psutil = None
 
-# Ensure project root is importable when script is run directly.
+# Ensure project root and analysis app package root are importable when script is run directly.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+APP_DIR = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
 
-from team_tracking import config
-from team_tracking.motion_detector import find_initial_position
-from team_tracking.simple_arrow_tracker import SimpleArrowTracker
-from team_tracking.tracking_settings import get_all_teams_for_map, get_frame_skip, get_round_windows
+from core.tracking import config
+from core.tracking.motion_detector import find_initial_position
+from core.tracking.simple_arrow_tracker import SimpleArrowTracker
+from core.tracking.tracking_settings import get_all_teams_for_map, get_frame_skip, get_round_windows
 from runtime_paths import load_runtime_paths
 from background_confidence import BackgroundConfidenceEstimator
 from map_registration import (
@@ -1900,8 +1903,8 @@ def analyze_team_task(
         format="%(asctime)s - %(levelname)s - [cmd=%(run_command)s t=+%(run_elapsed).1fs] %(message)s",
         force=True,
     )
-    logging.getLogger("team_tracking.simple_arrow_tracker").setLevel(logging.CRITICAL)
-    logging.getLogger("team_tracking.motion_detector").setLevel(logging.CRITICAL)
+    logging.getLogger("core.tracking.simple_arrow_tracker").setLevel(logging.CRITICAL)
+    logging.getLogger("core.tracking.motion_detector").setLevel(logging.CRITICAL)
     task_filter = RunContextFilter(command_line=run_command, started_wall=run_started_wall)
     root_logger = logging.getLogger()
     for handler in root_logger.handlers:
@@ -2809,8 +2812,8 @@ def main():
     for handler in logging.getLogger().handlers:
         handler.addFilter(context_filter)
     # Suppress noisy logs from lower-level tracking modules.
-    logging.getLogger("team_tracking.simple_arrow_tracker").setLevel(logging.CRITICAL)
-    logging.getLogger("team_tracking.motion_detector").setLevel(logging.CRITICAL)
+    logging.getLogger("core.tracking.simple_arrow_tracker").setLevel(logging.CRITICAL)
+    logging.getLogger("core.tracking.motion_detector").setLevel(logging.CRITICAL)
 
     parser = argparse.ArgumentParser(description="Batch analyze all map teams")
     parser.add_argument("--video", help="Video path")

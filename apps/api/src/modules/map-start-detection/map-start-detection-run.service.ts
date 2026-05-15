@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { JobsService } from "../jobs/jobs.service";
-/** Значения по умолчанию как в `videos_collector/detect_map_start.py` → `parse_args()`. */
+/** Значения по умолчанию как в `tools/algs-collector/detect_map_start.py` → `parse_args()`. */
 export const DETECT_MAP_START_RUN_DEFAULTS = {
   recordsDir: "ffmpeg_downloader/records",
   dbPath: "output/map_start_detection.sqlite",
@@ -404,9 +404,9 @@ export class MapStartDetectionRunService {
   async run(body: Record<string, unknown>): Promise<{ started: boolean; pid: number | undefined; jobId: string; command: string }> {
     const persistRingsOnly = body.persistRingsOnly === true;
     const opts = this.mergePayload(body);
-    const scriptPath = path.join(this.projectRoot, "videos_collector", "detect_map_start.py");
+    const scriptPath = path.join(this.projectRoot, "tools", "algs-collector", "detect_map_start.py");
     if (!fs.existsSync(scriptPath)) {
-      throw new ServiceUnavailableException(`Script not found: videos_collector/detect_map_start.py`);
+      throw new ServiceUnavailableException(`Script not found: tools/algs-collector/detect_map_start.py`);
     }
     const videoFsPath = path.resolve(this.projectRoot, String(opts.recordsDir), opts.videoName);
     if (!fs.existsSync(videoFsPath)) {
