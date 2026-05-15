@@ -112,6 +112,43 @@ Note: forbidden polygons are now applied in two stages:
 - per-point quality fields: `mapX/mapY`, `bgConfidence`, `transformResidual`, `transformState`, `sourceFrameX/sourceFrameY`, `mapSpaceValid`, `backupFrameSpace`.
 - optional `observerBenchmark` section (`--benchmark-pan-zoom`) with frame-space vs map-space jitter comparison.
 
+## Minimap Locator
+
+Experimental utility for locating the broadcast minimap crop on the full Apex map image.
+Uses OpenCV edge-based multi-scale template matching (not wired into `batch_analyze.py`).
+
+Single frame:
+
+```bash
+cd services/analysis
+python app/minimap_locator/cli.py \
+  --frame path/to/frame.jpg \
+  --map-id mp_storm_point \
+  --map-path ../../assets/maps/mp_storm_point.png \
+  --output-dir ../../output/minimap_locator/test_frame \
+  --minimap-x 48 --minimap-y 60 --minimap-size 240 \
+  --search-mode full
+```
+
+Video (sample every N frames):
+
+```bash
+python app/minimap_locator/cli.py \
+  --video ../../ffmpeg_downloader/records/example.mp4 \
+  --map-id mp_storm_point \
+  --map-path ../../assets/maps/mp_storm_point.png \
+  --output-dir ../../output/minimap_locator/test_video \
+  --every-n-frames 60 \
+  --search-mode tiled \
+  --debug-video
+```
+
+CLI flags: `--minimap-border`, `--min-score`, `--search-scales`, `--tile-size`, `--tile-overlap`, `--max-frames`.
+
+`map_id` is always explicit; `map_path` can be omitted only if the file exists under `assets/maps/` from `config/runtime_paths.json`.
+
+Debug output (when `--output-dir` is set): crop overlay, raw/processed minimap, map with bbox, patch zoom, JSON per frame, optional `debug_video.mp4`.
+
 ## Smoke test
 
 1. Run analysis:

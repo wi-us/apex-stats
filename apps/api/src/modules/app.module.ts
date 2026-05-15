@@ -6,6 +6,7 @@ import { CatalogModule } from "./catalog/catalog.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { WorkspaceModule } from "./workspace/workspace.module";
 import { MapStartDetectionModule } from "./map-start-detection/map-start-detection.module";
+import { MinimapLocatorModule } from "./minimap-locator/minimap-locator.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MapStartDetectionModule } from "./map-start-detection/map-start-detecti
     JobsModule,
     WorkspaceModule,
     MapStartDetectionModule,
+    MinimapLocatorModule,
   ],
   controllers: [HealthController]
 })

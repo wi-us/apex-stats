@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 
-export type AdminAppModule = "hsv" | "zones" | "poly" | "camera" | "database" | "management";
+export type AdminAppModule =
+  | "hsv"
+  | "zones"
+  | "poly"
+  | "camera"
+  | "database"
+  | "management"
+  | "minimap";
 
 export function AdminAppNav({ active }: { active: AdminAppModule }) {
   return (
@@ -62,6 +69,15 @@ export function AdminAppNav({ active }: { active: AdminAppModule }) {
           prefetch={false}
         >
           MANAGEMENT
+        </Link>
+        <Link
+          href="/admin/minimap-locator"
+          className={`mode-btn${active === "minimap" ? " on" : ""}`}
+          role="tab"
+          aria-selected={active === "minimap"}
+          prefetch={false}
+        >
+          MINIMAP
         </Link>
       </div>
     </>
