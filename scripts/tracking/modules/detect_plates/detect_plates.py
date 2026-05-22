@@ -231,11 +231,14 @@ def _read_at(cap: cv2.VideoCapture, frame_idx: int, *, seek: bool,
         # назад идти не умеем без seek; включим seek один раз
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         cur = frame_idx
+    # пропускаем все кадры ДО целевого без декодирования
     while cur < frame_idx:
         if not cap.grab():
             return None
         cur += 1
-    ok, frame = cap.retrieve()
+    # на целевом кадре нужен полноценный read() — grab()+decode.
+    # retrieve() в одиночку не работает, если grab() ещё не вызывался.
+    ok, frame = cap.read()
     _state["pos"] = frame_idx + 1
     if not ok:
         return None
