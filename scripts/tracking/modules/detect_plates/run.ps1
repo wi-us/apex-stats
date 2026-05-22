@@ -7,7 +7,13 @@ param(
   [string]$Out     = "scripts/tracking/modules/detect_plates/reports",
   [double]$SampleFps = 1.0,
   [int]$MaxFrames  = 0,
-  [switch]$NoRecovery
+  [switch]$NoRecovery,
+  [switch]$SaveDebug,
+  [int]$DebugEvery = 1,
+  [switch]$NoSeek,
+  [double]$TrackFps    = 5.0,
+  [double]$AdaptiveFps = 5.0,
+  [switch]$NoSlots
 )
 $ErrorActionPreference = "Stop"
 chcp 65001 > $null
@@ -30,5 +36,10 @@ $pyArgs = @(
 )
 if ($MaxFrames -gt 0) { $pyArgs += @("--max-frames", $MaxFrames) }
 if (-not $NoRecovery) { $pyArgs += "--recovery" }
+if ($SaveDebug)       { $pyArgs += @("--save-debug", "--debug-every", $DebugEvery) }
+if ($NoSeek)          { $pyArgs += "--no-seek" }
+if ($TrackFps -gt 0)  { $pyArgs += @("--track-fps", $TrackFps) }
+if ($AdaptiveFps -gt 0) { $pyArgs += @("--adaptive-fps", $AdaptiveFps) }
+if (-not $NoSlots)    { $pyArgs += "--emit-slots" }
 
 python @pyArgs

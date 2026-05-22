@@ -26,6 +26,32 @@ Per-slot память между кадрами:
 Так мы не теряем слот из-за единичного шума/перекрытия HUD и не уходим
 в гипер-широкую маску по всему кадру.
 
+## Что добавили: sub-frame трекинг + slots-агрегатор + seek
+
+- **tracker_light.MultiSlotTracker** — между keyframe протягивает каждый
+  слот KCF-трекером (fallback: Farneback OF в локальном окне). На каждом
+  следующем keyframe трекеры re-init'ятся от свежих детекций. Включается
+  флагом `--track-fps N` (рекомендуется 5).
+- **--adaptive-fps N** — для слотов, которых нет на keyframe (recovery),
+  поднимается частота сэмплирования промежутка до N fps. Дёшево, т.к.
+  расходуется только когда что-то реально потеряно.
+- **--emit-slots** — после прогона пишет `reports/slots/<team>.json` и
+  `reports/trajectories.json` (см. `aggregate_slots.py`).
+- **--seek** (default on) — `cv2.CAP_PROP_POS_FRAMES` вместо чтения всех
+  60·N кадров; на нашем 7-мин VOD это даёт ×5–×8 ускорения. Если seek
+  отдаёт пустой кадр — автоматический fallback на `grab()`-loop.
+- **--save-debug** (default **off**) и **--debug-every K** — debug-jpg
+  только при явном включении (раньше писалось всегда, десятки МБ).
+
+Типичный полный прогон под наш кейс:
+
+  powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\detect_plates\run.ps1 \
+    -Video scripts\tracking\game_sp.mp4 -SampleFps 1 -TrackFps 5 -AdaptiveFps 5
+
+Без sub-frame трекинга и без slots (только детекция, максимально быстро):
+
+  powershell ... run.ps1 -Video ... -NoSlots -TrackFps 0 -AdaptiveFps 0
+
 ## ROI
 
 ROI миникарты берётся из scripts/tracking/configs/zones.vod.json

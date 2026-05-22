@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -42,6 +43,8 @@ from build_dataset_opencv import (  # type: ignore
     draw_boxes,
     ensure_dir,
 )
+from tracker_light import MultiSlotTracker
+import aggregate_slots
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +206,45 @@ class RecoveryTracker:
 
 
 # ---------------------------------------------------------------------------
+# Video reader: seek vs sequential
+# ---------------------------------------------------------------------------
+def _read_at(cap: cv2.VideoCapture, frame_idx: int, *, seek: bool,
+             _state: dict) -> Optional[np.ndarray]:
+    """Возвращает BGR-кадр на позиции frame_idx.
+    seek=True — используем CAP_PROP_POS_FRAMES (быстро, нужен поддерживаемый кодек).
+    seek=False — обычное последовательное чтение.
+    """
+    if seek:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ok, frame = cap.read()
+        if ok and frame is not None:
+            return frame
+        # fallback: переключаемся на sequential до конца
+        _state["seek"] = False
+    # sequential: домотать grab() до нужного индекса
+    cur = _state.get("pos", 0)
+    while cur < frame_idx:
+        if not cap.grab():
+            return None
+        cur += 1
+    ok, frame = cap.read()
+    _state["pos"] = cur + 1
+    if not ok:
+        return None
+    return frame
+
+
+def _box_to_dict(b: Box, *, source: str) -> dict:
+    feat = dict(b[5]) if b[5] else {}
+    return {
+        "bbox": [int(b[0]), int(b[1]), int(b[2]), int(b[3])],
+        "score": float(b[4]),
+        "feat": feat,
+        "source": source,
+    }
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def main() -> None:
@@ -252,7 +294,26 @@ def main() -> None:
     ap.add_argument("--rec-radius-cap", type=int, default=320)
     ap.add_argument("--rec-max-lost-frames", type=int, default=30)
 
-    ap.add_argument("--save-debug", action="store_true", default=True)
+    # debug
+    ap.add_argument("--save-debug", action="store_true", default=False,
+                    help="писать debug-jpg на keyframe (тяжёлое, off по умолчанию)")
+    ap.add_argument("--debug-every", type=int, default=1,
+                    help="N: писать debug-jpg каждый N-й keyframe")
+
+    # speed
+    ap.add_argument("--seek", dest="seek", action="store_true", default=True,
+                    help="CAP_PROP_POS_FRAMES вместо чтения всех кадров (default on)")
+    ap.add_argument("--no-seek", dest="seek", action="store_false")
+
+    # sub-frame tracking + adaptive up-sample
+    ap.add_argument("--track-fps", type=float, default=0.0,
+                    help=">0 — между keyframe протягивать слоты KCF/OF на этой fps")
+    ap.add_argument("--adaptive-fps", type=float, default=0.0,
+                    help=">0 — для recovered/missed слотов up-sample на этой fps")
+
+    # slots aggregator
+    ap.add_argument("--emit-slots", action="store_true",
+                    help="по окончании посчитать slots/<team>.json + trajectories.json")
     args = ap.parse_args()
 
     team_hsv = load_team_hsv(str(args.hsv_presets)) or {}
@@ -269,6 +330,8 @@ def main() -> None:
     fh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     rx, ry, rw, rh = pick_minimap_zone(zones_cfg, fw, fh, args.zone_name)
     step = max(1, int(round(src_fps / args.sample_fps)))
+    track_step = max(1, int(round(src_fps / args.track_fps))) if args.track_fps > 0 else 0
+    adaptive_step = max(1, int(round(src_fps / args.adaptive_fps))) if args.adaptive_fps > 0 else 0
 
     out_dir = args.out
     debug_dir = out_dir / "debug"
@@ -305,18 +368,50 @@ def main() -> None:
             base_params=base_params,
         )
 
-    log: list = []
-    frame_idx = 0
-    sampled = 0
-    pbar = tqdm(total=total, desc="detect_plates")
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
-        if frame_idx % step != 0:
-            frame_idx += 1; pbar.update(1); continue
+    multi = MultiSlotTracker() if track_step > 0 else None
 
+    log: list = []
+    keyframes = list(range(0, total, step)) if total > 0 else []
+    if not keyframes:
+        # fallback на стриминговое чтение, если total неизвестен
+        keyframes = [i * step for i in range(10**9)]
+    if args.max_frames:
+        keyframes = keyframes[: args.max_frames]
+
+    read_state = {"seek": args.seek, "pos": 0}
+    sampled = 0
+    t0 = time.time()
+    pbar = tqdm(total=len(keyframes), desc="detect_plates")
+    prev_keyframe: Optional[int] = None
+    prev_roi: Optional[np.ndarray] = None
+    for kf_i, frame_idx in enumerate(keyframes):
+        if frame_idx >= total and total > 0:
+            break
+        frame = _read_at(cap, frame_idx, seek=read_state["seek"], _state=read_state)
+        if frame is None:
+            break
         roi = frame[ry:ry + rh, rx:rx + rw]
+
+        # sub-frame трекинг + adaptive up-sample в промежутке [prev_keyframe+1, frame_idx-1]
+        tracked_records: List[dict] = []
+        if prev_keyframe is not None and (track_step > 0 or adaptive_step > 0):
+            inter_step = min(
+                track_step if track_step > 0 else step,
+                adaptive_step if adaptive_step > 0 else step,
+            )
+            for inter_idx in range(prev_keyframe + inter_step, frame_idx, inter_step):
+                inter_frame = _read_at(cap, inter_idx, seek=read_state["seek"], _state=read_state)
+                if inter_frame is None:
+                    continue
+                inter_roi = inter_frame[ry:ry + rh, rx:rx + rw]
+                if multi is not None:
+                    upd = multi.update_all(inter_roi)
+                    for slot, bb in upd.items():
+                        tracked_records.append({
+                            "frame": inter_idx, "t": inter_idx / src_fps,
+                            "slot": slot, "bbox": list(bb),
+                        })
+
         accepted, rejected, _mask = detect_colored_plates_opencv(
             roi, team_hsv=team_hsv, **base_params,
         )
@@ -324,41 +419,83 @@ def main() -> None:
         if tracker is not None:
             accepted, recoveries = tracker.step(roi, accepted)
 
-        if args.save_debug:
+        # re-init трекеров от свежих детекций
+        if multi is not None:
+            seen_keys = set()
+            for b in accepted:
+                feat = b[5] or {}
+                k = str(feat.get("team_key") or feat.get("slot") or feat.get("dominant_team_id"))
+                if k == "None":
+                    continue
+                seen_keys.add(k)
+                multi.init_slot(k, roi, (b[0], b[1], b[2], b[3]))
+            for k in list(multi.slots.keys()):
+                if k not in seen_keys:
+                    multi.reset(k)
+
+        if args.save_debug and (kf_i % max(1, args.debug_every) == 0):
             dbg = draw_boxes(roi, accepted, rejected=rejected, draw_rejected=False)
             cv2.imwrite(str(debug_dir / f"f{frame_idx:07d}.jpg"),
                         dbg, [cv2.IMWRITE_JPEG_QUALITY, 88])
+
+        boxes_dump = [_box_to_dict(b, source=("recover" if (b[5] or {}).get("recovered_level") else "detect"))
+                      for b in accepted]
+
+        # отдельные tracked-точки в промежутке, плюс tracked на самом keyframe пропускаем
+        # (на keyframe есть detect/recover)
+        if tracked_records:
+            # отсечь те, что относятся к этому keyframe (их нет — мы шли inter_step)
+            tracked_for_this = [r for r in tracked_records if r["frame"] < frame_idx]
+        else:
+            tracked_for_this = []
 
         log.append({
             "frame": frame_idx,
             "t": frame_idx / src_fps,
             "accepted": len(accepted),
             "rejected": len(rejected),
+            "boxes": boxes_dump,
             "recoveries": recoveries,
+            "tracked": tracked_for_this,
             "by_slot": sorted({
-                str(b[5].get("team_key") or b[5].get("slot")) for b in accepted
+                str((b[5] or {}).get("team_key") or (b[5] or {}).get("slot")) for b in accepted
             }),
         })
 
+        prev_keyframe = frame_idx
+        prev_roi = roi
         sampled += 1
-        if args.max_frames and sampled >= args.max_frames:
-            break
-        frame_idx += 1; pbar.update(1)
+        pbar.update(1)
     pbar.close(); cap.release()
+    elapsed = time.time() - t0
 
     (out_dir / "detections.json").write_text(json.dumps({
         "video": str(args.video), "fps": src_fps,
         "roi": [rx, ry, rw, rh],
         "sampled_frames": sampled,
+        "elapsed_sec": round(elapsed, 2),
+        "seek_used": read_state["seek"],
         "params": base_params,
         "recovery": bool(tracker),
+        "track_fps": args.track_fps,
+        "adaptive_fps": args.adaptive_fps,
         "frames": log,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     n_rec = sum(len(f["recoveries"]) for f in log)
-    print(f"[ok] frames={sampled}, recoveries={n_rec}")
-    print(f"[ok] debug -> {debug_dir}")
+    n_tracked = sum(len(f["tracked"]) for f in log)
+    print(f"[ok] frames={sampled}, recoveries={n_rec}, tracked={n_tracked}, "
+          f"elapsed={elapsed:.1f}s")
+    if args.save_debug:
+        print(f"[ok] debug -> {debug_dir}")
     print(f"[ok] log   -> {out_dir/'detections.json'}")
+
+    if args.emit_slots:
+        det = json.loads((out_dir / "detections.json").read_text(encoding="utf-8"))
+        by_slot = aggregate_slots.aggregate(det)
+        aggregate_slots.write_outputs(out_dir, by_slot)
+        print(f"[ok] slots -> {out_dir/'slots'} ({len(by_slot)} files), "
+              f"trajectories -> {out_dir/'trajectories.json'}")
 
 
 if __name__ == "__main__":
