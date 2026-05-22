@@ -408,34 +408,30 @@ def main() -> None:
     t0 = time.time()
     pbar = tqdm(total=len(keyframes), desc="detect_plates")
     prev_keyframe: Optional[int] = None
-    prev_roi: Optional[np.ndarray] = None
     for kf_i, frame_idx in enumerate(keyframes):
         if frame_idx >= total and total > 0:
             break
-        frame = _read_at(cap, frame_idx, seek=read_state["seek"], _state=read_state)
-        if frame is None:
-            break
-        roi = frame[ry:ry + rh, rx:rx + rw]
 
-        # sub-frame трекинг + adaptive up-sample в промежутке [prev_keyframe+1, frame_idx-1]
+        # sub-frame tracking ДО чтения текущего keyframe: так VideoCapture идёт
+        # строго вперёд и не делает дорогой seek назад на H.264.
         tracked_records: List[dict] = []
-        if prev_keyframe is not None and (track_step > 0 or adaptive_step > 0):
-            inter_step = min(
-                track_step if track_step > 0 else step,
-                adaptive_step if adaptive_step > 0 else step,
-            )
-            for inter_idx in range(prev_keyframe + inter_step, frame_idx, inter_step):
+        if prev_keyframe is not None and multi is not None and track_step > 0:
+            for inter_idx in range(prev_keyframe + track_step, frame_idx, track_step):
                 inter_frame = _read_at(cap, inter_idx, seek=read_state["seek"], _state=read_state)
                 if inter_frame is None:
                     continue
                 inter_roi = inter_frame[ry:ry + rh, rx:rx + rw]
-                if multi is not None:
-                    upd = multi.update_all(inter_roi)
-                    for slot, bb in upd.items():
-                        tracked_records.append({
-                            "frame": inter_idx, "t": inter_idx / src_fps,
-                            "slot": slot, "bbox": list(bb),
-                        })
+                upd = multi.update_all(inter_roi)
+                for slot, bb in upd.items():
+                    tracked_records.append({
+                        "frame": inter_idx, "t": inter_idx / src_fps,
+                        "slot": slot, "bbox": list(bb),
+                    })
+
+        frame = _read_at(cap, frame_idx, seek=read_state["seek"], _state=read_state)
+        if frame is None:
+            break
+        roi = frame[ry:ry + rh, rx:rx + rw]
 
         accepted, rejected, _mask = detect_colored_plates_opencv(
             roi, team_hsv=team_hsv, **base_params,
@@ -488,7 +484,6 @@ def main() -> None:
         })
 
         prev_keyframe = frame_idx
-        prev_roi = roi
         sampled += 1
         pbar.update(1)
     pbar.close(); cap.release()
