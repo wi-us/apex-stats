@@ -309,9 +309,12 @@ def main() -> None:
                     help="N: писать debug-jpg каждый N-й keyframe")
 
     # speed
-    ap.add_argument("--seek", dest="seek", action="store_true", default=True,
-                    help="CAP_PROP_POS_FRAMES вместо чтения всех кадров (default on)")
+    ap.add_argument("--seek", dest="seek", action="store_true", default=False,
+                    help="CAP_PROP_POS_FRAMES (для H.264 обычно МЕДЛЕННЕЕ, default off)")
     ap.add_argument("--no-seek", dest="seek", action="store_false")
+    ap.add_argument("--hwaccel", default="auto",
+                    help="ffmpeg hwaccel: auto|cuda|d3d11va|dxva2|qsv|videotoolbox|none "
+                         "(default auto). 'none' отключает.")
 
     # sub-frame tracking + adaptive up-sample
     ap.add_argument("--track-fps", type=float, default=0.0,
@@ -329,7 +332,18 @@ def main() -> None:
         raise SystemExit(f"[err] пустой пресет: {args.hsv_presets}")
     zones_cfg = json.loads(args.zones.read_text(encoding="utf-8"))
 
-    cap = cv2.VideoCapture(str(args.video))
+    # D — hardware-accelerated H.264 decode через ffmpeg backend.
+    if args.hwaccel and args.hwaccel.lower() != "none":
+        # OpenCV пробрасывает эти опции в libavcodec.
+        os.environ.setdefault(
+            "OPENCV_FFMPEG_CAPTURE_OPTIONS",
+            f"hwaccel;{args.hwaccel}",
+        )
+    cap = cv2.VideoCapture(str(args.video), cv2.CAP_FFMPEG)
+    if not cap.isOpened():
+        # fallback: без hwaccel и без явного backend
+        os.environ.pop("OPENCV_FFMPEG_CAPTURE_OPTIONS", None)
+        cap = cv2.VideoCapture(str(args.video))
     if not cap.isOpened():
         raise SystemExit(f"[err] cv2 не открыл {args.video}")
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
