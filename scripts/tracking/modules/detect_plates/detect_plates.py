@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -211,24 +212,31 @@ class RecoveryTracker:
 def _read_at(cap: cv2.VideoCapture, frame_idx: int, *, seek: bool,
              _state: dict) -> Optional[np.ndarray]:
     """Возвращает BGR-кадр на позиции frame_idx.
-    seek=True — используем CAP_PROP_POS_FRAMES (быстро, нужен поддерживаемый кодек).
-    seek=False — обычное последовательное чтение.
+    seek=True — CAP_PROP_POS_FRAMES (для H.264 на практике медленнее sequential:
+      каждый set() заново декодирует от ближайшего keyframe).
+    seek=False (default) — один проход вперёд: grab() для пропуска,
+      retrieve() только на нужном индексе. Декодируется только то, что нужно.
     """
     if seek:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ok, frame = cap.read()
         if ok and frame is not None:
+            _state["pos"] = frame_idx + 1
             return frame
         # fallback: переключаемся на sequential до конца
         _state["seek"] = False
     # sequential: домотать grab() до нужного индекса
     cur = _state.get("pos", 0)
+    if cur > frame_idx:
+        # назад идти не умеем без seek; включим seek один раз
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        cur = frame_idx
     while cur < frame_idx:
         if not cap.grab():
             return None
         cur += 1
-    ok, frame = cap.read()
-    _state["pos"] = cur + 1
+    ok, frame = cap.retrieve()
+    _state["pos"] = frame_idx + 1
     if not ok:
         return None
     return frame
@@ -301,9 +309,12 @@ def main() -> None:
                     help="N: писать debug-jpg каждый N-й keyframe")
 
     # speed
-    ap.add_argument("--seek", dest="seek", action="store_true", default=True,
-                    help="CAP_PROP_POS_FRAMES вместо чтения всех кадров (default on)")
+    ap.add_argument("--seek", dest="seek", action="store_true", default=False,
+                    help="CAP_PROP_POS_FRAMES (для H.264 обычно МЕДЛЕННЕЕ, default off)")
     ap.add_argument("--no-seek", dest="seek", action="store_false")
+    ap.add_argument("--hwaccel", default="auto",
+                    help="ffmpeg hwaccel: auto|cuda|d3d11va|dxva2|qsv|videotoolbox|none "
+                         "(default auto). 'none' отключает.")
 
     # sub-frame tracking + adaptive up-sample
     ap.add_argument("--track-fps", type=float, default=0.0,
@@ -321,7 +332,18 @@ def main() -> None:
         raise SystemExit(f"[err] пустой пресет: {args.hsv_presets}")
     zones_cfg = json.loads(args.zones.read_text(encoding="utf-8"))
 
-    cap = cv2.VideoCapture(str(args.video))
+    # D — hardware-accelerated H.264 decode через ffmpeg backend.
+    if args.hwaccel and args.hwaccel.lower() != "none":
+        # OpenCV пробрасывает эти опции в libavcodec.
+        os.environ.setdefault(
+            "OPENCV_FFMPEG_CAPTURE_OPTIONS",
+            f"hwaccel;{args.hwaccel}",
+        )
+    cap = cv2.VideoCapture(str(args.video), cv2.CAP_FFMPEG)
+    if not cap.isOpened():
+        # fallback: без hwaccel и без явного backend
+        os.environ.pop("OPENCV_FFMPEG_CAPTURE_OPTIONS", None)
+        cap = cv2.VideoCapture(str(args.video))
     if not cap.isOpened():
         raise SystemExit(f"[err] cv2 не открыл {args.video}")
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
