@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -211,24 +212,31 @@ class RecoveryTracker:
 def _read_at(cap: cv2.VideoCapture, frame_idx: int, *, seek: bool,
              _state: dict) -> Optional[np.ndarray]:
     """Возвращает BGR-кадр на позиции frame_idx.
-    seek=True — используем CAP_PROP_POS_FRAMES (быстро, нужен поддерживаемый кодек).
-    seek=False — обычное последовательное чтение.
+    seek=True — CAP_PROP_POS_FRAMES (для H.264 на практике медленнее sequential:
+      каждый set() заново декодирует от ближайшего keyframe).
+    seek=False (default) — один проход вперёд: grab() для пропуска,
+      retrieve() только на нужном индексе. Декодируется только то, что нужно.
     """
     if seek:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ok, frame = cap.read()
         if ok and frame is not None:
+            _state["pos"] = frame_idx + 1
             return frame
         # fallback: переключаемся на sequential до конца
         _state["seek"] = False
     # sequential: домотать grab() до нужного индекса
     cur = _state.get("pos", 0)
+    if cur > frame_idx:
+        # назад идти не умеем без seek; включим seek один раз
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        cur = frame_idx
     while cur < frame_idx:
         if not cap.grab():
             return None
         cur += 1
-    ok, frame = cap.read()
-    _state["pos"] = cur + 1
+    ok, frame = cap.retrieve()
+    _state["pos"] = frame_idx + 1
     if not ok:
         return None
     return frame
