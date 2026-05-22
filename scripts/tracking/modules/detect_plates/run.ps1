@@ -11,6 +11,8 @@ param(
   [switch]$SaveDebug,
   [int]$DebugEvery = 1,
   [switch]$NoSeek,
+  [switch]$Seek,
+  [string]$Hwaccel = "auto",
   [double]$TrackFps    = 5.0,
   [double]$AdaptiveFps = 5.0,
   [switch]$NoSlots
@@ -38,6 +40,8 @@ if ($MaxFrames -gt 0) { $pyArgs += @("--max-frames", $MaxFrames) }
 if (-not $NoRecovery) { $pyArgs += "--recovery" }
 if ($SaveDebug)       { $pyArgs += @("--save-debug", "--debug-every", $DebugEvery) }
 if ($NoSeek)          { $pyArgs += "--no-seek" }
+if ($Seek)            { $pyArgs += "--seek" }
+if ($Hwaccel)         { $pyArgs += @("--hwaccel", $Hwaccel) }
 if ($TrackFps -gt 0)  { $pyArgs += @("--track-fps", $TrackFps) }
 if ($AdaptiveFps -gt 0) { $pyArgs += @("--adaptive-fps", $AdaptiveFps) }
 if (-not $NoSlots)    { $pyArgs += "--emit-slots" }
