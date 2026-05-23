@@ -1,4 +1,4 @@
-# batch_extract.ps1 — прогоняет detect_plates + extract_crops по всем видео в папке.
+﻿# batch_extract.ps1 — прогоняет detect_plates + extract_crops по всем видео в папке.
 #
 # Использование:
 #   powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\recognize_tags\batch_extract.ps1
