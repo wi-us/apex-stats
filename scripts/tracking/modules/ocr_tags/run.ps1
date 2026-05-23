@@ -4,7 +4,7 @@ param(
   [string]$Teams      = "scripts/tracking/modules/ocr_tags/configs/teams.m-test-g1.json",
   [string]$Zones      = "scripts/tracking/configs/zones.vod.json",
   [string]$Out        = "scripts/tracking/modules/ocr_tags/reports",
-  [int]   $TopN       = 30,
+  [int]   $TopN       = 60,
   [string]$TesseractCmd = "C:\Program Files\Tesseract-OCR\tesseract.exe",
   [switch]$SaveDebug
 )
