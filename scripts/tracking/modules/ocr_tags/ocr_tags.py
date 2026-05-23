@@ -230,7 +230,12 @@ def vote(ocr_results: List[Tuple[str, float, float]],
         tag = alias_to_tag[alias]
         # Защита от ситуаций "L" vs "ELTE": OCR-текст заметно короче алиаса.
         # Требуем, чтобы OCR покрывал хотя бы половину алиаса (минимум 3 символа).
-        min_text_len = max(3, len(alias) // 2)
+        # Для коротких алиасов (≤4) — точное покрытие по длине, иначе мусор
+        # типа "FEE"/"EIE" уверенно матчит "FREE"/"ELTE" через WRatio.
+        if len(alias) <= 4:
+            min_text_len = len(alias)
+        else:
+            min_text_len = max(3, len(alias) // 2)
         if len(text) < min_text_len:
             debug["rejected"].append({"text": text, "alias": alias,
                                       "ratio": ratio,
