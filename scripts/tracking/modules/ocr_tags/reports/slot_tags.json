@@ -1,0 +1,3801 @@
+{
+  "video": "scripts\\tracking\\game_sp.mp4",
+  "detections": "scripts\\tracking\\modules\\detect_plates\\reports\\detections.json",
+  "teams_dict": [
+    "ELTE",
+    "FREE",
+    "FXI",
+    "NIP",
+    "OBVN",
+    "S2",
+    "SRC",
+    "STAL",
+    "TL",
+    "THUG",
+    "BB",
+    "CRT",
+    "DINO",
+    "DKK",
+    "GMBL",
+    "JDG",
+    "MR",
+    "REV",
+    "ROC"
+  ],
+  "top_n": 30,
+  "min_match_ratio": 70.0,
+  "assignments": {
+    "slot_07_Team 7": "S2",
+    "slot_20_Team 20": "FREE",
+    "slot_01_Team 1": "ELTE",
+    "slot_13_Team 13": "DINO",
+    "slot_08_Team 8": "THUG",
+    "slot_04_Team 4": "NIP",
+    "slot_12_Team 12": "CRT",
+    "slot_19_Team 19": "ROC",
+    "slot_05_Team 5": "OBVN",
+    "slot_17_Team 17": "JDG",
+    "slot_09_Team 9": "TL",
+    "slot_11_Team 11": "BB",
+    "slot_03_Team 3": "FXI"
+  },
+  "per_slot": {
+    "slot_15_Team 15": {
+      "tag": null,
+      "weight": 1.266,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "7",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 34.0,
+            "score": 2.9402573529411766
+          },
+          {
+            "text": "Z",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 3.013362068965517
+          },
+          {
+            "text": "P",
+            "match": "NIP",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.7064144736842106
+          },
+          {
+            "text": "GAMQERS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.957331730769231
+          },
+          {
+            "text": "GAMEERS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.800646551724138
+          },
+          {
+            "text": "UAMBLERS",
+            "match": "GMBL",
+            "ratio": 67.5,
+            "ocr_conf": 0.0,
+            "score": 2.7613877118644066
+          },
+          {
+            "text": "OT",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 5.0,
+            "score": 2.7080078125
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 2.7642463235294117
+          },
+          {
+            "text": "OT",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.7105978260869565
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.835576923076923
+          },
+          {
+            "text": "F",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.8608630952380953
+          },
+          {
+            "text": "GAMBLERS",
+            "match": "GMBL",
+            "ratio": 67.5,
+            "ocr_conf": 32.0,
+            "score": 2.798618285123967
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.787870762711864
+          },
+          {
+            "text": "EL",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 49.0,
+            "score": 2.871389180672269
+          },
+          {
+            "text": "ET",
+            "match": "ELTE",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.743371212121212
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 9.0,
+            "score": 2.759672619047619
+          }
+        ],
+        "rejected": [
+          {
+            "text": "7",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "Z",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "GAMQERS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "GAMEERS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "UAMBLERS",
+            "match": "GMBL",
+            "ratio": 67.5,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OT",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OT",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "GAMBLERS",
+            "match": "GMBL",
+            "ratio": 67.5,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ET",
+            "match": "ELTE",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "TS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "NIP": 0.0,
+          "FREE": 0.0,
+          "ELTE": 1.2662826286764706
+        }
+      },
+      "needs_review": "collision_with:slot_01_Team 1"
+    },
+    "slot_07_Team 7": {
+      "tag": "S2",
+      "weight": 0.473,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "6SG",
+            "match": "S2",
+            "ratio": 45.0,
+            "ocr_conf": 0.0,
+            "score": 2.8375946969696972
+          },
+          {
+            "text": "G",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.832175925925926
+          },
+          {
+            "text": "AMINGG",
+            "match": "DINO",
+            "ratio": 45.0,
+            "ocr_conf": 0.0,
+            "score": 2.9848958333333333
+          },
+          {
+            "text": "CGNN",
+            "match": "NIP",
+            "ratio": 28.57142857142857,
+            "ocr_conf": 16.333333333333332,
+            "score": 2.8578821656050954
+          },
+          {
+            "text": "RGG",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.854967948717949
+          },
+          {
+            "text": "2SGWN",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 22.25,
+            "score": 2.9106617647058823
+          },
+          {
+            "text": "OG",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.7349290780141846
+          },
+          {
+            "text": "SI",
+            "match": "FXI",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.7854662698412698
+          },
+          {
+            "text": "G",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.998214285714286
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.814423076923077
+          },
+          {
+            "text": "182",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.866657838983051
+          },
+          {
+            "text": "182",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.905852754237288
+          },
+          {
+            "text": "LYS2",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 19.0,
+            "score": 2.766702586206897
+          },
+          {
+            "text": "O",
+            "match": "OBVN",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.8920036764705883
+          },
+          {
+            "text": "NPY55",
+            "match": "NIP",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.0985054347826084
+          },
+          {
+            "text": "FX1",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.8244485294117645
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.7617694805194803
+          },
+          {
+            "text": "NJP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.7568108974358974
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.7591911764705883
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.7358870967741935
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.75
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.839968152866242
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.002840909090909
+          }
+        ],
+        "rejected": [
+          {
+            "text": "6SG",
+            "match": "S2",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "AMINGG",
+            "match": "DINO",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CGNN",
+            "match": "NIP",
+            "ratio": 28.57142857142857,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RGG",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "2SGWN",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OG",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SI",
+            "match": "FXI",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "182",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "182",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FX1",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NJP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "THUG": 0.0,
+          "S2": 0.47310614224137937,
+          "OBVN": 0.0,
+          "NIP": 0.0
+        }
+      }
+    },
+    "slot_06_Team 6": {
+      "tag": null,
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "SG9",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.870673076923077
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.7900528169014085
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.8559027777777777
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.922202797202797
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.79375
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.88512323943662
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.9232954545454546
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.800724637681159
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.814700704225352
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.84375
+          },
+          {
+            "text": "SU",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.8463908450704225
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.8076584507042255
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.809419014084507
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.803257042253521
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.8631161971830985
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.798611111111111
+          },
+          {
+            "text": "SCN",
+            "match": "SRC",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.8287852112676055
+          },
+          {
+            "text": "S082",
+            "match": "S2",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 23.0,
+            "score": 2.927816901408451
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.929195804195804
+          },
+          {
+            "text": "NJSP",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 2.95125
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.794230769230769
+          },
+          {
+            "text": "U8CAM",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.909970238095238
+          },
+          {
+            "text": "NIP",
+            "match": "NIP",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 2.819943405511811
+          }
+        ],
+        "rejected": [
+          {
+            "text": "SG9",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SU",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SG",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SCN",
+            "match": "SRC",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "S082",
+            "match": "S2",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NJSP",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "U8CAM",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "S2": 0.0,
+          "NIP": 0.0
+        }
+      },
+      "needs_review": "collision_with:slot_07_Team 7"
+    },
+    "slot_20_Team 20": {
+      "tag": "FREE",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "F",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.3258272058823533
+          },
+          {
+            "text": "WS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2773399014778324
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2745098039215685
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 3.3013392857142856
+          },
+          {
+            "text": "SISR",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 25.5,
+            "score": 3.2659574468085104
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2730978260869565
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2843822843822843
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2867132867132867
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.274493243243243
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2871621621621623
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.317989864864865
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.385486577181208
+          },
+          {
+            "text": "EE1",
+            "match": "ELTE",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.2842881944444446
+          },
+          {
+            "text": "FE",
+            "match": "FREE",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.3461174242424243
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 3.2871621621621623
+          }
+        ],
+        "rejected": [
+          {
+            "text": "WS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SISR",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "EE1",
+            "match": "ELTE",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FE",
+            "match": "FREE",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "FREE": 0.0
+        }
+      }
+    },
+    "slot_01_Team 1": {
+      "tag": "ELTE",
+      "weight": 2.848,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "C",
+            "match": "SRC",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.350340136054422
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.095010615711253
+          },
+          {
+            "text": "S3SCT",
+            "match": "CRT",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.115347018572825
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.142292490118577
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.179264214046823
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.194583333333333
+          },
+          {
+            "text": "EE5",
+            "match": "ELTE",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.2024999999999997
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1262499999999998
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1576986754966887
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.068702290076336
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0800189393939394
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.3184121621621623
+          },
+          {
+            "text": "EE",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2777777777777777
+          },
+          {
+            "text": "LI",
+            "match": "FXI",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0802884615384616
+          },
+          {
+            "text": "LT",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 62.0,
+            "score": 3.078345070422535
+          },
+          {
+            "text": "LT",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 40.0,
+            "score": 3.1392045454545454
+          },
+          {
+            "text": "T",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.128080985915493
+          },
+          {
+            "text": "LL",
+            "match": "STAL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.108274647887324
+          }
+        ],
+        "rejected": [
+          {
+            "text": "EE5",
+            "match": "ELTE",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "EES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "LI",
+            "match": "FXI",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "LL",
+            "match": "STAL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "SRC": 0.0,
+          "FREE": 0.0,
+          "CRT": 0.0,
+          "ELTE": 2.847830185659411
+        }
+      }
+    },
+    "slot_13_Team 13": {
+      "tag": "DINO",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "DINOS",
+            "match": "DINO",
+            "ratio": 88.88888888888889,
+            "ocr_conf": 0.0,
+            "score": 3.1699617346938775
+          },
+          {
+            "text": "CS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.320075757575758
+          },
+          {
+            "text": "6Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 3.162957702020202
+          },
+          {
+            "text": "H",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1763980263157894
+          },
+          {
+            "text": "YU",
+            "match": "THUG",
+            "ratio": 45.0,
+            "ocr_conf": 0.0,
+            "score": 3.165364583333333
+          },
+          {
+            "text": "4",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 66.0,
+            "score": 3.236935399159664
+          }
+        ],
+        "rejected": [
+          {
+            "text": "CS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "6Y",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "YU",
+            "match": "THUG",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "4",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "DINO": 0.0,
+          "THUG": 0.0
+        }
+      }
+    },
+    "slot_08_Team 8": {
+      "tag": "THUG",
+      "weight": 10.739,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "SS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.3051948051948052
+          },
+          {
+            "text": "JOG",
+            "match": "JDG",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 46.0,
+            "score": 3.288231382978723
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.340865384615385
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.494791666666667
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.372159090909091
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 81.0,
+            "score": 3.267857142857143
+          },
+          {
+            "text": "AFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 32.0,
+            "score": 3.2971153846153847
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.43671875
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 43.5,
+            "score": 3.2933467741935485
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 34.0,
+            "score": 3.2710625
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 44.0,
+            "score": 3.3046875
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 92.0,
+            "score": 3.3641983695652176
+          },
+          {
+            "text": "M",
+            "match": "GMBL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.3037420382165603
+          },
+          {
+            "text": "SS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.3066907051282053
+          },
+          {
+            "text": "NJIP",
+            "match": "NIP",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.4134615384615383
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.4869462025316453
+          },
+          {
+            "text": "TTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.38916015625
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 92.0,
+            "score": 3.3817063053097343
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 92.0,
+            "score": 3.3470982142857144
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.346765350877193
+          },
+          {
+            "text": "THUGGETST",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4180372807017543
+          }
+        ],
+        "rejected": [
+          {
+            "text": "SS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JOG",
+            "match": "JDG",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "AFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "4S",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SS",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "THUG": 10.73927424936789,
+          "NIP": 0.0,
+          "GMBL": 0.0
+        }
+      }
+    },
+    "slot_04_Team 4": {
+      "tag": "NIP",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "IPA",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.189583333333333
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.1830357142857144
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.278465346534653
+          },
+          {
+            "text": "NPAS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2041440217391304
+          },
+          {
+            "text": "NNP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.3452868852459017
+          },
+          {
+            "text": "NPJ",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.2247596153846154
+          },
+          {
+            "text": "NJPY",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.178401898734177
+          },
+          {
+            "text": "MP",
+            "match": "NIP",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.1882961783439487
+          },
+          {
+            "text": "ND",
+            "match": "NIP",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.185111464968153
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.1775914634146343
+          },
+          {
+            "text": "NPYMS",
+            "match": "NIP",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.2735119047619046
+          },
+          {
+            "text": "NNP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.2704741379310347
+          },
+          {
+            "text": "NP",
+            "match": "NIP",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.2046493902439024
+          }
+        ],
+        "rejected": [
+          {
+            "text": "IPA",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NPAS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NNP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NPJ",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NJPY",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "MP",
+            "match": "NIP",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ND",
+            "match": "NIP",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "NNP",
+            "match": "NIP",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "NIP": 0.0
+        }
+      }
+    },
+    "slot_02_Team 2": {
+      "tag": null,
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "AFT7",
+            "match": "TL",
+            "ratio": 45.0,
+            "ocr_conf": 18.0,
+            "score": 2.9463141025641026
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.936100746268657
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.947596153846154
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0751953125
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0108333333333333
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.972682119205298
+          },
+          {
+            "text": "FC",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.9124087591240877
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.8958333333333335
+          },
+          {
+            "text": "7TH1",
+            "match": "THUG",
+            "ratio": 50.0,
+            "ocr_conf": 11.666666666666666,
+            "score": 3.0221920289855073
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.377248201438849
+          },
+          {
+            "text": "FFT7",
+            "match": "TL",
+            "ratio": 45.0,
+            "ocr_conf": 7.25,
+            "score": 3.2163461538461537
+          }
+        ],
+        "rejected": [
+          {
+            "text": "AFT7",
+            "match": "TL",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FC",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FT",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "7TH1",
+            "match": "THUG",
+            "ratio": 50.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FFT",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FFT7",
+            "match": "TL",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          }
+        ]
+      }
+    },
+    "slot_10_Team 10": {
+      "tag": null,
+      "weight": 1.184,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "TTHUBSETS",
+            "match": "THUG",
+            "ratio": 67.5,
+            "ocr_conf": 36.0,
+            "score": 2.9443430656934306
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1360143442622954
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.09375
+          },
+          {
+            "text": "ONUGLETS",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0346153846153845
+          },
+          {
+            "text": "TTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9560185185185186
+          },
+          {
+            "text": "THTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0694444444444446
+          },
+          {
+            "text": "TTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1946022727272725
+          },
+          {
+            "text": "1THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.00927734375
+          },
+          {
+            "text": "TTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.064922480620155
+          },
+          {
+            "text": "SH",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0634398496240602
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9572610294117645
+          },
+          {
+            "text": "THTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.941722972972973
+          },
+          {
+            "text": "THITHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.943921232876712
+          },
+          {
+            "text": "THUGGETSETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0093344155844157
+          },
+          {
+            "text": "IHIHULLEIS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 10.0,
+            "score": 3.1254401408450705
+          },
+          {
+            "text": "A",
+            "match": "STAL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9517857142857142
+          },
+          {
+            "text": "T",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9682904411764706
+          },
+          {
+            "text": "THUGTHUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.027391975308642
+          },
+          {
+            "text": "TBUETS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.9261363636363638
+          },
+          {
+            "text": "THUGGETS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.065384615384615
+          },
+          {
+            "text": "THUGEFIS",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.992311507936508
+          },
+          {
+            "text": "THUGT",
+            "match": "THUG",
+            "ratio": 88.88888888888889,
+            "ocr_conf": 45.5,
+            "score": 2.9267857142857143
+          }
+        ],
+        "rejected": [
+          {
+            "text": "TTHUBSETS",
+            "match": "THUG",
+            "ratio": 67.5,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ONUGLETS",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SH",
+            "match": "SRC",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "IHIHULLEIS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "TBUETS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "THUG": 1.1837222222222221,
+          "STAL": 0.0,
+          "ELTE": 0.0
+        }
+      },
+      "needs_review": "collision_with:slot_08_Team 8"
+    },
+    "slot_12_Team 12": {
+      "tag": "CRT",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.0994318181818183
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.921654929577465
+          },
+          {
+            "text": "CTR",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.8690693430656933
+          },
+          {
+            "text": "CTCAT",
+            "match": "CRT",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 2.878012048192771
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.9705615942028984
+          },
+          {
+            "text": "CCT",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.0434027777777777
+          },
+          {
+            "text": "ET",
+            "match": "ELTE",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.9676258992805753
+          },
+          {
+            "text": "BT",
+            "match": "THUG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.969858156028369
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.9486607142857144
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.0243794326241136
+          },
+          {
+            "text": "CTE",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.9493343195266273
+          },
+          {
+            "text": "CTHVES9",
+            "match": "CRT",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 2.9286242603550297
+          },
+          {
+            "text": "CTHVES9",
+            "match": "CRT",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 2.8903443113772456
+          },
+          {
+            "text": "CZTHIVES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.886764705882353
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.104166666666667
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.054450757575758
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.8635110294117645
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.961267605633803
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.9728053435114505
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.103846153846154
+          },
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 2.9829545454545454
+          }
+        ],
+        "rejected": [
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CTR",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CCT",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ET",
+            "match": "ELTE",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "BT",
+            "match": "THUG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CTE",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CZTHIVES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "CRT": 0.0
+        }
+      }
+    },
+    "slot_19_Team 19": {
+      "tag": "ROC",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "NROCEA",
+            "match": "ROC",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.258064516129032
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.2572115384615383
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.24160447761194
+          },
+          {
+            "text": "BNIF",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2926136363636367
+          },
+          {
+            "text": "ANIF",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.351923076923077
+          },
+          {
+            "text": "RNEF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.406001984126984
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.24169921875
+          },
+          {
+            "text": "RNTF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.322596153846154
+          },
+          {
+            "text": "BATF",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2986641221374047
+          },
+          {
+            "text": "RNTF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.427734375
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.33056640625
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.3273252952755907
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.348486712598425
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.3573449803149606
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.27978515625
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.3627583661417324
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.329457364341085
+          },
+          {
+            "text": "ANTF",
+            "match": "TL",
+            "ratio": 45.0,
+            "ocr_conf": 0.0,
+            "score": 3.2697115384615385
+          },
+          {
+            "text": "RNEF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.35107421875
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.287463090551181
+          },
+          {
+            "text": "ROCES",
+            "match": "ROC",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2606589147286824
+          }
+        ],
+        "rejected": [
+          {
+            "text": "BNIF",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ANIF",
+            "match": "NIP",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RNEF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RNTF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "BATF",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RNTF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ANTF",
+            "match": "TL",
+            "ratio": 45.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RNEF",
+            "match": "MR",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "ROC": 0.0
+        }
+      }
+    },
+    "slot_05_Team 5": {
+      "tag": "OBVN",
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "O1L",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 26.5,
+            "score": 3.5084134615384617
+          },
+          {
+            "text": "O",
+            "match": "OBVN",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.460648148148148
+          },
+          {
+            "text": "FO3",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 34.5,
+            "score": 3.40625
+          },
+          {
+            "text": "YO0F",
+            "match": "FXI",
+            "ratio": 28.57142857142857,
+            "ocr_conf": 0.0,
+            "score": 3.4408482142857144
+          },
+          {
+            "text": "OV5",
+            "match": "OBVN",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.4426448170731705
+          },
+          {
+            "text": "O4",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.59765625
+          },
+          {
+            "text": "D",
+            "match": "DINO",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5402131782945734
+          },
+          {
+            "text": "O4",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.530505952380952
+          },
+          {
+            "text": "OL",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.508928571428571
+          },
+          {
+            "text": "OI8",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 27.0,
+            "score": 3.4448341836734695
+          },
+          {
+            "text": "ON",
+            "match": "OBVN",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.5166015625
+          },
+          {
+            "text": "OV",
+            "match": "OBVN",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.5424107142857144
+          },
+          {
+            "text": "O",
+            "match": "OBVN",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5126953125
+          },
+          {
+            "text": "JO31",
+            "match": "JDG",
+            "ratio": 28.57142857142857,
+            "ocr_conf": 0.0,
+            "score": 3.479629088785047
+          },
+          {
+            "text": "BO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.4304929123711343
+          },
+          {
+            "text": "CO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.412615740740741
+          },
+          {
+            "text": "OO1",
+            "match": "ROC",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 0.0,
+            "score": 3.4028072033898304
+          },
+          {
+            "text": "J1O",
+            "match": "JDG",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 0.0,
+            "score": 3.470703125
+          },
+          {
+            "text": "FOO",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 0.0,
+            "score": 3.543496621621622
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.545608108108108
+          },
+          {
+            "text": "OV0O",
+            "match": "OBVN",
+            "ratio": 50.0,
+            "ocr_conf": 25.666666666666668,
+            "score": 3.5470890410958904
+          },
+          {
+            "text": "YOVO",
+            "match": "OBVN",
+            "ratio": 50.0,
+            "ocr_conf": 0.0,
+            "score": 3.5565068493150687
+          },
+          {
+            "text": "O",
+            "match": "OBVN",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4565484550561796
+          },
+          {
+            "text": "Q0O",
+            "match": "ROC",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 0.0,
+            "score": 3.445023148148148
+          },
+          {
+            "text": "2O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.5434027777777777
+          },
+          {
+            "text": "5O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 5.0,
+            "score": 3.5497685185185186
+          },
+          {
+            "text": "1O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.4467592592592595
+          },
+          {
+            "text": "OD",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.4341517857142856
+          },
+          {
+            "text": "OOV",
+            "match": "OBVN",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.4555555555555557
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.5412037037037036
+          }
+        ],
+        "rejected": [
+          {
+            "text": "O1L",
+            "match": "TL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FO3",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "YO0F",
+            "match": "FXI",
+            "ratio": 28.57142857142857,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OV5",
+            "match": "OBVN",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "O4",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "O4",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OL",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OI8",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ON",
+            "match": "OBVN",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OV",
+            "match": "OBVN",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JO31",
+            "match": "JDG",
+            "ratio": 28.57142857142857,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "BO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OO1",
+            "match": "ROC",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "J1O",
+            "match": "JDG",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FOO",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OV0O",
+            "match": "OBVN",
+            "ratio": 50.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "YOVO",
+            "match": "OBVN",
+            "ratio": 50.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "Q0O",
+            "match": "ROC",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "2O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "5O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "1O",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OD",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OOV",
+            "match": "OBVN",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "OBVN": 0.0,
+          "DINO": 0.0
+        }
+      }
+    },
+    "slot_17_Team 17": {
+      "tag": "JDG",
+      "weight": 1.826,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "E",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.455935251798561
+          },
+          {
+            "text": "FCD",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "ocr_conf": 0.0,
+            "score": 3.47992700729927
+          },
+          {
+            "text": "C",
+            "match": "SRC",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4835624999999997
+          },
+          {
+            "text": "ST",
+            "match": "STAL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4990671641791042
+          },
+          {
+            "text": "FY",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 46.0,
+            "score": 3.4238945578231292
+          },
+          {
+            "text": "6SS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.4224137931034484
+          },
+          {
+            "text": "GG",
+            "match": "THUG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 17.0,
+            "score": 3.4452054794520546
+          },
+          {
+            "text": "J",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 57.0,
+            "score": 3.560374149659864
+          },
+          {
+            "text": "E",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.45530303030303
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4595323741007196
+          }
+        ],
+        "rejected": [
+          {
+            "text": "FCD",
+            "match": "FXI",
+            "ratio": 33.333333333333336,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FY",
+            "match": "FREE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "6SS",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "GG",
+            "match": "THUG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "ELTE": 0.0,
+          "SRC": 0.0,
+          "STAL": 0.0,
+          "JDG": 1.8264719387755102,
+          "S2": 0.0
+        }
+      }
+    },
+    "slot_09_Team 9": {
+      "tag": "TL",
+      "weight": 0.495,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.4359879032258065
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.3947916666666664
+          },
+          {
+            "text": "JL",
+            "match": "STAL",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.3638392857142856
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.393649193548387
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.41845703125
+          },
+          {
+            "text": "TLE",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4069767441860463
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.380859375
+          },
+          {
+            "text": "TL7",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.372983870967742
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.369711538461538
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.4284351145038165
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.4706439393939394
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.41845703125
+          },
+          {
+            "text": "TLIP",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.361359126984127
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.3903174212598426
+          },
+          {
+            "text": "TL",
+            "match": "TL",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.4351946721311473
+          },
+          {
+            "text": "CTL",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.4350961538461537
+          },
+          {
+            "text": "18TL",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.3689123376623376
+          },
+          {
+            "text": "TLL",
+            "match": "TL",
+            "ratio": 90.0,
+            "ocr_conf": 16.333333333333332,
+            "score": 3.3663194444444446
+          }
+        ],
+        "rejected": [
+          {
+            "text": "JL",
+            "match": "STAL",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "TL": 0.4948489583333333
+        }
+      }
+    },
+    "slot_16_Team 16": {
+      "tag": null,
+      "weight": 1.328,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0045955882352944
+          },
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.073473282442748
+          },
+          {
+            "text": "ACAMING",
+            "match": "DINO",
+            "ratio": 51.42857142857142,
+            "ocr_conf": 0.0,
+            "score": 3.0930397727272725
+          },
+          {
+            "text": "JJOGAING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 42.0,
+            "score": 3.263565891472868
+          },
+          {
+            "text": "JGALNG",
+            "match": "JDG",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.287790697674419
+          },
+          {
+            "text": "JUGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.2094465648854964
+          },
+          {
+            "text": "JJDGAMING",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 46.0,
+            "score": 3.2067669172932334
+          },
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0386782786885247
+          },
+          {
+            "text": "JDGAMIND",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9972826086956523
+          },
+          {
+            "text": "JDGAMING",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9859118852459017
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0010976239669422
+          },
+          {
+            "text": "JUGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 9.0,
+            "score": 2.9558035714285715
+          },
+          {
+            "text": "SUM4",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 2.982291666666667
+          },
+          {
+            "text": "1DGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.0307971014492754
+          },
+          {
+            "text": "JJOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.1262842465753424
+          }
+        ],
+        "rejected": [
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "ACAMING",
+            "match": "DINO",
+            "ratio": 51.42857142857142,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JJOGAING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JUGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JUGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "SUM4",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "1DGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "JJOGAMING",
+            "match": "JDG",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "JDG": 1.3276015037593987,
+          "S2": 0.0
+        }
+      },
+      "needs_review": "collision_with:slot_17_Team 17"
+    },
+    "slot_11_Team 11": {
+      "tag": "BB",
+      "weight": 0.748,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "BB",
+            "match": "BB",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 2.972470238095238
+          },
+          {
+            "text": "BB",
+            "match": "BB",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.14990234375
+          },
+          {
+            "text": "BB",
+            "match": "BB",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.054924242424242
+          },
+          {
+            "text": "BBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0651785714285715
+          },
+          {
+            "text": "BDD",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.013839285714286
+          },
+          {
+            "text": "BBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.9842625899280577
+          },
+          {
+            "text": "BLBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 2.989732142857143
+          },
+          {
+            "text": "BBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.2569444444444446
+          },
+          {
+            "text": "7BBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 26.25,
+            "score": 3.1647727272727275
+          },
+          {
+            "text": "PBB",
+            "match": "BB",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0046992481203008
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.014903846153846
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 2.9770992366412212
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.3419117647058822
+          },
+          {
+            "text": "CTES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.1917613636363633
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 5.5,
+            "score": 3.015625
+          },
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.218034351145038
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.1074810606060606
+          },
+          {
+            "text": "CT",
+            "match": "CRT",
+            "ratio": 80.0,
+            "ocr_conf": 0.0,
+            "score": 3.3110795454545454
+          },
+          {
+            "text": "ROCE",
+            "match": "ROC",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.1180555555555554
+          }
+        ],
+        "rejected": [
+          {
+            "text": "BDD",
+            "match": "BB",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CTES",
+            "match": "S2",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "CTS",
+            "match": "CRT",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "BB": 0.7476775568181819,
+          "CRT": 0.1326875,
+          "ROC": 0.0
+        }
+      }
+    },
+    "slot_14_Team 14": {
+      "tag": null,
+      "weight": 0.412,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "BB",
+            "match": "BB",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.0149629237288136
+          },
+          {
+            "text": "J",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.028125
+          },
+          {
+            "text": "F",
+            "match": "FREE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.1771716101694913
+          },
+          {
+            "text": "E",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.124524456521739
+          },
+          {
+            "text": "1",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "ocr_conf": 0.0,
+            "score": 3.025356359649123
+          },
+          {
+            "text": "J",
+            "match": "JDG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.0145833333333334
+          },
+          {
+            "text": "DKK",
+            "match": "DKK",
+            "ratio": 100.0,
+            "ocr_conf": 0.0,
+            "score": 3.107421875
+          },
+          {
+            "text": "RR",
+            "match": "REV",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.040625
+          },
+          {
+            "text": "BRB",
+            "match": "BB",
+            "ratio": 80.0,
+            "ocr_conf": 17.0,
+            "score": 3.0296336206896552
+          }
+        ],
+        "rejected": [
+          {
+            "text": "1",
+            "match": "ELTE",
+            "ratio": 0.0,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RR",
+            "match": "REV",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "BB": 0.41203017241379314,
+          "JDG": 0.0,
+          "FREE": 0.0,
+          "ELTE": 0.0,
+          "DKK": 0.0
+        }
+      },
+      "needs_review": "collision_with:slot_11_Team 11"
+    },
+    "slot_18_Team 18": {
+      "tag": null,
+      "weight": 0.0,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.6580882352941178
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.542293233082707
+          },
+          {
+            "text": "SO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.562984496124031
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5415625
+          },
+          {
+            "text": "BE",
+            "match": "ELTE",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 30.0,
+            "score": 3.566451149425287
+          },
+          {
+            "text": "OY",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.565340909090909
+          },
+          {
+            "text": "REVIVALREVIVAL",
+            "match": "REV",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.553515625
+          },
+          {
+            "text": "RR",
+            "match": "REV",
+            "ratio": 60.00000000000001,
+            "ocr_conf": 0.0,
+            "score": 3.583470394736842
+          },
+          {
+            "text": "S",
+            "match": "S2",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.6775568181818183
+          },
+          {
+            "text": "E",
+            "match": "ELTE",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.6548295454545454
+          },
+          {
+            "text": "H",
+            "match": "THUG",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.665246212121212
+          }
+        ],
+        "rejected": [
+          {
+            "text": "SO",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "BE",
+            "match": "ELTE",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "OY",
+            "match": "OBVN",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "RR",
+            "match": "REV",
+            "ratio": 60.00000000000001,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "S2": 0.0,
+          "REV": 0.0,
+          "ELTE": 0.0,
+          "THUG": 0.0
+        }
+      },
+      "needs_review": "collision_with:slot_07_Team 7"
+    },
+    "slot_03_Team 3": {
+      "tag": "FXI",
+      "weight": 1.201,
+      "samples": 30,
+      "debug": {
+        "raw": [
+          {
+            "text": "FXFX",
+            "match": "FXI",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.5371266592920354
+          },
+          {
+            "text": "FXF",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.6133146367521367
+          },
+          {
+            "text": "FXFXY",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.546875
+          },
+          {
+            "text": "FXFXY",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.5701800847457625
+          },
+          {
+            "text": "FXFXV",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.6182379201680672
+          },
+          {
+            "text": "FXIF4Y",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.6135416666666664
+          },
+          {
+            "text": "FXFXY",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.6171875
+          },
+          {
+            "text": "FXFXY",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.5447563559322033
+          },
+          {
+            "text": "FXIFV",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.6401041666666667
+          },
+          {
+            "text": "FXIF",
+            "match": "FXI",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.6255208333333333
+          },
+          {
+            "text": "FXIF",
+            "match": "FXI",
+            "ratio": 85.71428571428572,
+            "ocr_conf": 0.0,
+            "score": 3.596133474576271
+          },
+          {
+            "text": "FXFXY",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.624532585470085
+          },
+          {
+            "text": "FX1FX",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.564883474576271
+          },
+          {
+            "text": "FX1FX",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.538810483870968
+          },
+          {
+            "text": "FXIFXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5661802685950414
+          },
+          {
+            "text": "FX1FXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5842587809917354
+          },
+          {
+            "text": "FX1FXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.542419938016529
+          },
+          {
+            "text": "FX1FX1",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.595030737704918
+          },
+          {
+            "text": "FX1FUXT",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.5379552165354333
+          },
+          {
+            "text": "FXIFX1",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5328237410071943
+          },
+          {
+            "text": "FXFX",
+            "match": "FXI",
+            "ratio": 57.14285714285714,
+            "ocr_conf": 0.0,
+            "score": 3.533978174603175
+          },
+          {
+            "text": "FXIFFK7",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.696496212121212
+          },
+          {
+            "text": "FXF",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "ocr_conf": 0.0,
+            "score": 3.6529571280991737
+          },
+          {
+            "text": "FXFX1",
+            "match": "FXI",
+            "ratio": 72.0,
+            "ocr_conf": 0.0,
+            "score": 3.5540021929824563
+          },
+          {
+            "text": "FXFXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 0.0,
+            "score": 3.5711805555555554
+          },
+          {
+            "text": "FUXIFXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 14.333333333333334,
+            "score": 3.5690359477124183
+          },
+          {
+            "text": "FX1XFXI",
+            "match": "FXI",
+            "ratio": 90.0,
+            "ocr_conf": 22.666666666666668,
+            "score": 3.628448275862069
+          }
+        ],
+        "rejected": [
+          {
+            "text": "FXFX",
+            "match": "FXI",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FXF",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FXFX",
+            "match": "FXI",
+            "ratio": 57.14285714285714,
+            "reason": "low_ratio"
+          },
+          {
+            "text": "FXF",
+            "match": "FXI",
+            "ratio": 66.66666666666667,
+            "reason": "low_ratio"
+          }
+        ],
+        "weights": {
+          "FXI": 1.200609085530764
+        }
+      }
+    }
+  }
+}
