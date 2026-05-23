@@ -1552,11 +1552,12 @@ class SlotTracker:
             dx = cand_cx - last_cx
             dy = cand_cy - last_cy
             dist = math.hypot(dx, dy)
+            direct_measurement = (det_source == "from_detections" and self.trust_from_detections)
             # PR-2: pending-switch hysteresis. Если кандидат скакнул дальше
             # jump_switch_threshold_px от прошлого центра — НЕ принимаем сразу,
             # требуем switch_confirm_frames подряд таких же скачков рядом.
             jump_thresh = max(self.jump_switch_threshold_px, 2.0 * self.max_center_step_px)
-            if dist > jump_thresh:
+            if dist > jump_thresh and not direct_measurement:
                 if self.pending_canon is not None:
                     pd = math.hypot(cand_cx - self.pending_canon[0],
                                     cand_cy - self.pending_canon[1])
@@ -1586,14 +1587,15 @@ class SlotTracker:
                 self.pending_canon = None
                 self.pending_hits = 0
                 self.pending_age = 0
-            step_budget = max(self.max_center_step_px, 200.0)
+            step_budget = dist if direct_measurement else max(self.max_center_step_px, 200.0)
             if dist > self.center_deadzone_px:
                 if dist > step_budget:
                     scale = step_budget / max(1e-6, dist)
                     dx *= scale
                     dy *= scale
-                new_cx = last_cx + dx * self.center_smoothing_alpha
-                new_cy = last_cy + dy * self.center_smoothing_alpha
+                alpha = 1.0 if direct_measurement else self.center_smoothing_alpha
+                new_cx = last_cx + dx * alpha
+                new_cy = last_cy + dy * alpha
                 if self.last_seen_t is not None and (t_now - self.last_seen_t) > 1e-3:
                     inst_vx = (new_cx - last_cx) / (t_now - self.last_seen_t)
                     inst_vy = (new_cy - last_cy) / (t_now - self.last_seen_t)
