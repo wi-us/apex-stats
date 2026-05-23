@@ -1895,6 +1895,23 @@ def main():
     else:
         print(f"[info] da_strategy={da_strategy} (старая логика)")
 
+    # ---- from-detections mode (use detect_plates checkpoints) ---------------
+    from_det_index: Optional[dict[int, list[dict]]] = None
+    from_det_frames: list[int] = []
+    from_det_tol: int = 0
+    if args.from_detections is not None:
+        if not Path(args.from_detections).exists():
+            print(f"[err] --from-detections файл не найден: {args.from_detections}",
+                  file=sys.stderr)
+            sys.exit(2)
+        from_det_index, from_det_frames, sample_step, _det_fps = \
+            load_checkpoints_from_detections(Path(args.from_detections), teams)
+        from_det_tol = (args.from_detections_tolerance_frames
+                        if args.from_detections_tolerance_frames > 0
+                        else max(1, sample_step))
+        print(f"[info] from-detections mode ON: собственная HSV-детекция отключена, "
+              f"tolerance=±{from_det_tol} кадров. da_strategy игнорируется.")
+
     # ---- HUD eliminations (authoritative wipe times) -------------------------
     elim_path = args.eliminations
     if elim_path is None and cfg.get("eliminations_file"):
