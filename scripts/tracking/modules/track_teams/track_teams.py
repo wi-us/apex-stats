@@ -1569,6 +1569,7 @@ class SlotTracker:
                     self.pending_age = 0
                 if self.pending_hits < self.switch_confirm_frames:
                     # Не двигаем canonical_px, держим прошлый якорь.
+                    self.state = "hold"
                     self.state_reason = f"switch_wait_{self.pending_hits}/{self.switch_confirm_frames}"
                     self.confidence = max(0.3, self.confidence * 0.85)
                     # Возвращаем snapshot без обновления позиции.
