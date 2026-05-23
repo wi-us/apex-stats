@@ -6,6 +6,8 @@ param(
   [string]$Out        = "scripts/tracking/modules/ocr_tags/reports",
   [int]   $TopN       = 60,
   [string]$TesseractCmd = "C:\Program Files\Tesseract-OCR\tesseract.exe",
+  [double]$PadFrac    = 0.4,
+  [double]$PadFracV   = 0.25,
   [switch]$SaveDebug
 )
 
@@ -18,6 +20,8 @@ $args = @(
   "--zones",      $Zones,
   "--out",        $Out,
   "--top-n",      $TopN,
+  "--pad-frac",   $PadFrac,
+  "--pad-frac-v", $PadFracV,
   "--tesseract-cmd", $TesseractCmd
 )
 if ($SaveDebug) { $args += "--save-debug-crops" }
