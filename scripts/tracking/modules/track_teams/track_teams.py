@@ -2069,7 +2069,30 @@ def main():
                 t_now = (frame_idx - start_frame) / fps
                 world_dets: list[dict] = []
                 slot_snaps: list[dict] = []
-                if da_strategy == "detect_first":
+                if from_det_index is not None:
+                    # ---- from-detections: checkpoints из detect_plates ----
+                    cps = pick_checkpoints_for_frame(
+                        frame_idx, from_det_index, from_det_frames, from_det_tol)
+                    assigns: dict[str, dict] = {}
+                    for c in cps:
+                        # canonical_px вычисляем по текущей H (рег. — единственное,
+                        # что мы тут делаем сами).
+                        cx_can, cy_can = map_point(H, c["frame_px"])
+                        c2 = dict(c)
+                        c2["canonical_px"] = (cx_can, cy_can)
+                        assigns[c["team_id"]] = c2
+                    for t in teams:
+                        st = slot_trackers[t.id]
+                        det = assigns.get(t.id)
+                        if det is not None:
+                            snap = st.accept_observation(
+                                det, t_now, det_source="from_detections")
+                        else:
+                            snap = st.note_miss(t_now)
+                        if snap is None:
+                            continue
+                        slot_snaps.append(snap)
+                elif da_strategy == "detect_first":
                     candidates = detect_candidates_in_minimap_roi(
                         frame, teams, minimap_bbox, H, det_cfg)
                     dyn_shrink, lg_info = compute_late_game_gate_shrink(
