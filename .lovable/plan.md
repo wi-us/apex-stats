@@ -1,87 +1,66 @@
-## Цель
+## Контекст
 
-Убрать дубль работы в `track_teams`: HSV-детекция и идентификация slot уже сделаны в `detect_plates`. `track_teams` оставляем как «сшиватель checkpoints в мировые координаты + wipe» — но без своего HSV-прохода. Регистрация (SIFT/ORB) остаётся как сейчас.
+Маски колец помогли частично (−3798 точек), но ID-свопы между слотами одинакового оттенка остаются. Нужен независимый канал идентификации — OCR плашек на миникарте, чтобы привязать `slot_id` к настоящему тегу команды (`ELTE`, `S2`, `SRC`, …).
 
-Ожидаемый эффект для ~20-мин VOD: `track_teams` 8–15 мин → **4–7 мин** (минус собственная HSV-детекция и связанные с ней операции). Полный пайплайн при последовательном запуске: ~35–55 мин → **~28–40 мин**.
+Заодно нашёл баг в `src/data/m-test-g1/slot-to-tag.json`: **`slot_7 = "SRC"` и `slot_20 = "SRC"`** — два слота с одинаковым тегом. На UI они склеиваются → визуально «команды 20 нет». В `tracks.json` точки `slot_20` присутствуют (≈1199 кадров).
 
-## Что меняется
+## План
 
-### 1. `track_teams.py` — новый режим `--from-detections`
+### 1. Фикс легенды (сразу, 1 мин)
+- Открыть `src/data/m-test-g1/slot-to-tag.json`, поправить `slot_20` (вероятно `SR2`/`SRC2` или другая команда — спрошу пользователя).
 
-Добавить флаг:
+### 2. Новый модуль `scripts/tracking/modules/ocr_tags/`
+Структура по конвенции проекта:
+```text
+ocr_tags/
+  ocr_tags.py        # основной скрипт
+  fonts/             # TTLakes-Regular.woff, TTLakes-Medium.woff (уже там)
+  configs/
+    teams.m-test-g1.json   # список известных тегов команд
+  reports/
+    slot_tags.json   # итог: slot_id -> {tag, confidence, votes}
+  run.ps1
+  push.ps1
+  README.md
 ```
---from-detections <path>   # путь к detect_plates/reports/detections.json
-```
 
-Когда флаг задан:
-- **Не открывать видео для HSV-детекции** plate-блобов. Кадры читаются ТОЛЬКО для registration (как сейчас). Это уже даёт основной выигрыш.
-- На каждом обрабатываемом кадре вместо вызова собственного HSV-детектора подтягиваются готовые checkpoints из `detections.json` по индексу кадра (или ближайшему предыдущему по `frame`).
-- Каждый checkpoint содержит `slot` (`team_key` из HSV-пресета), `roi_xy` (центр bbox). Конвертируем `roi_xy` → координаты полного кадра (прибавляем offset ROI миникарты из `detections.roi`) → world через текущую `H`.
-- Доверяем slot из detect_plates: жадное назначение по цвету заменяется прямой привязкой checkpoint → trackslot по `slot_id`. Калман остаётся для сглаживания и заполнения промежутков между checkpoints.
-- Wipe-detection (`absence_sec`) считается по отсутствию checkpoints для slot — без изменений в логике.
+### 3. Pipeline OCR (`ocr_tags.py`)
+**Вход:** `detections.json` из `detect_plates` (bbox плашек + slot/team_key по кадрам), видео, список тегов.
 
-### 2. Сопоставление кадров
+**Шаги:**
+1. Для каждого slot_id выбрать N=20–40 кадров с лучшими detect-score, не из recovery.
+2. Вырезать bbox плашки, ресайз ×3, перевести в LAB, по L-каналу маскировать только белый текст (T-канал плашки).
+3. Прогнать через Tesseract с whitelisted alphabet `ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789` и `--psm 7` (одна строка).
+4. Полученные строки fuzzy-сматчить с известным списком тегов (`rapidfuzz.process.extractOne`).
+5. Голосование: для каждого slot_id берём топ-1 тег по сумме `score × ocr_conf`.
+6. Sanity: если победитель совпадает у двух slot_id — оставить за тем, у кого больше суммарный вес; второму пометить `needs_review`.
 
-`detect_plates` сэмплирует с `sample_fps` (по умолчанию 1 fps), `track_teams` — со своим `frame_step` из конфига. Нужна синхронизация:
-- Загрузить `detections.json` один раз, построить словарь `frame_idx → [boxes]`.
-- На каждом кадре `track_teams` брать checkpoints с `frame ≤ current` в окне ±`tolerance` (по умолчанию `sample_step / 2`). Если checkpoint в окне нет — Калман-предикт без коррекции.
-- Включить и `tracked` (sub-frame KCF) и `recoveries` из `detections.json` — они тоже валидные точки.
+**Выход:** `reports/slot_tags.json` + лог отвергнутых матчей.
 
-### 3. ROI offset
+### 4. Применение к данным
+Скрипт `scripts/postprocess/apply_slot_tags.py` обновляет `src/data/m-test-g1/slot-to-tag.json` и пишет в `tracks.json meta.trimmed.ocr_tags = {...}`.
 
-`detections.json.roi = [rx, ry, rw, rh]` (миникарта в пикселях полного кадра). Координаты в `boxes[*].bbox` — относительно ROI. Перед переводом через `H` (которая в пространстве полного кадра) прибавлять `(rx, ry)`.
-
-### 4. Что НЕ трогаем
-
-- Registration (SIFT/RANSAC) — остаётся как есть; пользователь подтвердил, что зум меняется только на старте каждого Countdown, поэтому отдельный модуль разреженной H пока не нужен (B/C из обсуждения отложены).
-- ID-switch resolver — отключаем в этом режиме (доверяем detect_plates).
-- Schema `tracks.json` / `tracks.slots.json` — без изменений, фронт `/admin/tracking-lab` продолжает работать без правок.
-- `config.yaml` секция `teams[*]` остаётся для маппинга `slot → name/color_hex`, но `hsv_lower/upper` в этом режиме не используются.
-
-### 5. Изменения в `run.ps1`
-
-Добавить параметр `-FromDetections <path>` с дефолтом на `modules/detect_plates/reports/detections.json`, пробросить в `track_teams.py`.
-
-### 6. README
-
-Дописать секцию «`--from-detections` режим»: что это, зачем, ограничения (нужен предварительный прогон `detect_plates`, доверие к slot-привязке HSV-детектора).
+### 5. (Дальше) использовать OCR для разрешения свопов
+Если для двух соседних slot_id с близким HSV получены разные стабильные теги — на момент возможного свопа в трекинге сравнивать OCR-голос свежего кадра с тегом из калибровки и блокировать обмен ID. Это уже следующий заход.
 
 ## Технические детали
 
-```text
-detect_plates/reports/detections.json
-        │  frames[*].boxes[*]: { bbox:[x,y,w,h] in ROI, feat.team_key, score, source }
-        │  frames[*].tracked[*], frames[*].recoveries[*] — то же по структуре
-        │  roi: [rx, ry, rw, rh]
-        ▼
-track_teams.py (--from-detections):
-   for each processed frame f:
-       H = register(f)                         # как сейчас
-       cps = lookup_checkpoints(f.index)       # из detections.json
-       for cp in cps:
-           slot = cp.feat.team_key
-           xy_full = (rx + cp.cx, ry + cp.cy)
-           world_xy = warp(xy_full, H, px_to_world)
-           tracks[slot].update(world_xy)       # Калман-correct
-       tracks.predict_missing()                 # Калман-predict для остальных
-       check_wipes(absence_sec)
-   stream → tracks.json + tracks.slots.json
-```
+- **Tesseract**: запускается на Windows-стороне (видео там же, где `detect_plates`). Шрифт TTLakes можно установить в систему или скормить Tesseract как кастомные тренировочные данные — но обычно достаточно высокого разрешения + whitelist, без обучения.
+- **fuzzy match**: `rapidfuzz>=3` (добавить в `scripts/tracking/requirements.txt`).
+- **Кадры**: берём только из ровных секций трекинга (`state == "tracked"`, без `recovered_level`), чтобы не учить OCR на промахах.
+- **Конфигурация**: список тегов читаем из `configs/teams.<match>.json` (зеркало `slot-to-tag.json` без `slot_id`).
 
-Файлы под правку:
-- `scripts/tracking/modules/track_teams/track_teams.py` — добавить ветку загрузки detections, отключение собственной HSV-детекции, прямую привязку slot→track.
-- `scripts/tracking/modules/track_teams/push.ps1` и `run.ps1` — параметр `-FromDetections`.
-- `scripts/tracking/modules/track_teams/README.md` — секция о режиме.
+## Плюсы / минусы (для прозрачности)
 
-## План проверки
+**+** Независимый сигнал от цвета → ломает ID-свопы при одинаковом HSV.  
+**+** Шрифт фиксированный (TTLakes) → можно дотюнить.  
+**+** Один прогон на матч, не реалтайм.
 
-1. Прогнать `detect_plates` (уже сделано, ~13 мин).
-2. Прогнать `track_teams --from-detections ...` на тех же 20 мин видео; замерить время.
-3. Сверить полученный `tracks.json` с предыдущим (старый режим) на `/admin/tracking-lab`: треки команд должны лежать в тех же местах в пределах естественной погрешности.
-4. (Опц.) Прогнать `eval_id_switches.py` с существующим `assets/gt_anchors.json` — coverage не должен упасть.
+**−** Требует Windows-прогон (Tesseract + видео).  
+**−** Маленькие плашки (≈30 px высоты) — OCR может путать `O`/`0`, `I`/`1`. Решается ресайзом + whitelist + fuzzy.  
+**−** Не помогает кадрам, где плашка не показана (свёрнутая иконка).
 
-## Что НЕ входит в эту задачу
+## Что нужно от вас
 
-- Разреженная регистрация (вариант B) и выделение `register_lite` в отдельный модуль (C).
-- Параллелизация пайплайна (это отдельная задача — `run_all.ps1` с группами).
-- Ускорение `hud_read` (будущая итерация — основной кандидат после этого).
+1. Подтвердить, что реальный тег `slot_20` — какой? (`SR2`? новая команда?)
+2. Полный список 20 настоящих тегов — будет в `configs/teams.m-test-g1.json`.
