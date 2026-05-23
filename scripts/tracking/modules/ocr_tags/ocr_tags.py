@@ -207,6 +207,20 @@ def vote(ocr_results: List[Tuple[str, float, float]],
     for text, ocr_conf, score in ocr_results:
         if not text:
             continue
+        # Отсекаем мусор: одиночные символы и слишком короткий OCR.
+        # "L" не должен матчиться с "ELTE" через WRatio=90.
+        if len(text) < 3:
+            # Разрешаем только если есть алиас ровно такой же длины и точное совпадение.
+            if text in alias_to_tag:
+                tag = alias_to_tag[text]
+                w = 1.0 * max(ocr_conf / 100.0, 0.2) * max(0.1, score)
+                weights[tag] += w
+                debug["raw"].append({"text": text, "alias": text, "tag": tag,
+                                     "ratio": 100.0, "ocr_conf": ocr_conf,
+                                     "score": score, "short_exact": True})
+            else:
+                debug["rejected"].append({"text": text, "reason": "too_short"})
+            continue
         m = fuzz_process.extractOne(text, alias_keys,
                                     scorer=fuzz_scorer.WRatio)
         if not m:
@@ -214,6 +228,14 @@ def vote(ocr_results: List[Tuple[str, float, float]],
             continue
         alias, ratio, _idx = m
         tag = alias_to_tag[alias]
+        # Защита от ситуаций "L" vs "ELTE": OCR-текст заметно короче алиаса.
+        # Требуем, чтобы OCR покрывал хотя бы половину алиаса (минимум 3 символа).
+        min_text_len = max(3, len(alias) // 2)
+        if len(text) < min_text_len:
+            debug["rejected"].append({"text": text, "alias": alias,
+                                      "ratio": ratio,
+                                      "reason": "text_shorter_than_alias"})
+            continue
         # для длинных алиасов снижаем порог: ошибки OCR на длинных строках
         # понижают ratio даже если совпало 10+ символов
         eff_min = min_match_ratio
