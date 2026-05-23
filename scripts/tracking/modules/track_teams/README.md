@@ -41,6 +41,8 @@ powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\ru
 | `-FrameStep` | 0 (= из config) | шаг между обрабатываемыми кадрами |
 | `-Start`   | 0  | начало в секундах |
 | `-End`     | -1 | конец в секундах (-1 = до конца) |
+| `-FromDetections` | `modules/detect_plates/reports/detections.json` | checkpoints из `detect_plates` (см. ниже) |
+| `-NoFromDetections` | — | отключить режим checkpoints и пойти классическим путём |
 | `-NoPush`  | — | (только push.ps1) без коммита |
 
 `track_teams.py` дополнительно поддерживает `--anchors <motion_tracks.json>`
@@ -140,3 +142,58 @@ ID-switch как «ближайший трек к GT поменял id». 30 т�
 - Использовать `cuts.json` в wipe-детекте (`respect_cuts` — заглушка).
 - Multi-instance треки на слот (сейчас один трек на слот; для late-game
   с двумя выжившими игроками одной команды этого хватает).
+
+## Режим `--from-detections` (быстрый путь)
+
+Если в `modules/detect_plates/reports/detections.json` уже лежит свежий
+прогон `detect_plates` — `track_teams` может полностью пропустить
+собственную HSV-детекцию и использовать готовые «checkpoints» с уже
+привязанным `team_key` (= slot из `hsv_presets.<map>.json`).
+
+Что делает `track_teams` в этом режиме:
+
+1. Читает `detections.json` один раз, строит индекс `frame_idx → [candidates]`
+   в координатах ПОЛНОГО кадра (учитывает `roi`-offset миникарты).
+2. На каждом обрабатываемом кадре делает регистрацию (SIFT/ORB — как обычно).
+3. Берёт checkpoints в окне `±tolerance` кадров (по умолчанию = sample_step
+   из detections.json, т.е. ~1 сек). Дедупликация по слоту: ближайший к
+   текущему кадру побеждает.
+4. Для каждого checkpoint считает `canonical_px` через текущую `H` и
+   напрямую отдаёт в `SlotTracker.accept_observation(...)` своему слоту —
+   жадное HSV-сопоставление и ассоциация отключаются (доверяем
+   `detect_plates`).
+5. Wipe-detection / sidecar / схема `tracks.json` — без изменений.
+
+### Запуск
+
+```powershell
+# 1) сначала detect_plates (если ещё не запускали)
+powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\detect_plates\run.ps1 `
+  -Video scripts\tracking\game_sp.mp4 -SampleFps 1 -TrackFps 2 -AdaptiveFps 5
+
+# 2) track_teams в режиме from-detections (по умолчанию включён,
+#    если файл существует)
+powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\push.ps1 `
+  -Video scripts\tracking\game_sp.mp4
+```
+
+Чтобы вернуться к классическому режиму:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\push.ps1 `
+  -Video scripts\tracking\game_sp.mp4 -NoFromDetections
+```
+
+### Ожидаемый эффект
+
+`track_teams` на 20-мин VOD: 8–15 мин → **4–7 мин**. Снимается дубль
+HSV-операций; регистрация остаётся узким местом этого модуля.
+
+### Ограничения
+
+- Нужен предварительный прогон `detect_plates` (на тех же `zones.vod.json`
+  и `hsv_presets.<map>.json`, иначе slot-маппинг сломается).
+- ID-switch resolver выключен: если HSV-детектор спутал близкие цвета —
+  ошибка пройдёт в трек. На текущей калибровке `detect_plates` это редкий
+  кейс; если станет проблемой — добавим скоростной валидатор.
+- Параметр `da_strategy` из `config.yaml` в этом режиме игнорируется.

@@ -504,6 +504,122 @@ def load_minimap_roi_bbox(zones_path: Optional[Path]) -> Optional[tuple[int, int
     return None
 
 
+def load_checkpoints_from_detections(
+    det_path: Path, teams: list["TeamCfg"],
+) -> tuple[dict[int, list[dict]], list[int], int, float]:
+    """Превращает detect_plates/detections.json в {frame_idx: [candidates]}.
+
+    Каждый candidate уже в координатах ПОЛНОГО кадра (rx+cx, ry+cy) и
+    содержит team_id (через slot→team_id мап из teams[]).
+
+    Возвращает (by_frame, sorted_frames, sample_step, src_fps), где
+    sample_step — расстояние между keyframe'ами detect_plates (для tolerance).
+    """
+    raw = json.loads(Path(det_path).read_text(encoding="utf-8"))
+    roi = raw.get("roi") or [0, 0, 0, 0]
+    rx, ry = int(roi[0]), int(roi[1])
+    src_fps = float(raw.get("fps") or 30.0)
+    # slot (int) -> team_id (str). Plus string form to be lenient.
+    slot_to_team: dict[str, str] = {}
+    for tcfg in teams:
+        if tcfg.slot is not None:
+            slot_to_team[str(int(tcfg.slot))] = tcfg.id
+    by_frame: dict[int, list[dict]] = {}
+    n_skipped_unknown_slot = 0
+
+    def _push(frame: int, slot_raw, bbox, score):
+        nonlocal n_skipped_unknown_slot
+        if slot_raw is None:
+            n_skipped_unknown_slot += 1
+            return
+        key = str(slot_raw).strip()
+        if key not in slot_to_team:
+            try:
+                key = str(int(float(key)))
+            except (TypeError, ValueError):
+                pass
+        team_id = slot_to_team.get(key)
+        if team_id is None:
+            n_skipped_unknown_slot += 1
+            return
+        if not bbox or len(bbox) < 4:
+            return
+        x, y, w, h = bbox
+        if w <= 0 or h <= 0:
+            return
+        cx = float(x) + float(w) / 2.0
+        cy = float(y) + float(h) / 2.0
+        det_fx = rx + cx
+        det_fy = ry + cy
+        area = float(w) * float(h)
+        cand = {
+            "team_id": team_id,
+            "frame_px": (det_fx, det_fy),
+            "bbox": (int(rx + x), int(ry + y), int(w), int(h)),
+            "area": area,
+            "color_score": float(score) if score is not None else 0.5,
+        }
+        by_frame.setdefault(int(frame), []).append(cand)
+
+    frames = raw.get("frames", []) or []
+    for f in frames:
+        kf = int(f.get("frame", 0))
+        for b in f.get("boxes", []) or []:
+            feat = b.get("feat") or {}
+            slot_raw = feat.get("team_key") or feat.get("slot") or feat.get("dominant_team_id")
+            _push(kf, slot_raw, b.get("bbox"), b.get("score"))
+        for rec in f.get("recoveries", []) or []:
+            _push(kf, rec.get("team_key"), rec.get("bbox"), None)
+        for tr in f.get("tracked", []) or []:
+            _push(int(tr.get("frame", kf)), tr.get("slot"), tr.get("bbox"), None)
+
+    sorted_frames = sorted(by_frame.keys())
+    # sample_step: median gap between consecutive frame indices in detections.
+    if len(sorted_frames) >= 2:
+        gaps = [sorted_frames[i + 1] - sorted_frames[i]
+                for i in range(len(sorted_frames) - 1)]
+        gaps.sort()
+        sample_step = max(1, gaps[len(gaps) // 2])
+    else:
+        sample_step = max(1, int(round(src_fps)))  # ~1 fps fallback
+
+    print(f"[info] from-detections: loaded {sum(len(v) for v in by_frame.values())} "
+          f"candidates over {len(sorted_frames)} sample frames "
+          f"(sample_step={sample_step}, src_fps={src_fps}, "
+          f"slots_with_team_id={len(slot_to_team)}, "
+          f"skipped_unknown_slot={n_skipped_unknown_slot})")
+    return by_frame, sorted_frames, sample_step, src_fps
+
+
+def pick_checkpoints_for_frame(
+    current_frame: int,
+    by_frame: dict[int, list[dict]],
+    sorted_frames: list[int],
+    tolerance: int,
+) -> list[dict]:
+    """Берём все кандидаты из detections-кадров в окне [current-tol, current+tol].
+    Дедупликация по team_id: выживает ближайший к current_frame, при равенстве —
+    с большим color_score.
+    """
+    if not sorted_frames:
+        return []
+    import bisect as _bisect
+    lo = current_frame - tolerance
+    hi = current_frame + tolerance
+    li = _bisect.bisect_left(sorted_frames, lo)
+    ri = _bisect.bisect_right(sorted_frames, hi)
+    best: dict[str, tuple[int, float, dict]] = {}
+    for idx in sorted_frames[li:ri]:
+        d = abs(idx - current_frame)
+        for c in by_frame.get(idx, ()):
+            tid = c["team_id"]
+            prev = best.get(tid)
+            score = float(c.get("color_score") or 0.0)
+            if prev is None or d < prev[0] or (d == prev[0] and score > prev[1]):
+                best[tid] = (d, score, c)
+    return [v[2] for v in best.values()]
+
+
 def detect_candidates_in_minimap_roi(
     frame_bgr: np.ndarray,
     teams: list[TeamCfg],
@@ -1666,6 +1782,13 @@ def main():
     ap.add_argument("--eliminations", type=Path, default=None,
                     help="hud_read/reports/eliminations.json — точные t_first_dead по слоту, "
                          "если задано, заменяет absence-based wipe детекцию")
+    ap.add_argument("--from-detections", type=Path, default=None,
+                    help="detect_plates/reports/detections.json — взять готовые "
+                         "checkpoints (slot уже идентифицирован), отключить "
+                         "собственную HSV-детекцию. Доверяем team_key из detect_plates.")
+    ap.add_argument("--from-detections-tolerance-frames", type=int, default=0,
+                    help="окно поиска checkpoint вокруг текущего кадра, в кадрах. "
+                         "0 = auto (sample_step из detections.json).")
     args = ap.parse_args()
 
     if not args.video.exists():
@@ -1771,6 +1894,23 @@ def main():
             print("[info] associate=hungarian (scipy)")
     else:
         print(f"[info] da_strategy={da_strategy} (старая логика)")
+
+    # ---- from-detections mode (use detect_plates checkpoints) ---------------
+    from_det_index: Optional[dict[int, list[dict]]] = None
+    from_det_frames: list[int] = []
+    from_det_tol: int = 0
+    if args.from_detections is not None:
+        if not Path(args.from_detections).exists():
+            print(f"[err] --from-detections файл не найден: {args.from_detections}",
+                  file=sys.stderr)
+            sys.exit(2)
+        from_det_index, from_det_frames, sample_step, _det_fps = \
+            load_checkpoints_from_detections(Path(args.from_detections), teams)
+        from_det_tol = (args.from_detections_tolerance_frames
+                        if args.from_detections_tolerance_frames > 0
+                        else max(1, sample_step))
+        print(f"[info] from-detections mode ON: собственная HSV-детекция отключена, "
+              f"tolerance=±{from_det_tol} кадров. da_strategy игнорируется.")
 
     # ---- HUD eliminations (authoritative wipe times) -------------------------
     elim_path = args.eliminations
@@ -1929,7 +2069,30 @@ def main():
                 t_now = (frame_idx - start_frame) / fps
                 world_dets: list[dict] = []
                 slot_snaps: list[dict] = []
-                if da_strategy == "detect_first":
+                if from_det_index is not None:
+                    # ---- from-detections: checkpoints из detect_plates ----
+                    cps = pick_checkpoints_for_frame(
+                        frame_idx, from_det_index, from_det_frames, from_det_tol)
+                    assigns: dict[str, dict] = {}
+                    for c in cps:
+                        # canonical_px вычисляем по текущей H (рег. — единственное,
+                        # что мы тут делаем сами).
+                        cx_can, cy_can = map_point(H, c["frame_px"])
+                        c2 = dict(c)
+                        c2["canonical_px"] = (cx_can, cy_can)
+                        assigns[c["team_id"]] = c2
+                    for t in teams:
+                        st = slot_trackers[t.id]
+                        det = assigns.get(t.id)
+                        if det is not None:
+                            snap = st.accept_observation(
+                                det, t_now, det_source="from_detections")
+                        else:
+                            snap = st.note_miss(t_now)
+                        if snap is None:
+                            continue
+                        slot_snaps.append(snap)
+                elif da_strategy == "detect_first":
                     candidates = detect_candidates_in_minimap_roi(
                         frame, teams, minimap_bbox, H, det_cfg)
                     dyn_shrink, lg_info = compute_late_game_gate_shrink(
