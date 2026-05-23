@@ -37,26 +37,15 @@ data/
   tournaments/<slug>.json   # детали + teams + games + participants
 ```
 
-## 2) Загрузка в Lovable Cloud
+## 2) Загрузка в Lovable Cloud — отключено
 
-Нужна переменная `SUPABASE_DB_URL` (есть в Cloud → Secrets):
+Работаем только с JSON-кэшем. `upload.py` оставлен в репозитории, но
+не используется: для него нужен прямой Postgres-доступ
+(`SUPABASE_DB_URL` с паролем), которого нет в UI Lovable Cloud.
 
-```powershell
-$env:SUPABASE_DB_URL = "postgresql://..."
-python scripts\scrape_liquipedia\upload.py --in scripts\scrape_liquipedia\data
-```
-
-Заливка идемпотентна: апсертит `lp_tournaments`/`lp_teams` по `slug`,
-полностью пересоздаёт `lp_tournament_teams`, `lp_games`,
-`lp_game_participants` для каждого турнира.
-
-## Схема БД
-
-- `lp_tournaments` — name, url, dates_text, location, tier
-- `lp_teams` — name (полное), tag (узкий viewport), logo_url
-- `lp_tournament_teams` — состав турнира (+ place)
-- `lp_games` — игры (game_no, label из panel-tabs)
-- `lp_game_participants` — состав игры (+ place)
+Если позже понадобится залить в БД — проще переписать `upload.py` на
+Supabase REST API + `SUPABASE_SERVICE_ROLE_KEY` (этот секрет уже есть
+в Cloud → Secrets). Таблицы `lp_*` в БД уже созданы миграцией.
 
 ## Замечания
 
