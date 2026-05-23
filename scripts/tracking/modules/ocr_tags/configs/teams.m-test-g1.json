@@ -5,5 +5,26 @@
     "BB", "CRT", "DINO", "DKK", "GMBL",
     "JDG", "MR", "REV", "ROC"
   ],
-  "_note": "slot_20 tag is TBD (duplicate 'SRC' in slot-to-tag.json — replace once confirmed)"
+  "_note": "aliases — полное / альтернативное название плашки на трансляции; матчер вернёт канонический tag",
+  "aliases": {
+    "ELTE":  ["ELTE", "ELITE"],
+    "FREE":  ["FREE", "FREEDOM"],
+    "FXI":   ["FXI", "FENIX"],
+    "NIP":   ["NIP", "NINJAS"],
+    "OBVN":  ["OBVN", "OBVIOUSLY"],
+    "S2":    ["S2", "STORM2", "STORMTWO"],
+    "SRC":   ["SRC", "SCARZ"],
+    "STAL":  ["STAL", "STALKER"],
+    "TL":    ["TL", "TEAMLIQUID", "LIQUID"],
+    "THUG":  ["THUG", "THUGS"],
+    "BB":    ["BB", "BLEEDBLUE", "BLEED"],
+    "CRT":   ["CRT", "CRAZY", "CRAZYTHIEVES", "THIEVES"],
+    "DINO":  ["DINO", "DINOS", "DIDINOS"],
+    "DKK":   ["DKK"],
+    "GMBL":  ["GMBL", "GAMBLERS", "GAMBLER"],
+    "JDG":   ["JDG", "JDGAMING", "JDGAM"],
+    "MR":    ["MR", "MERU"],
+    "REV":   ["REV", "REVENGE"],
+    "ROC":   ["ROC", "ROCKETS"]
+  }
 }
