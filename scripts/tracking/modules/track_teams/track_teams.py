@@ -259,8 +259,28 @@ class FrameRegistrar:
         self.ratio = float(reg_cfg.get("match_ratio", 0.75))
         self.reproj = float(reg_cfg.get("ransac_reproj_px", 5.0))
         self.min_inliers = int(reg_cfg.get("min_inliers", 25))
+        # Some low-inlier SIFT matches still produce a numeric homography, but
+        # it can be wildly wrong (e.g. zoom hundreds of times or pan far outside
+        # the map). Reject those before they can project good detections to bad
+        # world positions.
+        self.min_zoom = float(reg_cfg.get("min_zoom", 0.08))
+        self.max_zoom = float(reg_cfg.get("max_zoom", 8.0))
+        self.pan_margin_px = float(reg_cfg.get("pan_margin_px", 768.0))
         roi = reg_cfg.get("roi", [0, 0, 1, 1])
         self.roi = tuple(float(v) for v in roi)
+
+    def _homography_plausible(self, H: np.ndarray, frame_shape: tuple[int, int]) -> bool:
+        if H is None or not np.isfinite(H).all() or abs(float(H[2, 2])) < 1e-9:
+            return False
+        decomp = decompose_homography(H)
+        z = float(decomp["zoom"])
+        if not (self.min_zoom <= z <= self.max_zoom):
+            return False
+        fh, fw = frame_shape[:2]
+        cx, cy = map_point(H, (fw / 2.0, fh / 2.0))
+        cw, ch = self.cmap.size
+        m = self.pan_margin_px
+        return (-m <= cx <= cw + m) and (-m <= cy <= ch + m)
 
     def _crop_roi(self, gray: np.ndarray) -> tuple[np.ndarray, tuple[int, int]]:
         h, w = gray.shape[:2]
@@ -298,6 +318,8 @@ class FrameRegistrar:
         if H is None:
             return None, 0
         inliers = int(mask.sum()) if mask is not None else 0
+        if not self._homography_plausible(H, gray.shape):
+            return None, inliers
         if inliers < self.min_inliers:
             return H, inliers   # return anyway, mark low_conf upstream
         return H, inliers
@@ -1038,6 +1060,10 @@ class SlotTracker:
         self.center_deadzone_px: float = float(slot_cfg.get("center_deadzone_px", 2.0))
         self.max_center_step_px: float = float(slot_cfg.get("max_center_step_px", 24.0))
         self.center_smoothing_alpha: float = float(slot_cfg.get("center_smoothing_alpha", 0.35))
+        # detect_plates already assigns a concrete slot id; in --from-detections
+        # mode we should trust that measurement instead of slowly dragging the
+        # old anchor toward it through anti-switch hysteresis.
+        self.trust_from_detections: bool = bool(slot_cfg.get("trust_from_detections", True))
         # Anti-jump (PR-4: defaults bumped — 30/3 was too lax, swaps slipped through).
         self.jump_switch_threshold_px: float = float(slot_cfg.get("jump_switch_threshold_px", 80.0))
         self.switch_confirm_frames: int = int(slot_cfg.get("switch_confirm_frames", 6))
@@ -1526,11 +1552,12 @@ class SlotTracker:
             dx = cand_cx - last_cx
             dy = cand_cy - last_cy
             dist = math.hypot(dx, dy)
+            direct_measurement = (det_source == "from_detections" and self.trust_from_detections)
             # PR-2: pending-switch hysteresis. Если кандидат скакнул дальше
             # jump_switch_threshold_px от прошлого центра — НЕ принимаем сразу,
             # требуем switch_confirm_frames подряд таких же скачков рядом.
             jump_thresh = max(self.jump_switch_threshold_px, 2.0 * self.max_center_step_px)
-            if dist > jump_thresh:
+            if dist > jump_thresh and not direct_measurement:
                 if self.pending_canon is not None:
                     pd = math.hypot(cand_cx - self.pending_canon[0],
                                     cand_cy - self.pending_canon[1])
@@ -1547,6 +1574,7 @@ class SlotTracker:
                     self.pending_age = 0
                 if self.pending_hits < self.switch_confirm_frames:
                     # Не двигаем canonical_px, держим прошлый якорь.
+                    self.state = "hold"
                     self.state_reason = f"switch_wait_{self.pending_hits}/{self.switch_confirm_frames}"
                     self.confidence = max(0.3, self.confidence * 0.85)
                     # Возвращаем snapshot без обновления позиции.
@@ -1559,14 +1587,15 @@ class SlotTracker:
                 self.pending_canon = None
                 self.pending_hits = 0
                 self.pending_age = 0
-            step_budget = max(self.max_center_step_px, 200.0)
+            step_budget = dist if direct_measurement else max(self.max_center_step_px, 200.0)
             if dist > self.center_deadzone_px:
                 if dist > step_budget:
                     scale = step_budget / max(1e-6, dist)
                     dx *= scale
                     dy *= scale
-                new_cx = last_cx + dx * self.center_smoothing_alpha
-                new_cy = last_cy + dy * self.center_smoothing_alpha
+                alpha = 1.0 if direct_measurement else self.center_smoothing_alpha
+                new_cx = last_cx + dx * alpha
+                new_cy = last_cy + dy * alpha
                 if self.last_seen_t is not None and (t_now - self.last_seen_t) > 1e-3:
                     inst_vx = (new_cx - last_cx) / (t_now - self.last_seen_t)
                     inst_vy = (new_cy - last_cy) / (t_now - self.last_seen_t)
@@ -2084,19 +2113,27 @@ def main():
                 slot_snaps: list[dict] = []
                 if from_det_index is not None:
                     # ---- from-detections: checkpoints из detect_plates ----
-                    cps = pick_checkpoints_for_frame(
-                        frame_idx, from_det_index, from_det_frames, from_det_tol)
-                    assigns: dict[str, dict] = {}
+                    if low and not bool(cfg.get("from_detections_accept_low_conf_registration", False)):
+                        cam["from_detections_skip"] = "low_confidence_registration"
+                        cps = []
+                    else:
+                        cps = pick_checkpoints_for_frame(
+                            frame_idx, from_det_index, from_det_frames, from_det_tol)
+                    assigns: dict[str, tuple[int, float, dict]] = {}
                     for c in cps:
                         # canonical_px вычисляем по текущей H (рег. — единственное,
                         # что мы тут делаем сами).
                         cx_can, cy_can = map_point(H, c["frame_px"])
                         c2 = dict(c)
                         c2["canonical_px"] = (cx_can, cy_can)
-                        assigns[c["team_id"]] = c2
+                        prev = assigns.get(c["team_id"])
+                        score = float(c.get("color_score") or 0.0)
+                        if prev is None or score > prev[1]:
+                            assigns[c["team_id"]] = (int(c.get("_dt", 0)), score, c2)
                     for t in teams:
                         st = slot_trackers[t.id]
-                        det = assigns.get(t.id)
+                        packed = assigns.get(t.id)
+                        det = packed[2] if packed is not None else None
                         if det is not None:
                             snap = st.accept_observation(
                                 det, t_now, det_source="from_detections")
