@@ -1060,6 +1060,10 @@ class SlotTracker:
         self.center_deadzone_px: float = float(slot_cfg.get("center_deadzone_px", 2.0))
         self.max_center_step_px: float = float(slot_cfg.get("max_center_step_px", 24.0))
         self.center_smoothing_alpha: float = float(slot_cfg.get("center_smoothing_alpha", 0.35))
+        # detect_plates already assigns a concrete slot id; in --from-detections
+        # mode we should trust that measurement instead of slowly dragging the
+        # old anchor toward it through anti-switch hysteresis.
+        self.trust_from_detections: bool = bool(slot_cfg.get("trust_from_detections", True))
         # Anti-jump (PR-4: defaults bumped — 30/3 was too lax, swaps slipped through).
         self.jump_switch_threshold_px: float = float(slot_cfg.get("jump_switch_threshold_px", 80.0))
         self.switch_confirm_frames: int = int(slot_cfg.get("switch_confirm_frames", 6))
