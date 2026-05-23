@@ -82,11 +82,31 @@ def preprocess_plate(roi: np.ndarray, scale: int = 3) -> np.ndarray:
     big = cv2.resize(roi, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
     lab = cv2.cvtColor(big, cv2.COLOR_BGR2LAB)
     L = lab[:, :, 0]
-    # белый текст = высокая яркость; Otsu по L даёт устойчивую маску
-    _th, mask = cv2.threshold(L, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    # инвертируем: tesseract любит чёрный текст на белом фоне
-    inv = cv2.bitwise_not(mask)
-    # лёгкий close, чтобы не «рвало» буквы
+
+    def _binarize(channel: np.ndarray) -> np.ndarray:
+        _th, m = cv2.threshold(channel, 0, 255,
+                               cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        return m
+
+    # 1) пробуем по L (яркости) — берём ту полярность, где меньше пикселей
+    #    (текст — меньшая площадь, чем фон)
+    mask_l = _binarize(L)
+    fg_ratio = float(np.mean(mask_l > 0))
+    # хотим: текст = 255 (foreground)
+    if fg_ratio > 0.5:
+        mask_l = cv2.bitwise_not(mask_l)
+        fg_ratio = 1.0 - fg_ratio
+
+    # 2) если ничего адекватного — попробуем адаптивный
+    if fg_ratio < 0.01 or fg_ratio > 0.45:
+        adp = cv2.adaptiveThreshold(L, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                    cv2.THRESH_BINARY_INV, 15, 4)
+        adp_ratio = float(np.mean(adp > 0))
+        if 0.01 < adp_ratio < 0.45:
+            mask_l = adp
+
+    # инверсия для tesseract: чёрный текст на белом
+    inv = cv2.bitwise_not(mask_l)
     k = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     inv = cv2.morphologyEx(inv, cv2.MORPH_CLOSE, k, iterations=1)
     return inv
