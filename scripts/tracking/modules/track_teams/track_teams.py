@@ -2109,16 +2109,10 @@ def main():
                     # ---- from-detections: checkpoints из detect_plates ----
                     if low and not bool(cfg.get("from_detections_accept_low_conf_registration", False)):
                         cam["from_detections_skip"] = "low_confidence_registration"
-                        for t in teams:
-                            snap = slot_trackers[t.id].note_miss(t_now)
-                            if snap is not None:
-                                slot_snaps.append(snap)
-                        processed += 1
-                        frame_idx += 1
-                        pbar.update(1)
-                        continue
-                    cps = pick_checkpoints_for_frame(
-                        frame_idx, from_det_index, from_det_frames, from_det_tol)
+                        cps = []
+                    else:
+                        cps = pick_checkpoints_for_frame(
+                            frame_idx, from_det_index, from_det_frames, from_det_tol)
                     assigns: dict[str, tuple[int, float, dict]] = {}
                     for c in cps:
                         # canonical_px вычисляем по текущей H (рег. — единственное,
