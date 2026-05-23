@@ -19,6 +19,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -519,26 +520,38 @@ def load_checkpoints_from_detections(
     roi = raw.get("roi") or [0, 0, 0, 0]
     rx, ry = int(roi[0]), int(roi[1])
     src_fps = float(raw.get("fps") or 30.0)
-    # slot (int) -> team_id (str). Plus string form to be lenient.
+    # slot aliases -> team_id (str). detect_plates may emit either numeric
+    # slot=19 or verbose team_key="slot_19_Team 19"; accept both.
     slot_to_team: dict[str, str] = {}
     for tcfg in teams:
         if tcfg.slot is not None:
-            slot_to_team[str(int(tcfg.slot))] = tcfg.id
+            slot_int = int(tcfg.slot)
+            for alias in (str(slot_int), f"slot_{slot_int}", f"slot_{slot_int:02d}", str(tcfg.slot_id or "")):
+                if alias:
+                    slot_to_team[alias] = tcfg.id
     by_frame: dict[int, list[dict]] = {}
     n_skipped_unknown_slot = 0
+
+    def _slot_aliases(slot_raw) -> list[str]:
+        key = str(slot_raw).strip()
+        aliases = [key]
+        try:
+            n = int(float(key))
+            aliases.extend([str(n), f"slot_{n}", f"slot_{n:02d}"])
+        except (TypeError, ValueError):
+            pass
+        m = re.search(r"slot[_\-\s]*0*(\d+)", key, flags=re.IGNORECASE)
+        if m:
+            n = int(m.group(1))
+            aliases.extend([str(n), f"slot_{n}", f"slot_{n:02d}"])
+        return aliases
 
     def _push(frame: int, slot_raw, bbox, score):
         nonlocal n_skipped_unknown_slot
         if slot_raw is None:
             n_skipped_unknown_slot += 1
             return
-        key = str(slot_raw).strip()
-        if key not in slot_to_team:
-            try:
-                key = str(int(float(key)))
-            except (TypeError, ValueError):
-                pass
-        team_id = slot_to_team.get(key)
+        team_id = next((slot_to_team[a] for a in _slot_aliases(slot_raw) if a in slot_to_team), None)
         if team_id is None:
             n_skipped_unknown_slot += 1
             return
