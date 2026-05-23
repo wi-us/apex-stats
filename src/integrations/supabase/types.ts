@@ -53,6 +53,182 @@ export type Database = {
         }
         Relationships: []
       }
+      lp_game_participants: {
+        Row: {
+          created_at: string
+          game_id: string
+          place: number | null
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          place?: number | null
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          place?: number | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lp_game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "lp_games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lp_game_participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lp_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lp_games: {
+        Row: {
+          created_at: string
+          game_no: number
+          id: string
+          label: string | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_no: number
+          id?: string
+          label?: string | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          game_no?: number
+          id?: string
+          label?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lp_games_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "lp_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lp_teams: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          scraped_at: string
+          slug: string
+          tag: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          scraped_at?: string
+          slug: string
+          tag?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          scraped_at?: string
+          slug?: string
+          tag?: string | null
+        }
+        Relationships: []
+      }
+      lp_tournament_teams: {
+        Row: {
+          created_at: string
+          place: number | null
+          team_id: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          place?: number | null
+          team_id: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          place?: number | null
+          team_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lp_tournament_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lp_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lp_tournament_teams_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "lp_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lp_tournaments: {
+        Row: {
+          created_at: string
+          dates_text: string | null
+          end_date: string | null
+          id: string
+          location: string | null
+          name: string
+          scraped_at: string
+          slug: string
+          start_date: string | null
+          tier: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          dates_text?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          scraped_at?: string
+          slug: string
+          start_date?: string | null
+          tier?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          dates_text?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          scraped_at?: string
+          slug?: string
+          start_date?: string | null
+          tier?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
