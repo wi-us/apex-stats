@@ -5,6 +5,8 @@ param(
   [string]$Out = "scripts/tracking/modules/track_teams/reports/tracks.json",
   [string]$Anchors = "scripts/tracking/modules/motion_detect/reports/motion_tracks.json",
   [string]$Eliminations = "scripts/tracking/modules/hud_read/reports/eliminations.json",
+  [string]$FromDetections = "scripts/tracking/modules/detect_plates/reports/detections.json",
+  [switch]$NoFromDetections,
   [int]$FrameStep = 0,
   [double]$Start = 0,
   [double]$End = -1,
@@ -29,6 +31,16 @@ if ($Eliminations -and (Test-Path $Eliminations)) {
   Write-Host "[track_teams] using eliminations: $Eliminations" -ForegroundColor Cyan
 } else {
   Write-Host "[track_teams] no eliminations file (looked at: $Eliminations) - absence-based wipe fallback" -ForegroundColor Yellow
+}
+if (-not $NoFromDetections -and $FromDetections -and (Test-Path $FromDetections)) {
+  $args += @("--from-detections", $FromDetections)
+  Write-Host "[track_teams] using detect_plates checkpoints: $FromDetections (HSV-детекция отключена)" -ForegroundColor Cyan
+} else {
+  if ($NoFromDetections) {
+    Write-Host "[track_teams] -NoFromDetections: классический режим (собственная HSV-детекция)" -ForegroundColor Yellow
+  } else {
+    Write-Host "[track_teams] no detections file (looked at: $FromDetections) - классический режим" -ForegroundColor Yellow
+  }
 }
 $logPath = Join-Path (Split-Path $Out -Parent) "run.log"
 New-Item -ItemType Directory -Force -Path (Split-Path $logPath -Parent) | Out-Null
