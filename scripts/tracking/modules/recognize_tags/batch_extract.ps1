@@ -1,4 +1,4 @@
-# batch_extract.ps1 — прогоняет detect_plates + extract_crops по всем видео в папке.
+﻿# batch_extract.ps1 — прогоняет detect_plates + extract_crops по всем видео в папке.
 #
 # Использование:
 #   powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\recognize_tags\batch_extract.ps1
@@ -99,7 +99,7 @@ foreach ($v in $videos) {
   $videoRel = Resolve-Path -Relative $v.FullName
   $detDir   = Join-Path $DetectOut $matchId
   $detJson  = Join-Path $detDir "detections.json"
-  $logFile  = Join-Path $logDir "$matchId.log"
+  $logFile  = Join-Path $logDir "${matchId}.log"
   if (Test-Path $logFile) { Remove-Item $logFile -Force }
 
   Write-Host "[launch] $matchId  (log: $logFile)" -ForegroundColor Cyan
@@ -119,7 +119,8 @@ foreach ($j in $jobs) {
     Write-Host "  [ok]   $($j.Name)" -ForegroundColor Green
     $okCount++
   } else {
-    Write-Host "  [fail] $($j.Name) -> $res (см. $logDir\$($j.Name).log)" -ForegroundColor Red
+    $jn = $j.Name
+    Write-Host "  [fail] $jn -> $res (log: $logDir\$jn.log)" -ForegroundColor Red
     $failCount++
   }
 }
