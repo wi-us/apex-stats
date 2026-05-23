@@ -222,32 +222,33 @@ def vote(ocr_results: List[Tuple[str, float, float]],
                 debug["rejected"].append({"text": text, "reason": "too_short"})
             continue
         m = fuzz_process.extractOne(text, alias_keys,
-                                    scorer=fuzz_scorer.WRatio)
+                                    scorer=fuzz_scorer.ratio)
         if not m:
             debug["rejected"].append({"text": text, "reason": "no_match"})
             continue
         alias, ratio, _idx = m
         tag = alias_to_tag[alias]
-        # Защита от ситуаций "L" vs "ELTE": OCR-текст заметно короче алиаса.
-        # Требуем, чтобы OCR покрывал хотя бы половину алиаса (минимум 3 символа).
-        # Для коротких алиасов (≤4) — точное покрытие по длине, иначе мусор
-        # типа "FEE"/"EIE" уверенно матчит "FREE"/"ELTE" через WRatio.
-        if len(alias) <= 4:
-            min_text_len = len(alias)
-        else:
-            min_text_len = max(3, len(alias) // 2)
+        # OCR-текст должен покрывать большую часть алиаса.
+        # С fuzz.ratio (Levenshtein на полных строках) разница длин уже
+        # снижает ratio, но дополнительно требуем минимальную длину.
+        min_text_len = max(3, int(len(alias) * 0.6))
         if len(text) < min_text_len:
             debug["rejected"].append({"text": text, "alias": alias,
                                       "ratio": ratio,
                                       "reason": "text_shorter_than_alias"})
             continue
-        # для длинных алиасов снижаем порог: ошибки OCR на длинных строках
-        # понижают ratio даже если совпало 10+ символов
-        eff_min = min_match_ratio
-        if len(alias) >= 8:
-            eff_min = max(55.0, min_match_ratio - 15.0)
-        elif len(alias) >= 6:
-            eff_min = max(60.0, min_match_ratio - 10.0)
+        # Пороги по длине алиаса (fuzz.ratio = 100 * 2*matches / (la+lt)):
+        # короткие алиасы дают высокий ratio даже на 1-2 совпавших символах,
+        # поэтому требуем выше; длинные — ниже из-за OCR-ошибок.
+        la = len(alias)
+        if la <= 4:
+            eff_min = 80.0
+        elif la <= 6:
+            eff_min = 70.0
+        elif la <= 9:
+            eff_min = 62.0
+        else:
+            eff_min = 55.0
         debug["raw"].append({"text": text, "alias": alias, "tag": tag,
                              "ratio": ratio, "ocr_conf": ocr_conf,
                              "score": score})
@@ -256,9 +257,13 @@ def vote(ocr_results: List[Tuple[str, float, float]],
                                       "ratio": ratio, "min": eff_min,
                                       "reason": "low_ratio"})
             continue
-        # вес = (ratio/100) * max(ocr_conf/100, 0.2) * score
-        # ocr_conf часто 0 на коротких словах — не даём весу обнулиться
-        w = (ratio / 100.0) * max(ocr_conf / 100.0, 0.2) * max(0.1, score)
+        # вес = (ratio/100)^2 * max(ocr_conf/100, 0.2) * score * coverage
+        # coverage = min(len(text), len(alias)) / len(alias) — поощряем
+        # длинные совпадения (STALLIONS) над короткими (FFEE→FREE).
+        # ratio^2 усиливает разрыв между сильными и пограничными матчами.
+        coverage = min(len(text), la) / la
+        w = ((ratio / 100.0) ** 2) * max(ocr_conf / 100.0, 0.2) \
+            * max(0.1, score) * coverage
         weights[tag] += w
     if not weights:
         return None, 0.0, debug
