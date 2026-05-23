@@ -46,7 +46,9 @@ except ImportError as e:
     raise SystemExit("[err] rapidfuzz не установлен: pip install rapidfuzz") from e
 
 
-TESS_CONFIG = "--oem 1 --psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+TESS_WHITELIST = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+def _tess_cfg(psm: int) -> str:
+    return f"--oem 1 --psm {psm} -c tessedit_char_whitelist={TESS_WHITELIST}"
 
 
 # ---------------------------------------------------------------------------
@@ -75,50 +77,55 @@ def pick_minimap_zone(zones_cfg: dict, fw: int, fh: int) -> Tuple[int, int, int,
 # ---------------------------------------------------------------------------
 # Подготовка изображения плашки под OCR
 # ---------------------------------------------------------------------------
-def preprocess_plate(roi: np.ndarray, scale: int = 3) -> np.ndarray:
-    """Апскейл + маска белого текста на цветной плашке."""
+def preprocess_variants(roi: np.ndarray, scale: int = 3) -> List[np.ndarray]:
+    """
+    Возвращает несколько готовых под OCR картинок (чёрный текст на белом):
+      v1: Otsu по L, авто-полярность (хорошо для цветного чипа с белым текстом)
+      v2: бинаризация светлого текста на тёмной подложке (порог по L >= 180)
+      v3: адаптивный threshold (фолбэк)
+    """
     if roi.size == 0:
-        return roi
+        return []
     big = cv2.resize(roi, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
     lab = cv2.cvtColor(big, cv2.COLOR_BGR2LAB)
     L = lab[:, :, 0]
 
-    def _binarize(channel: np.ndarray) -> np.ndarray:
-        _th, m = cv2.threshold(channel, 0, 255,
-                               cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return m
-
-    # 1) пробуем по L (яркости) — берём ту полярность, где меньше пикселей
-    #    (текст — меньшая площадь, чем фон)
-    mask_l = _binarize(L)
-    fg_ratio = float(np.mean(mask_l > 0))
-    # хотим: текст = 255 (foreground)
-    if fg_ratio > 0.5:
-        mask_l = cv2.bitwise_not(mask_l)
-        fg_ratio = 1.0 - fg_ratio
-
-    # 2) если ничего адекватного — попробуем адаптивный
-    if fg_ratio < 0.01 or fg_ratio > 0.45:
-        adp = cv2.adaptiveThreshold(L, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                    cv2.THRESH_BINARY_INV, 15, 4)
-        adp_ratio = float(np.mean(adp > 0))
-        if 0.01 < adp_ratio < 0.45:
-            mask_l = adp
-
-    # инверсия для tesseract: чёрный текст на белом
-    inv = cv2.bitwise_not(mask_l)
+    out: List[np.ndarray] = []
     k = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    inv = cv2.morphologyEx(inv, cv2.MORPH_CLOSE, k, iterations=1)
-    return inv
+
+    # v1: Otsu + авто-полярность
+    _th, m1 = cv2.threshold(L, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    fg = float(np.mean(m1 > 0))
+    if fg > 0.5:
+        m1 = cv2.bitwise_not(m1)
+    inv1 = cv2.bitwise_not(m1)
+    inv1 = cv2.morphologyEx(inv1, cv2.MORPH_CLOSE, k, iterations=1)
+    out.append(inv1)
+
+    # v2: явная ветка "светлый текст на тёмном" — без auto-инверсии
+    _th2, m2 = cv2.threshold(L, 180, 255, cv2.THRESH_BINARY)
+    inv2 = cv2.bitwise_not(m2)
+    inv2 = cv2.morphologyEx(inv2, cv2.MORPH_CLOSE, k, iterations=1)
+    out.append(inv2)
+
+    # v3: адаптивный
+    adp = cv2.adaptiveThreshold(L, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                cv2.THRESH_BINARY_INV, 15, 4)
+    adp_ratio = float(np.mean(adp > 0))
+    if 0.005 < adp_ratio < 0.5:
+        inv3 = cv2.bitwise_not(adp)
+        out.append(inv3)
+
+    return out
 
 
-def ocr_one(img: np.ndarray) -> Tuple[str, float]:
+def ocr_one(img: np.ndarray, psm: int = 7) -> Tuple[str, float]:
     """Возвращает (text, mean_conf 0..100)."""
     try:
         data = pytesseract.image_to_data(
-            img, config=TESS_CONFIG, output_type=pytesseract.Output.DICT,
+            img, config=_tess_cfg(psm), output_type=pytesseract.Output.DICT,
         )
-    except pytesseract.TesseractError as e:
+    except pytesseract.TesseractError:
         return "", 0.0
     txts, confs = [], []
     for t, c in zip(data["text"], data["conf"]):
@@ -138,6 +145,20 @@ def ocr_one(img: np.ndarray) -> Tuple[str, float]:
     text = re.sub(r"[^A-Z0-9]", "", "".join(txts).upper())
     conf = float(np.mean(confs)) if confs else 0.0
     return text, conf
+
+
+def ocr_multi(roi: np.ndarray) -> List[Tuple[str, float]]:
+    """OCR по нескольким препроцессам и нескольким psm. Дедупликация по text."""
+    results: Dict[str, float] = {}
+    for prep in preprocess_variants(roi):
+        for psm in (7, 6):
+            t, c = ocr_one(prep, psm=psm)
+            if not t:
+                continue
+            # храним лучшую conf по тексту
+            if t not in results or c > results[t]:
+                results[t] = c
+    return list(results.items())
 
 
 # ---------------------------------------------------------------------------
@@ -193,12 +214,20 @@ def vote(ocr_results: List[Tuple[str, float, float]],
             continue
         alias, ratio, _idx = m
         tag = alias_to_tag[alias]
+        # для длинных алиасов снижаем порог: ошибки OCR на длинных строках
+        # понижают ratio даже если совпало 10+ символов
+        eff_min = min_match_ratio
+        if len(alias) >= 8:
+            eff_min = max(55.0, min_match_ratio - 15.0)
+        elif len(alias) >= 6:
+            eff_min = max(60.0, min_match_ratio - 10.0)
         debug["raw"].append({"text": text, "alias": alias, "tag": tag,
                              "ratio": ratio, "ocr_conf": ocr_conf,
                              "score": score})
-        if ratio < min_match_ratio:
+        if ratio < eff_min:
             debug["rejected"].append({"text": text, "alias": alias,
-                                      "ratio": ratio, "reason": "low_ratio"})
+                                      "ratio": ratio, "min": eff_min,
+                                      "reason": "low_ratio"})
             continue
         # вес = (ratio/100) * max(ocr_conf/100, 0.2) * score
         # ocr_conf часто 0 на коротких словах — не даём весу обнулиться
@@ -224,7 +253,7 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--top-n", type=int, default=30)
     ap.add_argument("--min-match-ratio", type=float, default=70.0)
-    ap.add_argument("--pad-frac", type=float, default=0.35,
+    ap.add_argument("--pad-frac", type=float, default=1.0,
                     help="Доля расширения bbox по горизонтали вправо (хвост названия).")
     ap.add_argument("--pad-frac-v", type=float, default=0.25,
                     help="Доля расширения bbox по вертикали (название над/под чипом).")
@@ -291,14 +320,18 @@ def main() -> None:
             crop = roi[y1:y2, x1:x2]
             if crop.size == 0:
                 continue
-            prep = preprocess_plate(crop, scale=3)
-            text, conf = ocr_one(prep)
-            per_slot_ocr[slot].append((text, conf, score))
+            ocrs = ocr_multi(crop)
+            if not ocrs:
+                per_slot_ocr[slot].append(("", 0.0, score))
+            for text, conf in ocrs:
+                per_slot_ocr[slot].append((text, conf, score))
             if args.save_debug_crops:
-                tag_suffix = text if text else "_NA"
-                base = debug_dir / f"{slot}_f{frame_idx:07d}_{tag_suffix}"
+                best_text = ocrs[0][0] if ocrs else "_NA"
+                base = debug_dir / f"{slot}_f{frame_idx:07d}_{best_text}"
                 cv2.imwrite(str(base.with_suffix(".raw.png")), crop)
-                cv2.imwrite(str(base.with_suffix(".prep.png")), prep)
+                preps = preprocess_variants(crop)
+                for i_p, p in enumerate(preps):
+                    cv2.imwrite(str(base.with_suffix(f".prep{i_p}.png")), p)
         if (i + 1) % 50 == 0:
             print(f"  ocr: {i+1}/{len(needed)} кадров")
     cap.release()

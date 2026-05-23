@@ -11,10 +11,10 @@
     "FREE":  ["FREE", "FREETHINKERS", "THINKERS"],
     "FXI":   ["FXI", "FULLXI"],
     "NIP":   ["NIP", "NINJAS", "NINJASINPYJAMAS", "PYJAMAS"],
-    "OBVN":  ["OBVN", "ONLIVION"],
+    "OBVN":  ["OBVN", "ONLIVION", "ONLIVI", "NLIVION", "LIVION"],
     "S2":    ["S2"],
     "SRC":   ["SRC", "SOURCE", "SOURCEGAMING"],
-    "STAL":  ["STAL", "STALLIONS"],
+    "STAL":  ["STAL", "STALLIONS", "STALLI", "TALLIONS", "ALLIONS"],
     "TL":    ["TL", "TEAMLIQUID", "LIQUID"],
     "THUG":  ["THUG", "THUGS", "THUGGETS"],
     "BB":    ["BB", "BUCKLEBOYS", "BUCKLE"],
@@ -23,9 +23,9 @@
     "DKK":   ["DKK"],
     "GMBL":  ["GMBL", "GAMBLERS", "GAMBLER"],
     "JDG":   ["JDG", "JDGAMING", "JDGAM"],
-    "MR":    ["MR", "MEDIUMRARE", "MEDRARE"],
+    "MR":    ["MR", "MEDIUMRARE", "MEDRARE", "MEDIUM", "RARE"],
     "REV":   ["REV", "REVIVAL"],
-    "ROC":   ["ROC", "ROCESPORTS", "ROCESPRTS"],
-    "SR":    ["SR", "SHOPIFY", "SHOPIFYREBELLION", "REBELLION"]
+    "ROC":   ["ROC", "ROCESPORTS", "ROCESPRTS", "ESPORTS"],
+    "SR":    ["SR", "SHOPIFY", "SHOPIFYREBELLION", "REBELLION", "HOPIFY", "REBELLI", "EBELLION"]
   }
 }
