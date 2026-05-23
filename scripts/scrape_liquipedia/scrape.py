@@ -47,8 +47,13 @@ def slugify(s: str) -> str:
     return s.strip("-") or "unknown"
 
 
-def load(page: Page, url: str, wait: str = "networkidle") -> str:
+def load(page: Page, url: str, wait: str = "domcontentloaded") -> str:
     page.goto(url, wait_until=wait, timeout=60_000)
+    # Wait for the main content table to render; fall back to a short sleep.
+    try:
+        page.wait_for_selector("table.table2__table, div.tournaments-listing, div.standings-ffa", timeout=15_000)
+    except Exception:
+        pass
     time.sleep(SLEEP)
     return page.content()
 
