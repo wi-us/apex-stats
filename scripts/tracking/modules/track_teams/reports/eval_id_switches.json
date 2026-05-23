@@ -1,17 +1,51 @@
 {
   "tracks_file": "scripts\\tracking\\modules\\track_teams\\reports\\tracks.json",
   "gt_file": "scripts\\tracking\\modules\\track_teams\\assets\\gt_anchors.json",
-  "gt_points": 5,
-  "coverage_pct": 0.0,
-  "px_error_med": null,
-  "px_error_p95": null,
-  "id_switches_total": 0,
+  "gt_points": 119,
+  "coverage_pct": 91.6,
+  "px_error_med": 95.7,
+  "px_error_p95": 176.7,
+  "id_switches_total": 3,
   "id_switches_per_slot": {
+    "slot_1": 0,
+    "slot_2": 0,
     "slot_3": 0,
-    "slot_4": 0,
+    "slot_4": 1,
+    "slot_5": 0,
     "slot_6": 0,
+    "slot_7": 1,
+    "slot_8": 0,
+    "slot_9": 0,
+    "slot_10": 0,
+    "slot_11": 0,
+    "slot_12": 0,
+    "slot_13": 0,
+    "slot_14": 0,
+    "slot_15": 0,
+    "slot_16": 0,
+    "slot_17": 0,
+    "slot_18": 0,
     "slot_19": 0,
-    "slot_20": 0
+    "slot_20": 1
   },
-  "switch_events": []
+  "switch_events": [
+    {
+      "slot_id": "slot_4",
+      "t": 0,
+      "from": "slot_4",
+      "to": "slot_18"
+    },
+    {
+      "slot_id": "slot_7",
+      "t": 0,
+      "from": "slot_7",
+      "to": "slot_6"
+    },
+    {
+      "slot_id": "slot_20",
+      "t": 0,
+      "from": "slot_11",
+      "to": "slot_8"
+    }
+  ]
 }

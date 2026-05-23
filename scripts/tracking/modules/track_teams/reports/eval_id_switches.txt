@@ -1,11 +1,31 @@
-GT points:        5
-Coverage:         0.0%
-px error median:  None
-px error p95:     None
-ID-switches total:0
+GT points:        119
+Coverage:         91.6%
+px error median:  95.7
+px error p95:     176.7
+ID-switches total:3
 
+      slot_4  switches=1
+      slot_7  switches=1
+     slot_20  switches=1
+      slot_1  switches=0
+      slot_2  switches=0
       slot_3  switches=0
-      slot_4  switches=0
+      slot_5  switches=0
       slot_6  switches=0
+      slot_8  switches=0
+      slot_9  switches=0
+     slot_10  switches=0
+     slot_11  switches=0
+     slot_12  switches=0
+     slot_13  switches=0
+     slot_14  switches=0
+     slot_15  switches=0
+     slot_16  switches=0
+     slot_17  switches=0
+     slot_18  switches=0
      slot_19  switches=0
-     slot_20  switches=0
+
+Switch events:
+  t=    0.0      slot_4  slot_4 -> slot_18
+  t=    0.0      slot_7  slot_7 -> slot_6
+  t=    0.0     slot_20  slot_11 -> slot_8
