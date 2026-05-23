@@ -22,7 +22,9 @@ param(
   [double]$PadFracV    = 0.25,
   [double]$SampleFps   = 1.0,
   [switch]$Force,
-  [switch]$OnlyExtract
+  [switch]$OnlyExtract,
+  [int]   $MaxJobs     = 5,
+  [switch]$Sequential
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,74 +46,87 @@ if ($videos.Count -eq 0) {
   exit 1
 }
 
-Write-Host "[info] найдено видео: $($videos.Count)" -ForegroundColor Cyan
+if ($Sequential) { $MaxJobs = 1 }
+if ($MaxJobs -lt 1) { $MaxJobs = 1 }
+if ($MaxJobs -gt 15) { $MaxJobs = 15 }
 
-$idx = 0
+$logDir = Join-Path $DetectOut "_logs"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+Write-Host "[info] найдено видео: $($videos.Count), MaxJobs=$MaxJobs" -ForegroundColor Cyan
+
+$jobScript = {
+  param(
+    $repo, $videoRel, $matchId, $Hsv, $Zones, $detDir, $detJson,
+    $CropsOut, $TopN, $PadFrac, $PadFracV, $SampleFps,
+    $Force, $OnlyExtract, $logFile
+  )
+  Set-Location $repo
+  $env:PYTHONUTF8 = "1"
+  $stage1Cmd = ""
+  if (-not $OnlyExtract) {
+    if ((Test-Path $detJson) -and (-not $Force)) {
+      Add-Content -Path $logFile -Value "[skip] detections.json уже есть"
+    } else {
+      New-Item -ItemType Directory -Force -Path $detDir | Out-Null
+      $stage1Cmd = "python scripts/tracking/modules/detect_plates/detect_plates.py --video `"$videoRel`" --hsv-presets `"$Hsv`" --zones `"$Zones`" --out `"$detDir`" --sample-fps $SampleFps --h-tol 1 --s-tol 6 --v-tol 14 --loose-h-extra 1 --loose-s-extra 12 --loose-v-extra 20 --ignore-bottom-px 105 --target-plate-height 30 --max-expand-x 22 --max-width 220 --recovery --emit-slots --hwaccel auto --track-fps 5.0 --adaptive-fps 5.0 >> `"$logFile`" 2>&1"
+      cmd /c $stage1Cmd
+      if ($LASTEXITCODE -ne 0) {
+        Add-Content -Path $logFile -Value "[err] detect_plates failed"
+        return "FAIL_DETECT"
+      }
+    }
+  }
+  if (-not (Test-Path $detJson)) {
+    Add-Content -Path $logFile -Value "[err] нет $detJson"
+    return "NO_DETECTIONS"
+  }
+  $stage2Cmd = "python scripts/tracking/modules/recognize_tags/extract_crops.py --detections `"$detJson`" --video `"$videoRel`" --zones `"$Zones`" --match-id `"$matchId`" --out `"$CropsOut`" --top-n $TopN --pad-frac $PadFrac --pad-frac-v $PadFracV >> `"$logFile`" 2>&1"
+  cmd /c $stage2Cmd
+  if ($LASTEXITCODE -ne 0) {
+    Add-Content -Path $logFile -Value "[err] extract_crops failed"
+    return "FAIL_EXTRACT"
+  }
+  return "OK"
+}
+
+$jobs = @()
 foreach ($v in $videos) {
-  $idx++
+  while (@($jobs | Where-Object { $_.State -eq 'Running' }).Count -ge $MaxJobs) {
+    Start-Sleep -Milliseconds 500
+  }
   $matchId  = [IO.Path]::GetFileNameWithoutExtension($v.Name)
   $videoRel = Resolve-Path -Relative $v.FullName
   $detDir   = Join-Path $DetectOut $matchId
   $detJson  = Join-Path $detDir "detections.json"
+  $logFile  = Join-Path $logDir "$matchId.log"
+  if (Test-Path $logFile) { Remove-Item $logFile -Force }
 
-  Write-Host ""
-  Write-Host "===== [$idx/$($videos.Count)] $matchId =====" -ForegroundColor Yellow
-  Write-Host "  video: $videoRel"
-
-  # === Stage 1: detect_plates ===
-  if (-not $OnlyExtract) {
-    if ((Test-Path $detJson) -and (-not $Force)) {
-      Write-Host "  [skip] detections.json уже есть (-Force чтобы перегенерировать)"
-    } else {
-      New-Item -ItemType Directory -Force -Path $detDir | Out-Null
-      Write-Host "  [stage1] detect_plates ..."
-      $pyArgs = @(
-        "scripts/tracking/modules/detect_plates/detect_plates.py",
-        "--video", $videoRel,
-        "--hsv-presets", $Hsv,
-        "--zones", $Zones,
-        "--out", $detDir,
-        "--sample-fps", $SampleFps,
-        "--h-tol", 1, "--s-tol", 6, "--v-tol", 14,
-        "--loose-h-extra", 1, "--loose-s-extra", 12, "--loose-v-extra", 20,
-        "--ignore-bottom-px", 105, "--target-plate-height", 30,
-        "--max-expand-x", 22, "--max-width", 220,
-        "--recovery", "--emit-slots",
-        "--hwaccel", "auto",
-        "--track-fps", 5.0, "--adaptive-fps", 5.0
-      )
-      python @pyArgs
-      if ($LASTEXITCODE -ne 0) {
-        Write-Host "  [err] detect_plates упал для $matchId, пропускаю" -ForegroundColor Red
-        continue
-      }
-    }
-  }
-
-  if (-not (Test-Path $detJson)) {
-    Write-Host "  [err] нет $detJson, пропускаю extract" -ForegroundColor Red
-    continue
-  }
-
-  # === Stage 2: extract_crops ===
-  Write-Host "  [stage2] extract_crops -> $CropsOut/$matchId"
-  python scripts/tracking/modules/recognize_tags/extract_crops.py `
-    --detections $detJson `
-    --video      $videoRel `
-    --zones      $Zones `
-    --match-id   $matchId `
-    --out        $CropsOut `
-    --top-n      $TopN `
-    --pad-frac   $PadFrac `
-    --pad-frac-v $PadFracV
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "  [err] extract_crops упал для $matchId" -ForegroundColor Red
-    continue
-  }
-  Write-Host "  [ok] $matchId готов" -ForegroundColor Green
+  Write-Host "[launch] $matchId  (log: $logFile)" -ForegroundColor Cyan
+  $jobs += Start-Job -Name $matchId -ScriptBlock $jobScript -ArgumentList `
+    $repo, $videoRel, $matchId, $Hsv, $Zones, $detDir, $detJson, `
+    $CropsOut, $TopN, $PadFrac, $PadFracV, $SampleFps, `
+    [bool]$Force, [bool]$OnlyExtract, $logFile
 }
 
+Write-Host "[wait] $($jobs.Count) джобов, жду..." -ForegroundColor Yellow
+$jobs | Wait-Job | Out-Null
+
+$okCount = 0; $failCount = 0
+foreach ($j in $jobs) {
+  $res = Receive-Job $j
+  if ($res -eq "OK") {
+    Write-Host "  [ok]   $($j.Name)" -ForegroundColor Green
+    $okCount++
+  } else {
+    Write-Host "  [fail] $($j.Name) -> $res (см. $logDir\$($j.Name).log)" -ForegroundColor Red
+    $failCount++
+  }
+}
+$jobs | Remove-Job
+
 Write-Host ""
-Write-Host "[done] обработано $($videos.Count) видео" -ForegroundColor Green
+Write-Host "[done] ok=$okCount  fail=$failCount  всего=$($videos.Count)" -ForegroundColor Green
 Write-Host "       кропы: $CropsOut/{match_id}/slot_XX/*.png"
+Write-Host "       логи:  $logDir/{match_id}.log"
 Write-Host "       дальше — раскидать вручную в dataset/labeled/{TAG}/"
