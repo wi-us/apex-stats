@@ -1782,6 +1782,13 @@ def main():
     ap.add_argument("--eliminations", type=Path, default=None,
                     help="hud_read/reports/eliminations.json — точные t_first_dead по слоту, "
                          "если задано, заменяет absence-based wipe детекцию")
+    ap.add_argument("--from-detections", type=Path, default=None,
+                    help="detect_plates/reports/detections.json — взять готовые "
+                         "checkpoints (slot уже идентифицирован), отключить "
+                         "собственную HSV-детекцию. Доверяем team_key из detect_plates.")
+    ap.add_argument("--from-detections-tolerance-frames", type=int, default=0,
+                    help="окно поиска checkpoint вокруг текущего кадра, в кадрах. "
+                         "0 = auto (sample_step из detections.json).")
     args = ap.parse_args()
 
     if not args.video.exists():
