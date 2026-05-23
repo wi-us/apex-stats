@@ -259,8 +259,28 @@ class FrameRegistrar:
         self.ratio = float(reg_cfg.get("match_ratio", 0.75))
         self.reproj = float(reg_cfg.get("ransac_reproj_px", 5.0))
         self.min_inliers = int(reg_cfg.get("min_inliers", 25))
+        # Some low-inlier SIFT matches still produce a numeric homography, but
+        # it can be wildly wrong (e.g. zoom hundreds of times or pan far outside
+        # the map). Reject those before they can project good detections to bad
+        # world positions.
+        self.min_zoom = float(reg_cfg.get("min_zoom", 0.08))
+        self.max_zoom = float(reg_cfg.get("max_zoom", 8.0))
+        self.pan_margin_px = float(reg_cfg.get("pan_margin_px", 768.0))
         roi = reg_cfg.get("roi", [0, 0, 1, 1])
         self.roi = tuple(float(v) for v in roi)
+
+    def _homography_plausible(self, H: np.ndarray, frame_shape: tuple[int, int]) -> bool:
+        if H is None or not np.isfinite(H).all() or abs(float(H[2, 2])) < 1e-9:
+            return False
+        decomp = decompose_homography(H)
+        z = float(decomp["zoom"])
+        if not (self.min_zoom <= z <= self.max_zoom):
+            return False
+        fh, fw = frame_shape[:2]
+        cx, cy = map_point(H, (fw / 2.0, fh / 2.0))
+        cw, ch = self.cmap.size
+        m = self.pan_margin_px
+        return (-m <= cx <= cw + m) and (-m <= cy <= ch + m)
 
     def _crop_roi(self, gray: np.ndarray) -> tuple[np.ndarray, tuple[int, int]]:
         h, w = gray.shape[:2]
@@ -298,6 +318,8 @@ class FrameRegistrar:
         if H is None:
             return None, 0
         inliers = int(mask.sum()) if mask is not None else 0
+        if not self._homography_plausible(H, gray.shape):
+            return None, inliers
         if inliers < self.min_inliers:
             return H, inliers   # return anyway, mark low_conf upstream
         return H, inliers
