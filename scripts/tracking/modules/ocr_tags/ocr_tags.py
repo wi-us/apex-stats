@@ -153,32 +153,36 @@ def pick_samples(detections: dict, top_n: int) -> Dict[str, List[dict]]:
 # Голосование
 # ---------------------------------------------------------------------------
 def vote(ocr_results: List[Tuple[str, float, float]],
-         known_tags: List[str],
+         alias_to_tag: Dict[str, str],
          min_match_ratio: float = 70.0) -> Tuple[Optional[str], float, dict]:
     """
-    ocr_results: [(text, ocr_conf, detect_score)]
+    ocr_results:  [(text, ocr_conf, detect_score)]
+    alias_to_tag: {"GAMBLERS": "GMBL", "GMBL": "GMBL", ...}
     Возвращает (best_tag | None, total_weight, debug_dict)
     """
+    alias_keys = list(alias_to_tag.keys())
     weights: Dict[str, float] = defaultdict(float)
     debug = {"raw": [], "rejected": []}
     for text, ocr_conf, score in ocr_results:
         if not text:
             continue
-        m = fuzz_process.extractOne(text, known_tags,
+        m = fuzz_process.extractOne(text, alias_keys,
                                     scorer=fuzz_scorer.WRatio)
         if not m:
             debug["rejected"].append({"text": text, "reason": "no_match"})
             continue
-        tag, ratio, _idx = m
-        debug["raw"].append({"text": text, "match": tag,
+        alias, ratio, _idx = m
+        tag = alias_to_tag[alias]
+        debug["raw"].append({"text": text, "alias": alias, "tag": tag,
                              "ratio": ratio, "ocr_conf": ocr_conf,
                              "score": score})
         if ratio < min_match_ratio:
-            debug["rejected"].append({"text": text, "match": tag,
+            debug["rejected"].append({"text": text, "alias": alias,
                                       "ratio": ratio, "reason": "low_ratio"})
             continue
-        # вес = (ratio/100) * (ocr_conf/100) * score
-        w = (ratio / 100.0) * max(0.0, ocr_conf / 100.0) * max(0.1, score)
+        # вес = (ratio/100) * max(ocr_conf/100, 0.2) * score
+        # ocr_conf часто 0 на коротких словах — не даём весу обнулиться
+        w = (ratio / 100.0) * max(ocr_conf / 100.0, 0.2) * max(0.1, score)
         weights[tag] += w
     if not weights:
         return None, 0.0, debug
@@ -200,6 +204,10 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--top-n", type=int, default=30)
     ap.add_argument("--min-match-ratio", type=float, default=70.0)
+    ap.add_argument("--pad-frac", type=float, default=0.35,
+                    help="Доля расширения bbox по горизонтали вправо (хвост названия).")
+    ap.add_argument("--pad-frac-v", type=float, default=0.25,
+                    help="Доля расширения bbox по вертикали (название над/под чипом).")
     ap.add_argument("--save-debug-crops", action="store_true")
     ap.add_argument("--tesseract-cmd", default=None,
                     help="Полный путь до tesseract.exe (Windows).")
@@ -213,6 +221,13 @@ def main() -> None:
     known_tags: List[str] = list(teams_cfg.get("tags", []))
     if not known_tags:
         raise SystemExit(f"[err] нет тегов в {args.teams}")
+    aliases_cfg = teams_cfg.get("aliases") or {t: [t] for t in known_tags}
+    alias_to_tag: Dict[str, str] = {}
+    for tag, aliases in aliases_cfg.items():
+        for a in aliases:
+            alias_to_tag[a.upper()] = tag
+        alias_to_tag.setdefault(tag.upper(), tag)
+    print(f"[info] алиасов: {len(alias_to_tag)} -> {len(known_tags)} тегов")
     zones_cfg = json.loads(args.zones.read_text(encoding="utf-8"))
 
     args.out.mkdir(parents=True, exist_ok=True)
@@ -246,18 +261,24 @@ def main() -> None:
         roi = frame[ry:ry + rh, rx:rx + rw]
         for slot, bbox, score in needed[frame_idx]:
             x, y, w, h = bbox
-            pad = 4
-            x1 = max(0, x - pad); y1 = max(0, y - pad)
-            x2 = min(roi.shape[1], x + w + pad)
-            y2 = min(roi.shape[0], y + h + pad)
+            # горизонталь — асимметрично, в основном вправо (текст справа от чипа)
+            pad_x_l = max(2, int(w * 0.05))
+            pad_x_r = max(4, int(w * args.pad_frac))
+            pad_y   = max(2, int(h * args.pad_frac_v))
+            x1 = max(0, x - pad_x_l); y1 = max(0, y - pad_y)
+            x2 = min(roi.shape[1], x + w + pad_x_r)
+            y2 = min(roi.shape[0], y + h + pad_y)
             crop = roi[y1:y2, x1:x2]
             if crop.size == 0:
                 continue
             prep = preprocess_plate(crop, scale=3)
             text, conf = ocr_one(prep)
             per_slot_ocr[slot].append((text, conf, score))
-            if args.save_debug_crops and text:
-                cv2.imwrite(str(debug_dir / f"{slot}_f{frame_idx:07d}_{text}.png"), prep)
+            if args.save_debug_crops:
+                tag_suffix = text if text else "_NA"
+                base = debug_dir / f"{slot}_f{frame_idx:07d}_{tag_suffix}"
+                cv2.imwrite(str(base.with_suffix(".raw.png")), crop)
+                cv2.imwrite(str(base.with_suffix(".prep.png")), prep)
         if (i + 1) % 50 == 0:
             print(f"  ocr: {i+1}/{len(needed)} кадров")
     cap.release()
@@ -265,7 +286,7 @@ def main() -> None:
     results: Dict[str, dict] = {}
     assignments: Dict[str, str] = {}
     for slot in sorted(per_slot_ocr.keys(), key=lambda s: -len(per_slot_ocr[s])):
-        tag, weight, dbg = vote(per_slot_ocr[slot], known_tags,
+        tag, weight, dbg = vote(per_slot_ocr[slot], alias_to_tag,
                                 min_match_ratio=args.min_match_ratio)
         results[slot] = {
             "tag": tag, "weight": round(weight, 3),
