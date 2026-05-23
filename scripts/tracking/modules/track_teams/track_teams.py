@@ -2109,17 +2109,21 @@ def main():
                     # ---- from-detections: checkpoints из detect_plates ----
                     cps = pick_checkpoints_for_frame(
                         frame_idx, from_det_index, from_det_frames, from_det_tol)
-                    assigns: dict[str, dict] = {}
+                    assigns: dict[str, tuple[int, float, dict]] = {}
                     for c in cps:
                         # canonical_px вычисляем по текущей H (рег. — единственное,
                         # что мы тут делаем сами).
                         cx_can, cy_can = map_point(H, c["frame_px"])
                         c2 = dict(c)
                         c2["canonical_px"] = (cx_can, cy_can)
-                        assigns[c["team_id"]] = c2
+                        prev = assigns.get(c["team_id"])
+                        score = float(c.get("color_score") or 0.0)
+                        if prev is None or score > prev[1]:
+                            assigns[c["team_id"]] = (int(c.get("_dt", 0)), score, c2)
                     for t in teams:
                         st = slot_trackers[t.id]
-                        det = assigns.get(t.id)
+                        packed = assigns.get(t.id)
+                        det = packed[2] if packed is not None else None
                         if det is not None:
                             snap = st.accept_observation(
                                 det, t_now, det_source="from_detections")
