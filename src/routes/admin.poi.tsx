@@ -321,7 +321,7 @@ function PoiAdmin() {
             />
           </label>
           <label className="cursor-pointer rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted">
-            Load tournament JSON
+            Load ALGS / tournament JSON
             <input
               type="file"
               accept="application/json"
