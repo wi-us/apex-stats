@@ -774,32 +774,44 @@ function PoiMapImage({ mapImage, picks, large }: { mapImage: string | null; pick
 function RosterPanel({
   roster,
   players,
+  lastMatchPlayerIds,
+  lastMatchAt,
   isLoading,
 }: {
   roster: TeamRosterMember[];
   players: TeamPlayer[];
+  lastMatchPlayerIds: string[];
+  lastMatchAt: string | null;
   isLoading: boolean;
 }) {
+  const lastSet = new Set(lastMatchPlayerIds);
+  const lastDate = lastMatchAt ? new Date(lastMatchAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "2-digit" }) : null;
   return (
     <div className="hud-panel mt-4 p-3">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">Active roster · {roster.length} players</div>
         <div className="text-xs text-muted-foreground">
-          latest event team version · role=player
+          latest event team version · role=player{lastDate ? ` · last match ${lastDate}` : ""}
           {isLoading && " · loading…"}
         </div>
       </div>
       {roster.length === 0 ? <Empty /> : (
-        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="flex flex-wrap gap-3">
           {roster.map((p) => {
             const agg = players.find((x) => x.id === p.id);
+            const playedLast = lastSet.has(p.id);
             return (
-              <div key={p.id} className="overflow-hidden rounded-sm border border-border bg-surface">
-                <div className="relative aspect-[3/4] w-full bg-surface-2">
+              <div key={p.id} className="w-[225px] overflow-hidden rounded-sm border border-border bg-surface">
+                <div className="relative h-[300px] w-full bg-surface-2">
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">no photo</div>
+                  )}
+                  {playedLast && (
+                    <div className="absolute left-1.5 top-1.5 rounded-sm border border-primary/60 bg-primary/90 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground" title={lastDate ? `Играл в последнем матче (${lastDate})` : "Играл в последнем матче"}>
+                      Last match
+                    </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1.5">
                     <div className="truncate text-sm font-bold uppercase tracking-wider text-white">{p.name}</div>
