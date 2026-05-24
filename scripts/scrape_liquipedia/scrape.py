@@ -140,6 +140,23 @@ def _is_team_href(href: str) -> bool:
     return True
 
 
+def _parse_place(text: str) -> int | None:
+    m = re.match(r"\s*(\d+)", text or "")
+    return int(m.group(1)) if m else None
+
+
+def _parse_int(text: str) -> int | None:
+    m = re.search(r"-?\d+", text or "")
+    return int(m.group(0)) if m else None
+
+
+def _looks_like_tag(text: str | None) -> bool:
+    if not text:
+        return False
+    compact = re.sub(r"[^A-Za-z0-9]", "", text)
+    return 1 <= len(compact) <= 6 and compact.upper() == compact
+
+
 def _team_from_row(tr) -> dict[str, Any] | None:
     """Extract team info from one standings <tr>.
 
@@ -176,17 +193,22 @@ def _team_from_row(tr) -> dict[str, Any] | None:
     tag_span = bt.select_one("span.name.visible-xs")
     name = name_span.get_text(" ", strip=True) if name_span else team_a.get_text(" ", strip=True)
     tag = tag_span.get_text(" ", strip=True) if tag_span else None
-    # If wide & short variants are identical, the team simply has no abbreviation.
-    if tag and tag == name:
+    # Teams that are already short (TSM/CIMJ/DGAP/etc.) often render as one
+    # `span.name`; keep that value as the tag instead of dropping it.
+    if not tag and _looks_like_tag(name):
+        tag = name
+    elif tag and tag == name and not _looks_like_tag(tag):
         tag = None
 
-    # Place from first cell
+    # Place from first table cell or battle-royale rank cell.
     tds = tr.find_all("td")
     place: int | None = None
     if tds:
-        m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
-        if m:
-            place = int(m.group(1))
+        place = _parse_place(tds[0].get_text(" ", strip=True))
+    if place is None:
+        rank_cell = tr.select_one(".cell--rank")
+        if rank_cell:
+            place = _parse_place(rank_cell.get_text(" ", strip=True))
 
     return {
         "place": place,
