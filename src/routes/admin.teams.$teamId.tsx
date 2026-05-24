@@ -297,7 +297,7 @@ function TeamDetail() {
       </header>
       <div className="flex-1 overflow-auto p-6">
         {/* ---- Sticky filters + view switcher ---- */}
-        <div className="sticky top-0 z-30 -mx-6 -mt-6 mb-4 border-b border-border bg-background/95 px-6 pt-6 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="sticky -top-6 z-30 -mx-6 mb-4 border-b border-border bg-background px-6 pt-6 pb-3">
         <div className="hud-panel p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="label-eyebrow text-xs">Period</div>
