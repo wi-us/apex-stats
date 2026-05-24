@@ -1070,6 +1070,10 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
         else:
             continue
         radius *= gate_mult
+        anchor_r = st.anchor_radius_at(t_now) if hasattr(st, "anchor_radius_at") else None
+        anchor_cx = anchor_cy = None
+        if anchor_r is not None and st.init_canonical_px is not None:
+            anchor_cx, anchor_cy = st.init_canonical_px
         for j, cand in enumerate(candidates):
             same_color = cand["team_id"] == st.team.id
             if not same_color and not allow_cross_color:
@@ -1078,6 +1082,9 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
             d = math.hypot(cx - pred[0], cy - pred[1])
             if d > radius:
                 continue
+            if anchor_r is not None:
+                if math.hypot(cx - anchor_cx, cy - anchor_cy) > anchor_r:
+                    continue
             world_term = d / max(1.0, radius)
             shape_pen = 1.0 - min(1.0, max(0.0, cand.get("color_score", 1.0)))
             color_mismatch = 0.0 if same_color else delta
@@ -1107,6 +1114,12 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
         assigned_cands.add(j)
         used_slots.add(st.team.id)
         result[st.team.id] = candidates[j]
+        if st.init_canonical_px is not None:
+            cand_cx, cand_cy = candidates[j]["canonical_px"]
+            if math.hypot(cand_cx - st.init_canonical_px[0],
+                          cand_cy - st.init_canonical_px[1]) <= max(
+                              st.anchor_r0_px, st.near_anchor_radius_px):
+                st.anchor_inside_hits += 1
         if near_miss is not None:
             for other_c, other_sid in per_cand_costs.get(j, []):
                 if other_sid == st.team.id:
