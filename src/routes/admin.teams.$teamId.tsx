@@ -117,6 +117,7 @@ function TeamDetail() {
   const [year, setYear] = useState<number>(allYears[0] ?? 6);
   const [selectedTours, setSelectedTours] = useState<string[]>([]);
   const [range, setRange] = useState<RangeKey>("30d");
+  const [view, setView] = useState<"overview" | "maps" | "weapons">("overview");
 
   const filteredRows = useMemo(() => {
     if (mode === "year") return teamRows.filter((r) => r.tour?.year === year);
@@ -294,14 +295,7 @@ function TeamDetail() {
         </a>
       </header>
       <div className="flex-1 overflow-auto p-6">
-        {/* ---- Active roster moved to top ---- */}
-        <RosterPanel
-          roster={detail?.activeRoster ?? []}
-          players={detail?.players ?? []}
-          lastMatchPlayerIds={detail?.lastMatchPlayerIds ?? []}
-          lastMatchAt={detail?.lastMatchAt ?? null}
-          isLoading={detailQuery.isLoading}
-        />
+        {/* ---- Filters (sync source for all panels below) ---- */}
         <div className="hud-panel mb-4 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="label-eyebrow text-xs">Period</div>
@@ -411,7 +405,15 @@ function TeamDetail() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* ---- Active roster + Next matches side-by-side ---- */}
+        <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+          <RosterPanel
+            roster={detail?.activeRoster ?? []}
+            players={detail?.players ?? []}
+            lastMatchPlayerIds={detail?.lastMatchPlayerIds ?? []}
+            lastMatchAt={detail?.lastMatchAt ?? null}
+            isLoading={detailQuery.isLoading}
+          />
           <Panel title={`Next matches (${nextRows.length})`}>
             {nextRows.length === 0 ? <Empty /> : (
               <ScrollList>
@@ -435,7 +437,27 @@ function TeamDetail() {
               </ScrollList>
             )}
           </Panel>
+        </div>
 
+        {/* ---- View switcher ---- */}
+        <div className="mt-4 flex items-center gap-1.5">
+          {([
+            ["overview", "Overview"],
+            ["maps", "Maps"],
+            ["weapons", "Weapons"],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setView(k)}
+              className={`rounded-sm border px-3 py-1.5 text-xs uppercase tracking-wider ${view === k ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-surface hover:bg-muted"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {view === "overview" && (
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           <Panel title={`Tournaments (${filteredTournaments.length})`}>
             {filteredTournaments.length === 0 ? <Empty /> : (
               <ScrollList>
@@ -495,7 +517,10 @@ function TeamDetail() {
             )}
           </Panel>
         </div>
+        )}
 
+        {view === "overview" && (
+        <>
         {/* ---- Form dynamics ---- */}
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <Sparkline
@@ -529,7 +554,10 @@ function TeamDetail() {
             formatVal={(v) => `${v.toFixed(0)}%`}
           />
         </div>
+        </>
+        )}
 
+        {(view === "overview" || view === "maps") && (
         <div className="hud-panel mt-4 p-3">
           <div className="label-eyebrow mb-3 text-xs">Map tier list · avg placement, top 1 & top 5</div>
           {mapStats.length === 0 ? <Empty /> : (
@@ -576,13 +604,17 @@ function TeamDetail() {
             </div>
           )}
         </div>
+        )}
 
-        {/* ---- Weapon tier list (promoted from test) ---- */}
+        {(view === "overview" || view === "maps") && (
         <div className="mt-4">
           <PoiMapPanel picks={detail?.poiPicks ?? []} />
         </div>
+        )}
 
-        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
+        {(view === "overview" || view === "weapons") && (
+          <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
+        )}
       </div>
       {/* ---- TEST INTERFACE blocks moved inside main scroll area below ---- */}
       {editing && (
