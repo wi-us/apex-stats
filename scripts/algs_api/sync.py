@@ -170,6 +170,7 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("reference", help="sync /v1/maps and /v1/characters")
     sub.add_parser("seasons",   help="sync the season list only")
+    sub.add_parser("all",       help="sync every season returned by /v1/seasons")
     sp = sub.add_parser("season", help="sync a full season tree")
     sp.add_argument("--id", required=True)
     se = sub.add_parser("event",  help="sync one event")
@@ -187,6 +188,13 @@ def main() -> None:
         if args.cmd == "seasons":
             for s in client.seasons():
                 db.upsert_season(conn, s)
+            return
+        if args.cmd == "all":
+            for s in client.seasons():
+                db.upsert_season(conn, s)
+                print(f"[sync] season {s['id']} ({s.get('name')})",
+                      file=sys.stderr)
+                _sync_season_full(conn, s["id"])
             return
         if args.cmd == "season":
             _sync_season_full(conn, args.id)

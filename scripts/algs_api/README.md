@@ -43,7 +43,10 @@ The same data can later be mirrored to the Lovable Cloud database.
 ## Typical workflow
 
 ```bash
-# 1. Pull a season (or a specific event)
+# 1. Pull every available season in one go
+python -m scripts.algs_api.sync all
+
+# ...or pull a specific season / event / series
 python -m scripts.algs_api.sync seasons
 python -m scripts.algs_api.sync season --id 01KEAJYDXP9CBK44PPW7XWDNB3
 python -m scripts.algs_api.sync event  --id 01KH2GCEGZH7ZYY3FFKW8R4BAF
@@ -82,3 +85,12 @@ Override via env vars or CLI flags:
 ALGS uses ULIDs for map ids. We map them to the canonical short ids used
 everywhere else in the project (`storm_point`, `worlds_edge`, ...).
 The mapping lives in `db.MAP_ID_BY_ULID`.
+
+## Available seasons
+
+`GET /v1/seasons` currently returns only **Year 5** (`01JK2JQ40W0DDTZCWDB8WTWCBA`)
+and **Year 6** (`01KEAJYDXP9CBK44PPW7XWDNB3`). Older ALGS years are not
+exposed by the public API — for those tournaments fall back to the
+Liquipedia scraper under `scripts/scrape_liquipedia/`. If the official
+endpoint starts returning more season ULIDs later, `sync all` will pick
+them up automatically.
