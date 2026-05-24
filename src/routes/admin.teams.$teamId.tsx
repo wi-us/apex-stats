@@ -542,8 +542,30 @@ function TeamDetail() {
           )}
         </div>
       </div>
-      {/* ---- TEST INTERFACE blocks: data we have per team but the production UI doesn't surface yet ---- */}
-      <div className="border-t border-dashed border-warning/40 bg-warning/[0.03] p-6">
+      {/* ---- TEST INTERFACE blocks moved inside main scroll area below ---- */}
+      {editing && (
+        <EditTeamModal
+          row={editing}
+          onChange={setEditing}
+          onCancel={() => setEditing(null)}
+          onSave={() => { updateTeam(editing.id, editing); setEditing(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function TestInterfaceSection({
+  detail,
+  isLoading,
+  error,
+}: {
+  detail: TeamDetail | undefined;
+  isLoading: boolean;
+  error: unknown;
+}) {
+  return (
+      <div className="mt-6 rounded-sm border border-dashed border-warning/40 bg-warning/[0.03] p-4">
         <div className="mb-4 flex items-center gap-2">
           <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">
             Test interface
@@ -551,11 +573,11 @@ function TeamDetail() {
           <span className="text-xs text-muted-foreground">
             Дополнительные данные из ALGS, ещё не интегрированные в основной интерфейс
           </span>
-          {detailQuery.isLoading && (
+          {isLoading && (
             <span className="text-xs text-muted-foreground">· loading…</span>
           )}
-          {detailQuery.error && (
-            <span className="text-xs text-destructive">· {(detailQuery.error as Error).message}</span>
+          {error && (
+            <span className="text-xs text-destructive">· {(error as Error).message}</span>
           )}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
@@ -682,15 +704,6 @@ function TeamDetail() {
           </TestPanel>
         </div>
       </div>
-      {editing && (
-        <EditTeamModal
-          row={editing}
-          onChange={setEditing}
-          onCancel={() => setEditing(null)}
-          onSave={() => { updateTeam(editing.id, editing); setEditing(null); }}
-        />
-      )}
-    </div>
   );
 }
 
