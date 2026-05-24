@@ -5,15 +5,13 @@ Liquipedia Apex Legends tournament scraper.
 Шаги:
   1) Грузит индекс турниров (по умолчанию A-Tier 2025).
   2) Для каждого турнира:
-     - открывает страницу на широком viewport (1400x1080) и собирает
-       логотип + полное имя команды из таблицы `.standings-ffa`;
-     - открывает её же на узком viewport (700x1080) и собирает team-tag
-       (Liquipedia адаптивно подменяет полное имя на сокращение);
-     - открывает каждую вкладку игры из `ul.panel-tabs__list`
-       (кроме `#Overall_standings`) и собирает участников.
+     - открывает страницу на широком viewport (1400x1080);
+     - сначала ищет финальный battle-royale блок внутри
+       `.mw-content-ltr.mw-parser-output` и собирает ровно его команды/игры;
+     - если такого блока нет, использует fallback на `.standings-ffa`.
   3) Сохраняет всё в JSON-кэш под `--out`.
 
-После скрейпа используй `upload.py` для заливки в Lovable Cloud.
+После скрейпа работаем с JSON-кэшем.
 
 Usage:
   python scrape.py --out data --tier A --year 2025
