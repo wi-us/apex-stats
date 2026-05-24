@@ -11,6 +11,9 @@ import {
   type TeamDetail,
   type TeamMatchStat,
   type TeamPoiPick,
+  type TeamPlayer,
+  type TeamRosterMember,
+  type TeamWeaponStat,
 } from "@/lib/algs-team-fetchers";
 
 export const Route = createFileRoute("/admin/teams/$teamId")({ component: TeamDetail });
@@ -555,6 +558,17 @@ function TeamDetail() {
             </div>
           )}
         </div>
+
+        {/* ---- Active roster (promoted from test) ---- */}
+        <RosterPanel
+          roster={detail?.activeRoster ?? []}
+          players={detail?.players ?? []}
+          isLoading={detailQuery.isLoading}
+        />
+
+        {/* ---- Weapon tier list (promoted from test) ---- */}
+        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
+
         <TestInterfaceSection
           detail={detail}
           isLoading={detailQuery.isLoading}
