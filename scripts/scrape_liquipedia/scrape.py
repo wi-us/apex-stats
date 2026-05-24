@@ -24,6 +24,7 @@ import json
 import re
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
@@ -43,6 +44,29 @@ def slugify(s: str) -> str:
     s = s.strip().lower()
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return s.strip("-") or "unknown"
+
+
+# --------------------------------------------------------------------------- #
+# Map name normalization
+# --------------------------------------------------------------------------- #
+# Keys match files in scripts/tracking/shared/canonical_maps/*.json
+_MAP_ALIASES: dict[str, str] = {
+    "storm point": "storm_point",
+    "world's edge": "worlds_edge",
+    "worlds edge": "worlds_edge",
+    "e-district": "e_district",
+    "edistrict": "e_district",
+    "broken moon": "broken_moon",
+    "olympus": "olympus",
+    "kings canyon": "kings_canyon",
+}
+
+
+def normalize_map(name: str | None) -> str | None:
+    if not name:
+        return None
+    key = re.sub(r"\s+", " ", name).strip().lower()
+    return _MAP_ALIASES.get(key)
 
 
 def load(page: Page, url: str, wait: str = "domcontentloaded") -> str:
