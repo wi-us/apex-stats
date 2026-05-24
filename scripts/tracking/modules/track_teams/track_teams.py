@@ -1607,6 +1607,43 @@ class SlotTracker:
                 and self.near_anchor_consecutive >= self.min_consecutive_for_active):
             self.activated = True
 
+    def anchor_radius_at(self, t_now: float) -> Optional[float]:
+        """Прогрессивный радиус стартового якоря (canonical px) на момент t_now.
+
+        Возвращает None, когда якорь больше не активен — это значит ассоциатор
+        должен использовать обычный motion-gate без жёсткого фильтра:
+          - якорь не сидирован (init_canonical_px is None), или
+          - anchor_lock_sec == 0 (фича выключена), или
+          - время вышло (t > lock+grow), или
+          - LOW-якорь промахнулся первые lock секунд (anchor_lost=True).
+        """
+        if self.init_canonical_px is None:
+            return None
+        if self.anchor_lock_sec <= 0.0:
+            return None
+        if self.anchor_lost:
+            return None
+        if self.anchor_t0 is None:
+            self.anchor_t0 = float(t_now)
+        dt = float(t_now) - float(self.anchor_t0)
+        lock = self.anchor_lock_sec
+        grow = self.anchor_grow_sec
+        r0 = self.anchor_r0_px
+        r_max = self.anchor_r_max_px
+        # LOW-anchor watchdog: после lock-окна без единого попадания внутрь
+        # отключаем фильтр (motion_detect мог зацепиться за случайный блик).
+        if (dt >= lock and self.anchor_conf == "LOW"
+                and self.anchor_inside_hits == 0):
+            self.anchor_lost = True
+            return None
+        if dt <= lock:
+            return r0
+        if grow <= 0 or dt >= (lock + grow):
+            return None  # отпускаем якорь — дальше обычный motion-gate
+        # Линейный рост r0 → r_max в окне [lock, lock+grow].
+        u = (dt - lock) / grow
+        return r0 + (r_max - r0) * u
+
     def _snapshot(self) -> dict:
         return {
             "team_id": self.team.id,
