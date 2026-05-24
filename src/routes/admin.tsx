@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { useAuth } from "@/lib/auth";
+import { fetchAlgsBundle } from "@/lib/algs-fetchers";
+import { replaceFromAlgs } from "@/lib/admin-store";
 
 export const Route = createFileRoute("/admin")({
   component: () => (
@@ -41,6 +43,14 @@ const systemItems: NavItem[] = [
 
 function AdminLayout() {
   const { role } = useAuth();
+  const algsLoadedRef = useRef(false);
+  useEffect(() => {
+    if (algsLoadedRef.current) return;
+    algsLoadedRef.current = true;
+    fetchAlgsBundle()
+      .then(replaceFromAlgs)
+      .catch((e) => console.warn("[admin] ALGS bundle load failed", e));
+  }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const dataActive = dataItems.some((i) => pathname.startsWith(i.to));
   const calibActive = calibrationItems.some((i) => pathname.startsWith(i.to));

@@ -10,8 +10,7 @@ import {
   type TournamentStage,
   type MatchFull,
 } from "@/lib/mock-match";
-import { useAdminStore, type AnalysisProcess } from "@/lib/admin-store";
-import { fetchAlgsBundle } from "@/lib/algs-fetchers";
+import { useAdminStore, setTournaments, type AnalysisProcess } from "@/lib/admin-store";
 import { TeamLogo } from "@/components/admin/TeamLogo";
 
 export const Route = createFileRoute("/admin/tournaments")({ component: TournamentsAdmin });
@@ -97,27 +96,10 @@ function fmtRelative(ts: number): string {
 type TabKey = "overview" | "matches" | "teams" | "maps";
 
 function TournamentsAdmin() {
-  const { matches: allMatches, teams: allTeams, processes } = useAdminStore();
-  const [rows, setRows] = useState<Tournament[]>(seedT);
-  const [algsMatches, setAlgsMatches] = useState<MatchFull[]>([]);
-  const [loadingAlgs, setLoadingAlgs] = useState(true);
-  const [algsError, setAlgsError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoadingAlgs(true);
-    fetchAlgsBundle()
-      .then((b) => {
-        if (cancelled) return;
-        if (b.tournaments.length > 0) setRows(b.tournaments);
-        setAlgsMatches(b.matches);
-        setAlgsError(null);
-      })
-      .catch((e) => !cancelled && setAlgsError(e?.message ?? String(e)))
-      .finally(() => !cancelled && setLoadingAlgs(false));
-    return () => { cancelled = true; };
-  }, []);
-  const matchesSource = algsMatches.length > 0 ? algsMatches : allMatches;
+  const { matches: allMatches, teams: allTeams, processes, tournaments: storeTournaments } = useAdminStore();
+  const rows = storeTournaments.length > 0 ? storeTournaments : seedT;
+  const setRows = (next: Tournament[]) => setTournaments(next);
+  const matchesSource = allMatches;
   const [editing, setEditing] = useState<Tournament | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [tabById, setTabById] = useState<Record<string, TabKey>>({});
