@@ -5,15 +5,13 @@ Liquipedia Apex Legends tournament scraper.
 Шаги:
   1) Грузит индекс турниров (по умолчанию A-Tier 2025).
   2) Для каждого турнира:
-     - открывает страницу на широком viewport (1400x1080) и собирает
-       логотип + полное имя команды из таблицы `.standings-ffa`;
-     - открывает её же на узком viewport (700x1080) и собирает team-tag
-       (Liquipedia адаптивно подменяет полное имя на сокращение);
-     - открывает каждую вкладку игры из `ul.panel-tabs__list`
-       (кроме `#Overall_standings`) и собирает участников.
+     - открывает страницу на широком viewport (1400x1080);
+     - сначала ищет финальный battle-royale блок внутри
+       `.mw-content-ltr.mw-parser-output` и собирает ровно его команды/игры;
+     - если такого блока нет, использует fallback на `.standings-ffa`.
   3) Сохраняет всё в JSON-кэш под `--out`.
 
-После скрейпа используй `upload.py` для заливки в Lovable Cloud.
+После скрейпа работаем с JSON-кэшем.
 
 Usage:
   python scrape.py --out data --tier A --year 2025
@@ -140,6 +138,23 @@ def _is_team_href(href: str) -> bool:
     return True
 
 
+def _parse_place(text: str) -> int | None:
+    m = re.match(r"\s*(\d+)", text or "")
+    return int(m.group(1)) if m else None
+
+
+def _parse_int(text: str) -> int | None:
+    m = re.search(r"-?\d+", text or "")
+    return int(m.group(0)) if m else None
+
+
+def _looks_like_tag(text: str | None) -> bool:
+    if not text:
+        return False
+    compact = re.sub(r"[^A-Za-z0-9]", "", text)
+    return 1 <= len(compact) <= 6 and compact.upper() == compact
+
+
 def _team_from_row(tr) -> dict[str, Any] | None:
     """Extract team info from one standings <tr>.
 
@@ -176,17 +191,22 @@ def _team_from_row(tr) -> dict[str, Any] | None:
     tag_span = bt.select_one("span.name.visible-xs")
     name = name_span.get_text(" ", strip=True) if name_span else team_a.get_text(" ", strip=True)
     tag = tag_span.get_text(" ", strip=True) if tag_span else None
-    # If wide & short variants are identical, the team simply has no abbreviation.
-    if tag and tag == name:
+    # Teams that are already short (TSM/CIMJ/DGAP/etc.) often render as one
+    # `span.name`; keep that value as the tag instead of dropping it.
+    if not tag and _looks_like_tag(name):
+        tag = name
+    elif tag and tag == name and not _looks_like_tag(tag):
         tag = None
 
-    # Place from first cell
+    # Place from first table cell or battle-royale rank cell.
     tds = tr.find_all("td")
     place: int | None = None
     if tds:
-        m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
-        if m:
-            place = int(m.group(1))
+        place = _parse_place(tds[0].get_text(" ", strip=True))
+    if place is None:
+        rank_cell = tr.select_one(".cell--rank")
+        if rank_cell:
+            place = _parse_place(rank_cell.get_text(" ", strip=True))
 
     return {
         "place": place,
@@ -198,6 +218,53 @@ def _team_from_row(tr) -> dict[str, Any] | None:
     }
 
 
+def _extract_battle_royale(br) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Extract Final battle-royale standings from Liquipedia's panel table.
+
+    This is the block under `.mw-content-ltr.mw-parser-output` with rows like
+    `div.panel-table__row[data-js-battle-royale="row"]`. It contains exactly
+    the final lobby teams plus one nested `.cell--game` per played game.
+    """
+    rows = br.select('div.panel-table__row[data-js-battle-royale="row"]')
+    if not rows:
+        return [], []
+
+    header = br.select_one("div.panel-table__row.row--header")
+    game_labels: list[str] = []
+    if header:
+        for cell in header.select(":scope > div.cell--game-container div.cell--game"):
+            label = cell.select_one(".panel-table__cell-text")
+            game_labels.append(label.get_text(" ", strip=True) if label else f"Game {len(game_labels) + 1}")
+
+    teams: list[dict[str, Any]] = []
+    games: list[dict[str, Any]] = [
+        {"game_no": i + 1, "tab_id": str(i + 1), "label": label or f"Game {i + 1}", "participants": []}
+        for i, label in enumerate(game_labels)
+    ]
+    for row in rows:
+        info = _team_from_row(row)
+        if info is None:
+            continue
+        teams.append({k: info[k] for k in ("slug", "name", "tag", "logo_url", "url")})
+        for i, game_cell in enumerate(row.select(":scope > div.cell--game-container > div.cell--game")):
+            while i >= len(games):
+                games.append({"game_no": i + 1, "tab_id": str(i + 1), "label": f"Game {i + 1}", "participants": []})
+            placement = game_cell.select_one(".panel-table__cell__game-placement")
+            kills = game_cell.select_one(".panel-table__cell__game-kills")
+            games[i]["participants"].append(
+                {
+                    "place": _parse_place(placement.get_text(" ", strip=True) if placement else ""),
+                    "team_slug": info["slug"],
+                    "team_text": info["name"],
+                    "kills": _parse_int(kills.get_text(" ", strip=True) if kills else ""),
+                }
+            )
+
+    for game in games:
+        game["participants"].sort(key=lambda p: p["place"] if p["place"] is not None else 9999)
+    return teams, games
+
+
 def extract_teams_and_games(html: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Parse the standings-ffa table once.
 
@@ -206,7 +273,14 @@ def extract_teams_and_games(html: str) -> tuple[list[dict[str, Any]], list[dict[
     label them (item 0 = "Overall standings", item N = "Game N").
     """
     soup = BeautifulSoup(html, "html.parser")
-    cont = soup.select_one("div.standings-ffa")
+    content = soup.select_one("div.mw-content-ltr.mw-parser-output") or soup
+    battle_blocks = content.select("div.battle-royale[data-js-battle-royale-id]")
+    for br in reversed(battle_blocks):
+        teams, games = _extract_battle_royale(br)
+        if teams and games:
+            return teams, games
+
+    cont = content.select_one("div.standings-ffa")
     if not cont:
         return [], []
     table = cont.select_one("table.table2__table")
