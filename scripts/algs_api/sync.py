@@ -19,6 +19,21 @@ from pathlib import Path
 from . import client, db
 
 
+# Module-level run options (set from CLI in main()).
+SKIP_EXISTING = False
+
+
+def _series_has_matches(conn, series_id: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM matches WHERE series_id=? LIMIT 1", (series_id,)
+    ).fetchone()
+    return row is not None
+
+
+def _log_skip(kind: str, ident: str, reason: str) -> None:
+    print(f"[sync] skip {kind} {ident}: {reason}", file=sys.stderr)
+
+
 # -------------------------------- helpers ------------------------------------
 
 def _sync_reference(conn) -> None:
@@ -32,6 +47,9 @@ def _sync_reference(conn) -> None:
 
 def _sync_series_full(conn, series_id: str) -> None:
     """Sync a series + its matches + POI draft + stats."""
+    if SKIP_EXISTING and _series_has_matches(conn, series_id):
+        _log_skip("series", series_id, "already in DB (--skip-existing)")
+        return
     s = client.series(series_id)
     db.upsert_series(conn, s)
 
@@ -43,6 +61,8 @@ def _sync_series_full(conn, series_id: str) -> None:
     try:
         for m in client.series_matches(series_id):
             db.upsert_match(conn, m)
+    except client.AlgsNotFound:
+        _log_skip("matches", series_id, "no /matches endpoint (404)")
     except client.AlgsApiError as e:
         print(f"[sync] series {series_id}: matches: {e}", file=sys.stderr)
 
@@ -52,6 +72,8 @@ def _sync_series_full(conn, series_id: str) -> None:
             db.upsert_team(conn, t)
             for pl in t.get("players") or []:
                 db.upsert_player(conn, pl)
+    except client.AlgsNotFound:
+        _log_skip("teams", series_id, "no /teams endpoint (404)")
     except client.AlgsApiError as e:
         print(f"[sync] series {series_id}: teams: {e}", file=sys.stderr)
 
@@ -60,6 +82,8 @@ def _sync_series_full(conn, series_id: str) -> None:
         stats = client.stats_series(series_id)
         for t in stats.get("teams") or []:
             db.upsert_series_team_stats(conn, series_id, t)
+    except client.AlgsNotFound:
+        _log_skip("stats", series_id, "no stats yet (404)")
     except client.AlgsApiError as e:
         print(f"[sync] series {series_id}: stats_series: {e}", file=sys.stderr)
 
@@ -75,6 +99,10 @@ def _sync_series_full(conn, series_id: str) -> None:
             mid = ms.get("matchId") or row["id"]
             for t in ms.get("teams") or []:
                 db.upsert_match_team_stats(conn, mid, t)
+        except client.AlgsNotFound:
+            _log_skip("match-stats",
+                      f"{series_id}#{row['match_number']}",
+                      "no stats yet (404)")
         except client.AlgsApiError as e:
             print(f"[sync] series {series_id} match #{row['match_number']}: {e}",
                   file=sys.stderr)
@@ -89,6 +117,8 @@ def _sync_series_full(conn, series_id: str) -> None:
                 db.upsert_spawn_location(conn, loc)
             for pick in client.poi_draft_picks(draft_id):
                 db.upsert_poi_pick(conn, draft_id, pick)
+        except client.AlgsNotFound:
+            _log_skip("poi-draft", draft_id, "missing (404)")
         except client.AlgsApiError as e:
             print(f"[sync] series {series_id} poi {draft_id}: {e}",
                   file=sys.stderr)
@@ -99,6 +129,9 @@ def _sync_series_full(conn, series_id: str) -> None:
 def _sync_event_full(conn, event_id: str) -> None:
     try:
         ev = client.event(event_id)
+    except client.AlgsNotFound:
+        _log_skip("event", event_id, "not found (404)")
+        return
     except client.AlgsApiError as e:
         print(f"[sync] event {event_id}: {e}", file=sys.stderr)
         return
@@ -121,6 +154,8 @@ def _sync_event_full(conn, event_id: str) -> None:
         for m in client.event_maps(event_id):
             db.upsert_map(conn, {**m, "id": m.get("mapId") or m.get("id"),
                                   "active": True})
+    except client.AlgsNotFound:
+        pass
     except client.AlgsApiError as e:
         print(f"[sync] event {event_id}: maps: {e}", file=sys.stderr)
 
@@ -138,6 +173,8 @@ def _sync_event_full(conn, event_id: str) -> None:
                                          "tournamentId": tournament.get("id"),
                                          "seasonId": season.get("id")})
                 _sync_series_full(conn, s["id"])
+    except client.AlgsNotFound:
+        _log_skip("event-structure", event_id, "not found (404)")
     except client.AlgsApiError as e:
         print(f"[sync] event {event_id}: structure: {e}", file=sys.stderr)
 
@@ -145,6 +182,9 @@ def _sync_event_full(conn, event_id: str) -> None:
 def _sync_season_full(conn, season_id: str) -> None:
     try:
         st = client.season_structure(season_id)
+    except client.AlgsNotFound:
+        _log_skip("season", season_id, "structure not found (404)")
+        return
     except client.AlgsApiError as e:
         print(f"[sync] season {season_id}: {e}", file=sys.stderr)
         return
@@ -167,6 +207,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(prog="scripts.algs_api.sync")
     ap.add_argument("--db", type=Path, default=None,
                     help="SQLite path (default: scripts/algs_api/data/algs.sqlite)")
+    ap.add_argument("--skip-existing", action="store_true",
+                    help="Skip series that already have matches in the local DB. "
+                         "Useful to resume an interrupted sync without re-hitting the API.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("reference", help="sync /v1/maps and /v1/characters")
     sub.add_parser("seasons",   help="sync the season list only")
@@ -178,6 +221,9 @@ def main() -> None:
     sr = sub.add_parser("series", help="sync one series")
     sr.add_argument("--id", required=True)
     args = ap.parse_args()
+
+    global SKIP_EXISTING
+    SKIP_EXISTING = bool(args.skip_existing)
 
     with db.connect(args.db) as conn:
         # Reference is cheap and harmless; always refresh.

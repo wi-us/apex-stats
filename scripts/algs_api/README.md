@@ -46,6 +46,10 @@ The same data can later be mirrored to the Lovable Cloud database.
 # 1. Pull every available season in one go
 python -m scripts.algs_api.sync all
 
+# Resume an interrupted run without re-hitting the API for series
+# that already have matches in the local SQLite DB:
+python -m scripts.algs_api.sync --skip-existing all
+
 # ...or pull a specific season / event / series
 python -m scripts.algs_api.sync seasons
 python -m scripts.algs_api.sync season --id 01KEAJYDXP9CBK44PPW7XWDNB3
@@ -61,6 +65,16 @@ python -m scripts.algs_api.build_poi_hints \
     --map    storm_point \
     --out    scripts/tracking/modules/track_teams/configs/poi_hints.json
 ```
+
+## 404s during sync
+
+Some series are listed in an event's structure but their downstream
+endpoints (`/matches`, `/stats/series/...`, `/poi-drafts/...`) are not
+published yet (matches not finished, POI draft cancelled, etc.). Those
+now log as `[sync] skip ...: ... (404)` and the run keeps going instead
+of treating them as errors. 404 responses are cached so subsequent runs
+skip them locally without another network round-trip until the cache TTL
+expires.
 
 ## Rate limiting / blocking protection
 
