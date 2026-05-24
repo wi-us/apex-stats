@@ -191,3 +191,94 @@ function ActionRow({ action }: { action: typeof recentActions[number] }) {
     </div>
   );
 }
+
+const SYNC_KEY = "admin:algsSync:at";
+const STALE_MS = 60 * 60 * 1000; // 1h
+
+function AlgsSyncCard() {
+  const { teams, tournaments, matches, customMaps } = useAdminStore();
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [lastSync, setLastSync] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    const raw = window.localStorage.getItem(SYNC_KEY);
+    return raw ? Number(raw) : null;
+  });
+  const ranOnce = useRef(false);
+
+  const doSync = async () => {
+    setStatus("loading");
+    setError(null);
+    try {
+      const bundle = await fetchAlgsBundle();
+      replaceFromAlgs(bundle);
+      const ts = bundle.fetchedAt;
+      window.localStorage.setItem(SYNC_KEY, String(ts));
+      setLastSync(ts);
+      setStatus("ok");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setStatus("err");
+    }
+  };
+
+  // Auto-sync once per session if data is stale.
+  useEffect(() => {
+    if (ranOnce.current) return;
+    ranOnce.current = true;
+    const stale = !lastSync || Date.now() - lastSync > STALE_MS;
+    if (stale) void doSync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const ago = lastSync ? formatAgo(Date.now() - lastSync) : "never";
+
+  return (
+    <section className="hud-panel p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-sm border border-border bg-surface-2">
+            <Database className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <div className="text-sm font-bold uppercase tracking-wider">ALGS Data Sync</div>
+            <div className="text-xs text-muted-foreground">
+              Tournaments, Teams, Matches, Maps · last sync: <span className="text-mono">{ago}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-mono text-xs text-muted-foreground">
+            {tournaments.length} tour · {teams.length} teams · {matches.length} matches · {customMaps.length} maps
+          </div>
+          <button
+            onClick={doSync}
+            disabled={status === "loading"}
+            className="text-mono inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-primary/20 disabled:opacity-60"
+          >
+            <RefreshCw className={`h-3 w-3 ${status === "loading" ? "animate-spin" : ""}`} />
+            {status === "loading" ? "Syncing…" : "Sync now"}
+          </button>
+        </div>
+      </div>
+      {status === "err" && error && (
+        <div className="mt-2 rounded-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          Sync failed: {error}
+        </div>
+      )}
+      {status === "ok" && (
+        <div className="mt-2 text-xs text-emerald-400">Synced from ALGS database.</div>
+      )}
+    </section>
+  );
+}
+
+function formatAgo(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
