@@ -406,8 +406,25 @@ function TeamDetail() {
           </div>
         </div>
 
+        {/* ---- View switcher ---- */}
+        <div className="mt-4 flex items-center gap-1.5">
+          {([
+            ["overview", "Overview"],
+            ["maps", "Maps"],
+            ["weapons", "Weapons"],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setView(k)}
+              className={`rounded-sm border px-3 py-1.5 text-xs uppercase tracking-wider ${view === k ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-surface hover:bg-muted"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* ---- Active roster + Next matches side-by-side ---- */}
-        <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+        <div className="mt-4 grid gap-4 md:grid-cols-[auto_minmax(280px,1fr)] items-start">
           <RosterPanel
             roster={detail?.activeRoster ?? []}
             players={detail?.players ?? []}
@@ -438,23 +455,6 @@ function TeamDetail() {
               </ScrollList>
             )}
           </Panel>
-        </div>
-
-        {/* ---- View switcher ---- */}
-        <div className="mt-4 flex items-center gap-1.5">
-          {([
-            ["overview", "Overview"],
-            ["maps", "Maps"],
-            ["weapons", "Weapons"],
-          ] as const).map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setView(k)}
-              className={`rounded-sm border px-3 py-1.5 text-xs uppercase tracking-wider ${view === k ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-surface hover:bg-muted"}`}
-            >
-              {label}
-            </button>
-          ))}
         </div>
 
         {view === "overview" && (
