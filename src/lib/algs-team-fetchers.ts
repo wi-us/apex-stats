@@ -115,6 +115,10 @@ export type TeamDetail = {
   currentSeason: TeamCurrentSeason | null;
   activeRoster: TeamRosterMember[];
   weapons: TeamWeaponStat[];
+  /** Player ids that played the most recent match for this team. */
+  lastMatchPlayerIds: string[];
+  /** ISO timestamp of that most recent match, if known. */
+  lastMatchAt: string | null;
 };
 
 /** Fetch everything we render on /admin/teams/$teamId in one parallel batch. */
