@@ -143,6 +143,8 @@ def get(path: str, *, params: dict[str, Any] | None = None,
     if not force:
         cached = _cache_load(url, ttl)
         if cached is not None:
+            if isinstance(cached, dict) and cached.get("__error__") == "not_found":
+                raise AlgsNotFound(f"404 not found (cached): {url}")
             return cached
 
     delay = 1.0
