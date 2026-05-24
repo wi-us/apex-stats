@@ -890,6 +890,7 @@ def associate_hungarian(
     weights: dict,
     near_miss: Optional[Counter] = None,
     near_miss_threshold: float = 0.25,
+    debug_sink: Optional[list] = None,
 ) -> dict[str, dict]:
     """Глобальное назначение кандидатов слотам венгерским алгоритмом.
 
@@ -914,13 +915,18 @@ def associate_hungarian(
         # Fallback: жадный по cost, чтобы скрипт работал без scipy.
         return _associate_greedy(candidates, slot_trackers, t_now, weights,
                                  near_miss=near_miss,
-                                 near_miss_threshold=near_miss_threshold)
+                                 near_miss_threshold=near_miss_threshold,
+                                 debug_sink=debug_sink)
 
     slots = list(slot_trackers.values())
     n_slots = len(slots)
     n_cands = len(candidates)
     INF = 1e6
     cost = np.full((n_slots, n_cands), INF, dtype=np.float64)
+    # Per-cell breakdown (only filled when debug_sink is requested).
+    breakdown: list[list[Optional[dict]]] = (
+        [[None] * n_cands for _ in range(n_slots)] if debug_sink is not None else []
+    )
 
     # Per-slot weight overrides + dynamic late-game gate shrink (see _eff_w).
     overrides = weights.get("slot_overrides") or {}
@@ -989,12 +995,16 @@ def associate_hungarian(
             color_mismatch = 0.0 if cand["team_id"] == st.team.id else delta
             c = (beta * world_term + gamma * shape_pen + color_mismatch
                  + eta_anchor * anchor_pen)
+            hyst_bonus = 0.0
+            iou_bonus = 0.0
+            iou_val = 0.0
             # Hysteresis: предыдущий tracked-blob этого же слота получает скидку
             if getattr(st, "last_frame_px", None) is not None:
                 lfx, lfy = st.last_frame_px
                 cfx, cfy = cand["frame_px"]
                 if math.hypot(cfx - lfx, cfy - lfy) < 25.0:
                     c -= eps
+                    hyst_bonus = eps
             # PR-2: identity anchor — если кандидат сильно перекрывается с прошлым bbox
             # этого слота, даём ему скидку (предотвращает "перепрыг" на чужую плашку
             # того же цвета в массовых сценах вроде final-battle).
@@ -1004,7 +1014,22 @@ def associate_hungarian(
                 iou = _bbox_iou_xywh(prev_bb, cand_bb)
                 if iou >= iou_gate:
                     c -= eps_iou * iou
+                    iou_bonus = eps_iou * iou
+                    iou_val = iou
             cost[i, j] = max(0.0, c)
+            if debug_sink is not None:
+                breakdown[i][j] = {
+                    "d_pred_px": round(d, 1),
+                    "radius_px": round(radius, 1),
+                    "world": round(beta * world_term, 4),
+                    "shape": round(gamma * shape_pen, 4),
+                    "color_mismatch": round(color_mismatch, 4),
+                    "anchor_pen": round(eta_anchor * anchor_pen, 4),
+                    "hyst_bonus": round(hyst_bonus, 4),
+                    "iou_bonus": round(iou_bonus, 4),
+                    "iou": round(iou_val, 3),
+                    "same_color": bool(cand["team_id"] == st.team.id),
+                }
 
     # Pad to square so unmatched rows/cols are allowed.
     n = max(n_slots, n_cands)
@@ -1012,6 +1037,7 @@ def associate_hungarian(
     pad[:n_slots, :n_cands] = cost
     row_ind, col_ind = _hungarian(pad)
     result: dict[str, dict] = {}
+    winners_by_slot: dict[int, int] = {}
     for r, c in zip(row_ind, col_ind):
         if r >= n_slots or c >= n_cands:
             continue
@@ -1019,6 +1045,7 @@ def associate_hungarian(
             continue
         st = slots[r]
         result[st.team.id] = candidates[c]
+        winners_by_slot[r] = c
         # Учёт попадания внутрь стартового якоря (для LOW-watchdog).
         if st.init_canonical_px is not None:
             cand_cx, cand_cy = candidates[c]["canonical_px"]
@@ -1037,6 +1064,49 @@ def associate_hungarian(
                 if col[ri] <= win_c + max(0.05, near_miss_threshold):
                     loser = slots[ri]
                     near_miss[(st.team.id, loser.team.id)] += 1
+    # Debug dump: per-slot view of best/second/components (only finite cells).
+    if debug_sink is not None:
+        for i, st in enumerate(slots):
+            # Gather all gated candidates for this slot.
+            gated: list[dict] = []
+            for j in range(n_cands):
+                if cost[i, j] >= INF / 2:
+                    continue
+                cand = candidates[j]
+                bd = breakdown[i][j] or {}
+                gated.append({
+                    "j": int(j),
+                    "cand_team_id": cand["team_id"],
+                    "cand_canonical_px": [round(cand["canonical_px"][0], 1),
+                                          round(cand["canonical_px"][1], 1)],
+                    "color_score": round(float(cand.get("color_score") or 0.0), 3),
+                    "cost": round(float(cost[i, j]), 4),
+                    **bd,
+                })
+            if not gated and i not in winners_by_slot:
+                # nothing to report for this slot
+                continue
+            gated.sort(key=lambda x: x["cost"])
+            win_j = winners_by_slot.get(i)
+            best_cost = gated[0]["cost"] if gated else None
+            second_cost = gated[1]["cost"] if len(gated) > 1 else None
+            margin = (second_cost - best_cost) if (best_cost is not None and second_cost is not None) else None
+            entry = {
+                "slot_team_id": st.team.id,
+                "slot": getattr(st.team, "slot", None),
+                "slot_id": getattr(st.team, "slot_id", None),
+                "state": st.state,
+                "winner_j": (int(win_j) if win_j is not None else None),
+                "winner_cost": (round(float(cost[i, win_j]), 4)
+                                if win_j is not None else None),
+                "best_cost": best_cost,
+                "second_cost": second_cost,
+                "margin": (round(float(margin), 4) if margin is not None else None),
+                "n_gated": len(gated),
+                # cap candidates list to keep jsonl manageable
+                "candidates": gated[:6],
+            }
+            debug_sink.append(entry)
     return result
 
 
