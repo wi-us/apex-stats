@@ -296,8 +296,9 @@ function TeamDetail() {
         </a>
       </header>
       <div className="flex-1 overflow-auto p-6">
-        {/* ---- Filters (sync source for all panels below) ---- */}
-        <div className="hud-panel mb-4 p-3">
+        {/* ---- Sticky filters + view switcher ---- */}
+        <div className="sticky top-0 z-30 -mx-6 -mt-6 mb-4 border-b border-border bg-background/95 px-6 pt-6 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="hud-panel p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="label-eyebrow text-xs">Period</div>
             <button
@@ -407,7 +408,7 @@ function TeamDetail() {
         </div>
 
         {/* ---- View switcher ---- */}
-        <div className="mt-4 flex items-center gap-1.5">
+        <div className="mt-3 flex items-center gap-1.5">
           {([
             ["overview", "Overview"],
             ["maps", "Maps"],
@@ -421,6 +422,7 @@ function TeamDetail() {
               {label}
             </button>
           ))}
+        </div>
         </div>
 
         {/* ---- Active roster + Next matches side-by-side ---- */}
@@ -523,7 +525,7 @@ function TeamDetail() {
         {view === "overview" && (
         <>
         {/* ---- Form dynamics ---- */}
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 grid-cols-1">
           <Sparkline
             title="Placement over time"
             hint={["lower is better", "inverted axis"]}
