@@ -2439,17 +2439,30 @@ def main():
                         candidates, slot_trackers, t_now, da_weights_dyn,
                         near_miss=near_miss_counter,
                         debug_sink=dbg_sink)
-                    # PR-4: frame-level sanity gate. Если на одном кадре сразу
-                    # >= N слотов получили детекцию, скакнувшую дальше
-                    # jump_switch_threshold_px от прошлой канонической позиции,
-                    # — это не таргет-свитч, а глобальное событие (cut/killcam/
-                    # сорванная гомография). Кадр отбрасываем целиком: все
-                    # слоты идут в note_miss, никаких accept_observation.
+                    # PR-4 (revised): frame-level sanity gate. Раньше любой
+                    # кадр, где >= N слотов «прыгали» дальше fixed-порога от
+                    # прошлой canonical_px, отбрасывался целиком — это
+                    # выкашивало 100% кадров до 420s, потому что на старте
+                    # все 20 игроков реально движутся быстро и сравнение
+                    # идёт со «стоячей» позицией.
+                    # Новая логика:
+                    #   * порог по умолчанию поднят (см. конфиг);
+                    #   * jump меряем от Kalman-предсказания (vx,vy * dt),
+                    #     а не от устаревшей canonical_px;
+                    #   * если порог пробили — изолируем именно эти слоты
+                    #     (note_miss), остальные слоты кадра остаются
+                    #     валидными и получают accept_observation.
+                    #   * frame_dropped ставим только если бракованных слотов
+                    #     ≥ frame_sanity_max_jumps — это редкий ложный
+                    #     глобальный случай (cut/killcam/сорванная H),
+                    #     отдельно логируем причину.
                     frame_jump_thresh = float(da_weights.get(
-                        "frame_sanity_jump_px", 120.0))
+                        "frame_sanity_jump_px", 250.0))
                     frame_jump_max = int(da_weights.get(
-                        "frame_sanity_max_jumps", 4))
+                        "frame_sanity_max_jumps", 8))
                     bad_jumps = 0
+                    worst_jump_px = 0.0
+                    bad_slot_ids: list[str] = []
                     for t in teams:
                         det = assigns.get(t.id)
                         if det is None:
@@ -2457,17 +2470,32 @@ def main():
                         st = slot_trackers[t.id]
                         if st.canonical_px is None:
                             continue
-                        dx = det["canonical_px"][0] - st.canonical_px[0]
-                        dy = det["canonical_px"][1] - st.canonical_px[1]
-                        if (dx * dx + dy * dy) > (frame_jump_thresh * frame_jump_thresh):
+                        # Predict from Kalman: extrapolate (vx,vy) since last_seen_t.
+                        pred_x, pred_y = st.canonical_px
+                        if (not st.canonical_px_stale
+                                and st.last_seen_t is not None):
+                            dt = max(0.0, t_now - st.last_seen_t)
+                            pred_x += st.vx * dt
+                            pred_y += st.vy * dt
+                        dx = det["canonical_px"][0] - pred_x
+                        dy = det["canonical_px"][1] - pred_y
+                        d2 = dx * dx + dy * dy
+                        if d2 > worst_jump_px * worst_jump_px:
+                            worst_jump_px = math.sqrt(d2)
+                        if d2 > (frame_jump_thresh * frame_jump_thresh):
                             bad_jumps += 1
+                            bad_slot_ids.append(t.id)
                     frame_dropped = bad_jumps >= frame_jump_max
-                    if frame_dropped:
+                    if bad_jumps > 0:
                         cam["frame_sanity_drop"] = {
                             "bad_jumps": bad_jumps,
                             "threshold_px": frame_jump_thresh,
                             "max_jumps": frame_jump_max,
+                            "worst_jump_px": round(worst_jump_px, 1),
+                            "bad_slot_ids": list(bad_slot_ids),
+                            "frame_dropped": bool(frame_dropped),
                         }
+                    bad_slot_set = set(bad_slot_ids)
                     if dbg_sink is not None and da_dbg_fp is not None:
                         dbg_record = {
                             "t": round(t_now, 3),
@@ -2475,6 +2503,9 @@ def main():
                             "n_candidates": len(candidates),
                             "dyn_gate_shrink": round(float(dyn_shrink), 3),
                             "frame_dropped": bool(frame_dropped),
+                            "bad_jumps": int(bad_jumps),
+                            "worst_jump_px": round(worst_jump_px, 1),
+                            "bad_slot_ids": list(bad_slot_ids),
                             "candidates": [
                                 {
                                     "j": j,
@@ -2491,7 +2522,11 @@ def main():
                     for t in teams:
                         st = slot_trackers[t.id]
                         det = assigns.get(t.id)
-                        if det is not None and not frame_dropped:
+                        # Slot-level isolation: дропаем только бракованные
+                        # слоты, кроме случая полного frame_dropped.
+                        if (det is not None
+                                and not frame_dropped
+                                and t.id not in bad_slot_set):
                             snap = st.accept_observation(det, t_now)
                         else:
                             snap = st.note_miss(t_now)
