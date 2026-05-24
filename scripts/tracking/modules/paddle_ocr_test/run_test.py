@@ -142,7 +142,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--crops-dir", required=True, type=Path)
     ap.add_argument("--db", type=Path,
-                    default=Path(__file__).resolve().parents[4]
+                    default=Path(__file__).resolve().parents[3]
                     / "algs_api" / "data" / "algs.sqlite")
     ap.add_argument("--aliases", type=Path, default=None,
                     help="Опциональный JSON с {'aliases': {TAG: [..]}}")
