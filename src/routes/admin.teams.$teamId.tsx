@@ -850,14 +850,9 @@ function RosterPanel({
                     <div className="truncate text-sm font-bold uppercase tracking-wider text-white">{p.name}</div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 divide-x divide-border border-t border-border text-center">
+                <div className="grid grid-cols-2 divide-x divide-border border-t border-border text-center">
                   <Stat label="Matches" value={agg?.matchesPlayed ?? 0} />
                   <Stat label="Kills" value={agg?.kills ?? 0} />
-                  <Stat
-                    label="Downed"
-                    value={agg?.knockedDown ?? 0}
-                    title="Matches in which the player was knocked down at least once (per-match boolean from ALGS). Not knockdowns inflicted."
-                  />
                 </div>
               </div>
             );
