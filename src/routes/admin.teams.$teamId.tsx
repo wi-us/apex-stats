@@ -298,6 +298,8 @@ function TeamDetail() {
         <RosterPanel
           roster={detail?.activeRoster ?? []}
           players={detail?.players ?? []}
+          lastMatchPlayerIds={detail?.lastMatchPlayerIds ?? []}
+          lastMatchAt={detail?.lastMatchAt ?? null}
           isLoading={detailQuery.isLoading}
         />
         <div className="hud-panel mb-4 p-3">
