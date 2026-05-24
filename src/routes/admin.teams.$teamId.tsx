@@ -1,10 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAdminStore, updateTeam, updateMatch } from "@/lib/admin-store";
 import { maps as allMaps, type MatchFull } from "@/lib/mock-match";
 import type { Team } from "@/lib/mock-match";
 import { TeamLogo } from "@/components/admin/TeamLogo";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  fetchTeamDetail,
+  type TeamDetail,
+  type TeamMatchStat,
+} from "@/lib/algs-team-fetchers";
 
 export const Route = createFileRoute("/admin/teams/$teamId")({ component: TeamDetail });
 
@@ -38,6 +44,12 @@ function TeamDetail() {
   const navigate = useNavigate();
   const team = teams.find((t) => t.id === teamId);
   const [editing, setEditing] = useState<Team | null>(null);
+  const detailQuery = useQuery<TeamDetail>({
+    queryKey: ["algs-team-detail", teamId],
+    queryFn: () => fetchTeamDetail(teamId),
+    staleTime: 5 * 60 * 1000,
+  });
+  const detail = detailQuery.data;
   if (!team) {
     return (
       <div className="p-6 text-sm">
@@ -48,16 +60,45 @@ function TeamDetail() {
   const tourIndex = new Map(tournaments.map((t) => [t.id, t]));
   const today = Date.now();
 
+  // Real ALGS match-team stats keyed by match_id. Empty for mock seed teams.
+  const realStatByMatchId = useMemo(() => {
+    const m = new Map<string, TeamMatchStat>();
+    for (const s of detail?.matches ?? []) m.set(s.matchId, s);
+    return m;
+  }, [detail]);
+
   // Annotate matches with derived datetime and per-tournament index.
-  type Row = { match: MatchFull; tour: ReturnType<typeof tourIndex.get>; date: Date | null };
+  type Row = {
+    match: MatchFull;
+    tour: ReturnType<typeof tourIndex.get>;
+    date: Date | null;
+    stat?: TeamMatchStat;
+  };
   const tourCounters = new Map<string, number>();
   const allRows: Row[] = matches.map((m) => {
     const idx = tourCounters.get(m.tournamentId) ?? 0;
     tourCounters.set(m.tournamentId, idx + 1);
     const tour = tourIndex.get(m.tournamentId);
-    return { match: m, tour, date: matchDateTime(m, tour?.startDate, tour?.endDate, idx) };
+    // Prefer real started_at from ALGS for any of the games (series→match in store
+    // represents an ALGS *series*; pick the earliest real start among its games).
+    const realStarts = (detail?.matches ?? [])
+      .filter((x) => x.seriesId === m.id && x.startedAt)
+      .map((x) => Date.parse(x.startedAt!))
+      .sort((a, b) => a - b);
+    const realDate = realStarts.length > 0 ? new Date(realStarts[0]) : null;
+    return {
+      match: m,
+      tour,
+      date: realDate ?? matchDateTime(m, tour?.startDate, tour?.endDate, idx),
+      stat: undefined,
+    };
   });
-  const teamRows = allRows.filter((r) => r.match.teamIds?.includes(team.id));
+  // A "team row" is any stored series that has at least one real per-game stat
+  // for this team, OR (fallback for mock seed) a series whose teamIds includes us.
+  const teamRows = allRows.filter((r) => {
+    const hasReal = (detail?.matches ?? []).some((x) => x.seriesId === r.match.id);
+    return hasReal || r.match.teamIds?.includes(team.id);
+  });
   const teamTournaments = useMemo(() => {
     const ids = Array.from(new Set(teamRows.map((r) => r.match.tournamentId)));
     return ids.map((id) => tourIndex.get(id)).filter(Boolean) as typeof tournaments;
@@ -93,18 +134,29 @@ function TeamDetail() {
     return teamTournaments;
   }, [teamTournaments, mode, year, selectedTours, filteredRows]);
 
-  // Per-map deterministic placement sampler (1..20) — stable per (mapId, matchId, teamId).
+  // Real per-game placement / kills from ALGS, with deterministic fallback for
+  // mock seed series that have no ALGS rows. ALGS "matches" are individual map
+  // drops, so a stored series → 1..N ALGS rows joined by series_id.
   function pseudoPlacement(mapId: string, matchId: string): number {
+    // Find first real stat for this (series=matchId, map=mapId)
+    const real = (detail?.matches ?? []).find(
+      (x) => x.seriesId === matchId && (x.mapIdUlid === mapId || x.mapIdUlid?.replace(/_/g, "-") === mapId),
+    );
+    if (real && real.placement > 0) return real.placement;
     let h = team!.placement * 7;
     const s = mapId + matchId + team!.id;
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
     return 1 + (h % 20);
   }
   function pseudoKills(matchId: string): number {
+    // Sum real kills across all ALGS rows in this series for this team
+    const rows = (detail?.matches ?? []).filter((x) => x.seriesId === matchId);
+    if (rows.length > 0) {
+      return Math.round(rows.reduce((s, r) => s + r.kills, 0) / rows.length);
+    }
     let h = (team!.kills + 3) * 17;
     const s = matchId + team!.id + "k";
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    // 0..24 kills per match
     return h % 25;
   }
 
@@ -490,6 +542,146 @@ function TeamDetail() {
           )}
         </div>
       </div>
+      {/* ---- TEST INTERFACE blocks: data we have per team but the production UI doesn't surface yet ---- */}
+      <div className="border-t border-dashed border-warning/40 bg-warning/[0.03] p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">
+            Test interface
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Дополнительные данные из ALGS, ещё не интегрированные в основной интерфейс
+          </span>
+          {detailQuery.isLoading && (
+            <span className="text-xs text-muted-foreground">· loading…</span>
+          )}
+          {detailQuery.error && (
+            <span className="text-xs text-destructive">· {(detailQuery.error as Error).message}</span>
+          )}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <TestPanel title="Roster" subtitle={`${detail?.players.length ?? 0} players · aggregated from match_player_stats`}>
+            {!detail || detail.players.length === 0 ? <Empty /> : (
+              <ul className="space-y-1.5">
+                {detail.players.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-2 py-1.5">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="h-10 w-10 rounded-sm border border-border object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-sm border border-border bg-surface-2" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{p.name}</div>
+                      <div className="text-mono text-xs text-muted-foreground">
+                        {p.matchesPlayed} matches · {p.kills} kills · {p.knockedDown} knocks
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TestPanel>
+
+          <TestPanel title="Event placements" subtitle={`${detail?.events.length ?? 0} events · position / points / prize`}>
+            {!detail || detail.events.length === 0 ? <Empty /> : (
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th className="px-2 py-1.5 font-medium">Event</th>
+                    <th className="px-2 py-1.5 font-medium">Pos</th>
+                    <th className="px-2 py-1.5 font-medium">Pts</th>
+                    <th className="px-2 py-1.5 font-medium">Prize</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.events.map((e) => (
+                    <tr key={e.eventId} className="border-t border-border">
+                      <td className="px-2 py-1.5">
+                        <div className="truncate font-semibold">{e.eventName}</div>
+                        <div className="text-mono text-[10px] text-muted-foreground">
+                          {e.startDate?.slice(0, 10) ?? "—"} → {e.endDate?.slice(0, 10) ?? "—"}
+                        </div>
+                      </td>
+                      <td className="text-mono px-2 py-1.5">{e.position ?? "—"}</td>
+                      <td className="text-mono px-2 py-1.5">{e.points ?? "—"}</td>
+                      <td className="text-mono px-2 py-1.5">{e.prizeMoney ? `$${e.prizeMoney}` : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </TestPanel>
+
+          <TestPanel title="Season standings" subtitle={`${detail?.seasons.length ?? 0} seasons · total points`}>
+            {!detail || detail.seasons.length === 0 ? <Empty /> : (
+              <ul className="space-y-1">
+                {detail.seasons.map((s) => (
+                  <li key={s.seasonId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
+                    <span className="font-semibold">{s.seasonName ?? s.seasonId}</span>
+                    <span className="text-mono">{s.totalPoints ?? "—"} pts</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TestPanel>
+
+          <TestPanel title="Phase standings" subtitle={`${detail?.phases.length ?? 0} phases · group / pos / wins`}>
+            {!detail || detail.phases.length === 0 ? <Empty /> : (
+              <ul className="space-y-1">
+                {detail.phases.map((p) => (
+                  <li key={p.phaseId} className="rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-semibold">{p.phaseName ?? p.phaseId}</span>
+                      <span className="text-mono">#{p.position ?? "—"} · {p.points ?? 0} pts</span>
+                    </div>
+                    <div className="text-mono text-[10px] text-muted-foreground">
+                      {p.groupName ? `group ${p.groupName} · ` : ""}wins {p.matchWins ?? 0}
+                      {p.qualified ? " · qualified" : ""}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TestPanel>
+
+          <TestPanel title="POI picks (top 10)" subtitle={`${detail?.poiPicks.length ?? 0} unique spawns · pick frequency`}>
+            {!detail || detail.poiPicks.length === 0 ? <Empty /> : (
+              <ul className="space-y-1">
+                {detail.poiPicks.slice(0, 10).map((p) => (
+                  <li key={p.spawnLocationId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold">{p.spawnName}</div>
+                      <div className="text-mono text-[10px] text-muted-foreground">{p.mapName ?? "—"}</div>
+                    </div>
+                    <div className="text-mono text-right text-xs">
+                      <div>{p.count}×</div>
+                      <div className="text-[10px] text-muted-foreground">avg pick #{p.avgPickNumber.toFixed(1)}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TestPanel>
+
+          <TestPanel title="Recent series (last 15)" subtitle={`${detail?.series.length ?? 0} total · pos / pts / kills`}>
+            {!detail || detail.series.length === 0 ? <Empty /> : (
+              <ul className="space-y-1">
+                {detail.series.slice(0, 15).map((s) => (
+                  <li key={s.seriesId} className="rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-semibold">{s.seriesName ?? s.seriesId}</span>
+                      <span className="text-mono">#{s.position ?? "—"}</span>
+                    </div>
+                    <div className="text-mono text-[10px] text-muted-foreground">
+                      {s.startsAt?.slice(0, 10) ?? "—"} · {s.points ?? 0} pts · {s.kills ?? 0} kills
+                      {s.wonMatchPoint ? " · MP win" : ""}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TestPanel>
+        </div>
+      </div>
       {editing && (
         <EditTeamModal
           row={editing}
@@ -515,6 +707,18 @@ function ScrollList({ children }: { children: React.ReactNode }) {
 }
 function Empty() {
   return <div className="rounded-sm border border-dashed border-border px-2 py-4 text-center text-xs text-muted-foreground">No data</div>;
+}
+
+function TestPanel({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-sm border border-warning/30 bg-surface p-3">
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        <div className="label-eyebrow text-xs">{title}</div>
+        {subtitle && <div className="text-[10px] text-muted-foreground">{subtitle}</div>}
+      </div>
+      <div className="max-h-[320px] overflow-y-auto">{children}</div>
+    </div>
+  );
 }
 
 /* -------------------------------------------------------------------------- */
