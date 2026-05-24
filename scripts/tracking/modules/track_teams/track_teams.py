@@ -1112,7 +1112,8 @@ def associate_hungarian(
 
 def _associate_greedy(candidates, slot_trackers, t_now, weights,
                        near_miss: Optional[Counter] = None,
-                       near_miss_threshold: float = 0.25):
+                       near_miss_threshold: float = 0.25,
+                       debug_sink: Optional[list] = None):
     """Жадный fallback без scipy. Учитывает те же веса, что и hungarian,
     чтобы варианты конфигов (color_first/motion_first/...) реально различались
     даже когда scipy не установлен."""
