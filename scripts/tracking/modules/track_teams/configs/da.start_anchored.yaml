@@ -1,13 +1,10 @@
 # === A/B вариант к da.color_first.yaml ===
-# Добавляет жёсткий стартовый якорь на ранних кадрах матча: первые
-# `anchor_lock_sec` секунд каждый слот ищется только в круге радиуса r0
-# вокруг своей стартовой точки из motion_detect (HIGH=25, MED=40, LOW=70
-# минимап-px, переведённые в каноник). Дальше радиус линейно растёт до
-# `anchor_r_max` за `anchor_grow_sec`, после чего работает обычный
-# motion-gate (как в winner.config.yaml).
-#
-# Цель: исключить ранние slot-swap'ы между плашками похожего цвета,
-# которые в color_first случались за счёт мягкого near_anchor_radius=120.
+# Soft-anchor: кандидат вне круга (init_canonical_px, r_anchor) не
+# исключается, а штрафуется в cost-е на eta_anchor * (d/r - 1). r растёт
+# линейно от r0 (HIGH=25, MED=40, LOW=70 минимап-px) к anchor_r_max за
+# anchor_grow_sec, начиная отсчёт после anchor_lock_sec.
+# Цель: мягко прижать слоты к стартовой позиции в первые секунды и
+# срезать ранние slot-swap'ы, не убивая ассоциацию когда детекций мало.
 canonical_map: storm_point
 frame_step: 60
 anchors_file: ../../motion_detect/reports/motion_tracks.json
@@ -22,6 +19,7 @@ da_weights:
   eps_hysteresis: 0.3
   gate_radius_mult: 1.4
   fallback_gate_canonical_px: 250.0
+  eta_anchor: 0.6              # вес штрафа за выход за r_anchor
   slot_overrides:
     slot_11: { delta_color_mismatch: 10.0, gate_radius_mult: 0.6, eps_hysteresis: 0.5 }
     slot_20: { delta_color_mismatch: 10.0, gate_radius_mult: 0.6, eps_hysteresis: 0.5 }
@@ -36,9 +34,9 @@ slot_tracker:
   min_tracked_ratio_for_active: 0.20
   near_anchor_radius_canonical_px: 120.0
   # --- start-anchor lock (новый блок) ---
-  anchor_lock_sec: 15.0          # жёсткий радиус первые 15 с
-  anchor_grow_sec: 30.0          # затем линейный рост 15..45 с
-  anchor_r_max: 120.0            # потолок = near_anchor_radius
+  anchor_lock_sec: 8.0           # держим r0 первые 8 с
+  anchor_grow_sec: 20.0          # затем 8..28 с линейный рост r0 -> r_max
+  anchor_r_max: 160.0            # потолок чуть выше near_anchor_radius
   anchor_r0_fallback_canonical_px: 70.0  # если motion_detect не дал r0
 
 tracking:
