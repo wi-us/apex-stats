@@ -595,40 +595,6 @@ function TeamDetail() {
   );
 }
 
-function TestInterfaceSection({
-  detail,
-  isLoading,
-  error,
-}: {
-  detail: TeamDetail | undefined;
-  isLoading: boolean;
-  error: unknown;
-}) {
-  return (
-      <div className="mt-6 rounded-sm border border-dashed border-warning/40 bg-warning/[0.03] p-4">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-warning">
-            Test interface
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Дополнительные данные из ALGS, ещё не интегрированные в основной интерфейс
-          </span>
-          {isLoading && (
-            <span className="text-xs text-muted-foreground">· loading…</span>
-          )}
-          {error ? (
-            <span className="text-xs text-destructive">· {(error as Error).message}</span>
-          ) : null}
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="lg:col-span-2">
-            <PoiMapPanel picks={detail?.poiPicks ?? []} />
-          </div>
-        </div>
-      </div>
-  );
-}
-
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="hud-panel p-3">
