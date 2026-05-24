@@ -693,7 +693,8 @@ def main() -> None:
                     json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
                 )
                 print(
-                    f"    teams={len(data['teams'])} games={len(data['games'])}",
+                    f"    teams={len(data['teams'])} games={len(data['games'])} "
+                    f"poi_drafts={'yes' if data.get('has_poi_drafts') else 'no'}",
                     file=sys.stderr,
                 )
             except Exception as e:  # noqa: BLE001
