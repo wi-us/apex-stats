@@ -1039,8 +1039,18 @@ function Sparkline({
   color: string;
   formatVal: (v: number) => string;
 }) {
-  const w = 300;
-  const h = 100;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cw, setCw] = useState(800);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setCw(Math.max(300, Math.round(e.contentRect.width)));
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+  const w = cw;
+  const h = 180;
   const padX = 0;
   const padTop = 12;
   const padBottom = 16;
@@ -1112,12 +1122,12 @@ function Sparkline({
         )}
       </div>
 
-      <div className="relative min-h-0 flex-1 px-4">
+      <div ref={containerRef} className="relative min-h-0 flex-1 px-4">
         {values.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No data</div>
         ) : (
           <>
-            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
+            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full overflow-visible">
               {/* Gridlines */}
               {[0.2, 0.5, 0.8].map((f) => (
                 <line
