@@ -433,12 +433,36 @@ def load_anchors(path: Path,
     consensus_xy (minimap pixels) into canonical+world coordinates.
 
     Returns { team_id: { 'slot': int, 'slot_id': str, 'conf': 'HIGH|MED|LOW|MISS',
-                          'world':(x,y), 'canonical_px':(x,y) } }.
+                          'world':(x,y), 'canonical_px':(x,y),
+                          'r0_canonical_px': float | None } }.
     Teams without a 'slot' field in config are skipped (no way to match)."""
     if not path.exists():
         print(f"[warn] anchors file {path} not found — стартую без motion-якорей")
         return {}
     raw = json.loads(path.read_text(encoding="utf-8"))
+    # Optional start_anchors.json (lives next to motion_tracks.json) — даёт
+    # стартовый радиус r0 в минимап-пикселях, который motion_detect выбрал
+    # по уверенности (HIGH/MED/LOW).
+    start_anchors_path = path.with_name("start_anchors.json")
+    r0_by_slot: dict[int, float] = {}
+    r0_by_conf_minimap: dict[str, float] = {"HIGH": 25.0, "MED": 40.0, "LOW": 70.0}
+    if start_anchors_path.exists():
+        try:
+            sa = json.loads(start_anchors_path.read_text(encoding="utf-8"))
+            r0_by_conf_minimap.update(sa.get("r0_by_conf", {}) or {})
+            for _key, a in (sa.get("anchors") or {}).items():
+                slot = a.get("slot")
+                if slot is not None and a.get("r0_minimap_px") is not None:
+                    r0_by_slot[int(slot)] = float(a["r0_minimap_px"])
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] start_anchors.json present but unreadable: {e}")
+    # Масштаб мини-мап → канон. Берём из affine (определитель ≈ (scale)^2).
+    if mini_affine is not None:
+        det = float(abs(mini_affine[0, 0] * mini_affine[1, 1]
+                        - mini_affine[0, 1] * mini_affine[1, 0]))
+        mini_to_canon_scale = math.sqrt(det) if det > 0 else 1.0
+    else:
+        mini_to_canon_scale = 1.0
     # build slot -> best result
     by_slot: dict[int, dict] = {}
     for r in raw.get("results", []):
@@ -458,7 +482,8 @@ def load_anchors(path: Path,
         r = by_slot.get(t.slot)
         if r is None or not r.get("consensus_xy"):
             out[t.id] = {"slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
-                         "conf": "MISS", "world": None, "canonical_px": None}
+                         "conf": "MISS", "world": None, "canonical_px": None,
+                         "r0_canonical_px": None}
             continue
         mx, my = r["consensus_xy"]
         if mini_affine is not None:
@@ -466,10 +491,14 @@ def load_anchors(path: Path,
         else:
             cx, cy = float(mx), float(my)
         wx, wy = map_point(cmap.px_to_world, (cx, cy))
+        conf = r.get("confidence", "MISS")
+        r0_mini = r0_by_slot.get(t.slot, r0_by_conf_minimap.get(conf, 70.0))
+        r0_canon = float(r0_mini) * mini_to_canon_scale
         out[t.id] = {
             "slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
-            "conf": r.get("confidence", "MISS"),
+            "conf": conf,
             "world": (wx, wy), "canonical_px": (cx, cy),
+            "r0_canonical_px": r0_canon,
         }
     return out
 
