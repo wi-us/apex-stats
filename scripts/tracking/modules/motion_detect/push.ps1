@@ -34,8 +34,20 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $env:PYTHONIOENCODING = "utf-8"
 $env:PYTHONUTF8 = "1"
 
+$callerDir = (Get-Location).Path
 $repo = (git rev-parse --show-toplevel).Trim()
 if (-not $repo) { throw "Не вижу git-репозитория." }
+
+if (-not [System.IO.Path]::IsPathRooted($Video)) {
+  $videoFromCaller = Join-Path $callerDir $Video
+  $videoFromRepo = Join-Path $repo $Video
+  if (Test-Path $videoFromCaller) {
+    $Video = (Resolve-Path $videoFromCaller).Path
+  } elseif (Test-Path $videoFromRepo) {
+    $Video = (Resolve-Path $videoFromRepo).Path
+  }
+}
+
 Set-Location $repo
 
 if (Test-Path $Out) {
