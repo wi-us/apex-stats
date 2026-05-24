@@ -167,9 +167,10 @@ function TeamDetail() {
 
   // Per-map stats over filtered window
   type MapStat = { id: string; count: number; avg: number; top1: number; top5: number };
+  // Map tier list ignores the period filter — it represents all-time profile.
   const mapStats = useMemo<MapStat[]>(() => {
     const acc = new Map<string, { sum: number; count: number; top1: number; top5: number }>();
-    filteredRows.forEach((r) => {
+    teamRows.forEach((r) => {
       const ids = r.match.mapIds ?? [r.match.mapId];
       ids.forEach((id) => {
         const p = pseudoPlacement(id, r.match.id);
@@ -184,7 +185,7 @@ function TeamDetail() {
     return Array.from(acc.entries())
       .map(([id, v]) => ({ id, count: v.count, avg: v.sum / v.count, top1: v.top1, top5: v.top5 }))
       .sort((a, b) => a.avg - b.avg);
-  }, [filteredRows]);
+  }, [teamRows]);
 
   // Tier from average placement (lower is better).
   const tierOf = (avg: number): "S" | "A" | "B" | "C" | "D" | "F" => {
@@ -405,8 +406,25 @@ function TeamDetail() {
           </div>
         </div>
 
+        {/* ---- View switcher ---- */}
+        <div className="mt-4 flex items-center gap-1.5">
+          {([
+            ["overview", "Overview"],
+            ["maps", "Maps"],
+            ["weapons", "Weapons"],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setView(k)}
+              className={`rounded-sm border px-3 py-1.5 text-xs uppercase tracking-wider ${view === k ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-surface hover:bg-muted"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* ---- Active roster + Next matches side-by-side ---- */}
-        <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+        <div className="mt-4 grid gap-4 md:grid-cols-[auto_minmax(280px,1fr)] items-start">
           <RosterPanel
             roster={detail?.activeRoster ?? []}
             players={detail?.players ?? []}
@@ -437,23 +455,6 @@ function TeamDetail() {
               </ScrollList>
             )}
           </Panel>
-        </div>
-
-        {/* ---- View switcher ---- */}
-        <div className="mt-4 flex items-center gap-1.5">
-          {([
-            ["overview", "Overview"],
-            ["maps", "Maps"],
-            ["weapons", "Weapons"],
-          ] as const).map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setView(k)}
-              className={`rounded-sm border px-3 py-1.5 text-xs uppercase tracking-wider ${view === k ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-surface hover:bg-muted"}`}
-            >
-              {label}
-            </button>
-          ))}
         </div>
 
         {view === "overview" && (
@@ -557,7 +558,7 @@ function TeamDetail() {
         </>
         )}
 
-        {(view === "overview" || view === "maps") && (
+        {view === "maps" && (
         <div className="hud-panel mt-4 p-3">
           <div className="label-eyebrow mb-3 text-xs">Map tier list · avg placement, top 1 & top 5</div>
           {mapStats.length === 0 ? <Empty /> : (
@@ -606,13 +607,13 @@ function TeamDetail() {
         </div>
         )}
 
-        {(view === "overview" || view === "maps") && (
+        {view === "maps" && (
         <div className="mt-4">
           <PoiMapPanel picks={detail?.poiPicks ?? []} />
         </div>
         )}
 
-        {(view === "overview" || view === "weapons") && (
+        {view === "weapons" && (
           <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
         )}
       </div>
@@ -849,14 +850,9 @@ function RosterPanel({
                     <div className="truncate text-sm font-bold uppercase tracking-wider text-white">{p.name}</div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 divide-x divide-border border-t border-border text-center">
+                <div className="grid grid-cols-2 divide-x divide-border border-t border-border text-center">
                   <Stat label="Matches" value={agg?.matchesPlayed ?? 0} />
                   <Stat label="Kills" value={agg?.kills ?? 0} />
-                  <Stat
-                    label="Downed"
-                    value={agg?.knockedDown ?? 0}
-                    title="Matches in which the player was knocked down at least once (per-match boolean from ALGS). Not knockdowns inflicted."
-                  />
                 </div>
               </div>
             );
