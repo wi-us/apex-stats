@@ -819,7 +819,7 @@ function RosterPanel({
   const lastSet = new Set(lastMatchPlayerIds);
   const lastDate = lastMatchAt ? new Date(lastMatchAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "2-digit" }) : null;
   return (
-    <div className="hud-panel mt-4 p-3">
+    <div className="hud-panel p-3">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">Active roster · {roster.length} players</div>
         <div className="text-xs text-muted-foreground">
