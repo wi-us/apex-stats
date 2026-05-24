@@ -72,8 +72,8 @@ function Indicator({ label, state, valueLabel }: { label: string; state: "ok" | 
 
 function deriveStatus(t: Tournament, tMatches: MatchFull[]): TournamentStatus {
   if (t.status) return t.status;
-  if (tMatches.length === 0) return "draft";
   const today = new Date().toISOString().slice(0, 10);
+  if (!t.startDate || !t.endDate) return "draft";
   if (today < t.startDate) return "upcoming";
   if (today > t.endDate) return "finished";
   return "active";
