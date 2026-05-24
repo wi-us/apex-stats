@@ -433,12 +433,36 @@ def load_anchors(path: Path,
     consensus_xy (minimap pixels) into canonical+world coordinates.
 
     Returns { team_id: { 'slot': int, 'slot_id': str, 'conf': 'HIGH|MED|LOW|MISS',
-                          'world':(x,y), 'canonical_px':(x,y) } }.
+                          'world':(x,y), 'canonical_px':(x,y),
+                          'r0_canonical_px': float | None } }.
     Teams without a 'slot' field in config are skipped (no way to match)."""
     if not path.exists():
         print(f"[warn] anchors file {path} not found — стартую без motion-якорей")
         return {}
     raw = json.loads(path.read_text(encoding="utf-8"))
+    # Optional start_anchors.json (lives next to motion_tracks.json) — даёт
+    # стартовый радиус r0 в минимап-пикселях, который motion_detect выбрал
+    # по уверенности (HIGH/MED/LOW).
+    start_anchors_path = path.with_name("start_anchors.json")
+    r0_by_slot: dict[int, float] = {}
+    r0_by_conf_minimap: dict[str, float] = {"HIGH": 25.0, "MED": 40.0, "LOW": 70.0}
+    if start_anchors_path.exists():
+        try:
+            sa = json.loads(start_anchors_path.read_text(encoding="utf-8"))
+            r0_by_conf_minimap.update(sa.get("r0_by_conf", {}) or {})
+            for _key, a in (sa.get("anchors") or {}).items():
+                slot = a.get("slot")
+                if slot is not None and a.get("r0_minimap_px") is not None:
+                    r0_by_slot[int(slot)] = float(a["r0_minimap_px"])
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] start_anchors.json present but unreadable: {e}")
+    # Масштаб мини-мап → канон. Берём из affine (определитель ≈ (scale)^2).
+    if mini_affine is not None:
+        det = float(abs(mini_affine[0, 0] * mini_affine[1, 1]
+                        - mini_affine[0, 1] * mini_affine[1, 0]))
+        mini_to_canon_scale = math.sqrt(det) if det > 0 else 1.0
+    else:
+        mini_to_canon_scale = 1.0
     # build slot -> best result
     by_slot: dict[int, dict] = {}
     for r in raw.get("results", []):
@@ -458,7 +482,8 @@ def load_anchors(path: Path,
         r = by_slot.get(t.slot)
         if r is None or not r.get("consensus_xy"):
             out[t.id] = {"slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
-                         "conf": "MISS", "world": None, "canonical_px": None}
+                         "conf": "MISS", "world": None, "canonical_px": None,
+                         "r0_canonical_px": None}
             continue
         mx, my = r["consensus_xy"]
         if mini_affine is not None:
@@ -466,10 +491,14 @@ def load_anchors(path: Path,
         else:
             cx, cy = float(mx), float(my)
         wx, wy = map_point(cmap.px_to_world, (cx, cy))
+        conf = r.get("confidence", "MISS")
+        r0_mini = r0_by_slot.get(t.slot, r0_by_conf_minimap.get(conf, 70.0))
+        r0_canon = float(r0_mini) * mini_to_canon_scale
         out[t.id] = {
             "slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
-            "conf": r.get("confidence", "MISS"),
+            "conf": conf,
             "world": (wx, wy), "canonical_px": (cx, cy),
+            "r0_canonical_px": r0_canon,
         }
     return out
 
@@ -932,11 +961,23 @@ def associate_hungarian(
             continue
         radius *= gate_mult
 
+        # Прогрессивный стартовый якорь: на ранних кадрах принудительно
+        # ограничиваем поиск кругом (init_canonical_px, r_anchor).
+        anchor_r = st.anchor_radius_at(t_now) if hasattr(st, "anchor_radius_at") else None
+        anchor_cx = anchor_cy = None
+        if anchor_r is not None and st.init_canonical_px is not None:
+            anchor_cx, anchor_cy = st.init_canonical_px
+
         for j, cand in enumerate(candidates):
             cand_cx, cand_cy = cand["canonical_px"]
             d = math.hypot(cand_cx - pred_cx, cand_cy - pred_cy)
             if d > radius:
                 continue
+            # Hard-gate: вне якоря — кандидат недоступен этому слоту.
+            if anchor_r is not None:
+                da = math.hypot(cand_cx - anchor_cx, cand_cy - anchor_cy)
+                if da > anchor_r:
+                    continue
             world_term = d / max(1.0, radius)
             # shape_penalty: blob со слишком низким color_score штрафуем.
             shape_pen = 1.0 - min(1.0, max(0.0, cand["color_score"]))
@@ -972,6 +1013,13 @@ def associate_hungarian(
             continue
         st = slots[r]
         result[st.team.id] = candidates[c]
+        # Учёт попадания внутрь стартового якоря (для LOW-watchdog).
+        if st.init_canonical_px is not None:
+            cand_cx, cand_cy = candidates[c]["canonical_px"]
+            if math.hypot(cand_cx - st.init_canonical_px[0],
+                          cand_cy - st.init_canonical_px[1]) <= max(
+                              st.anchor_r0_px, st.near_anchor_radius_px):
+                st.anchor_inside_hits += 1
         # Near-miss: кто ещё хотел этого же кандидата?
         if near_miss is not None:
             win_c = cost[r, c]
@@ -1022,6 +1070,10 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
         else:
             continue
         radius *= gate_mult
+        anchor_r = st.anchor_radius_at(t_now) if hasattr(st, "anchor_radius_at") else None
+        anchor_cx = anchor_cy = None
+        if anchor_r is not None and st.init_canonical_px is not None:
+            anchor_cx, anchor_cy = st.init_canonical_px
         for j, cand in enumerate(candidates):
             same_color = cand["team_id"] == st.team.id
             if not same_color and not allow_cross_color:
@@ -1030,6 +1082,9 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
             d = math.hypot(cx - pred[0], cy - pred[1])
             if d > radius:
                 continue
+            if anchor_r is not None:
+                if math.hypot(cx - anchor_cx, cy - anchor_cy) > anchor_r:
+                    continue
             world_term = d / max(1.0, radius)
             shape_pen = 1.0 - min(1.0, max(0.0, cand.get("color_score", 1.0)))
             color_mismatch = 0.0 if same_color else delta
@@ -1059,6 +1114,12 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
         assigned_cands.add(j)
         used_slots.add(st.team.id)
         result[st.team.id] = candidates[j]
+        if st.init_canonical_px is not None:
+            cand_cx, cand_cy = candidates[j]["canonical_px"]
+            if math.hypot(cand_cx - st.init_canonical_px[0],
+                          cand_cy - st.init_canonical_px[1]) <= max(
+                              st.anchor_r0_px, st.near_anchor_radius_px):
+                st.anchor_inside_hits += 1
         if near_miss is not None:
             for other_c, other_sid in per_cand_costs.get(j, []):
                 if other_sid == st.team.id:
@@ -1082,7 +1143,8 @@ class SlotTracker:
 
     def __init__(self, team: TeamCfg, slot_cfg: dict, init_canonical_px: Optional[tuple[float, float]],
                  elim_t: Optional[float] = None,
-                 anchor_conf: str = "MISS", hud_alive: bool = False):
+                 anchor_conf: str = "MISS", hud_alive: bool = False,
+                 anchor_r0_canonical_px: Optional[float] = None):
         self.team = team
         self.canonical_px: Optional[tuple[float, float]] = init_canonical_px
         # Immutable copy of the seed anchor (canonical px). Used by the strict
@@ -1168,6 +1230,27 @@ class SlotTracker:
         self.min_consecutive_for_active: int = int(slot_cfg.get("min_consecutive_for_active", 3))
         self.near_anchor_consecutive: int = 0
         self.activated: bool = False
+        # ------------------------------------------------------------------
+        # Прогрессивный стартовый якорь (см. README): первые `anchor_lock_sec`
+        # секунд кандидаты должны лежать внутри (init_canonical_px, r0).
+        # Дальше за `anchor_grow_sec` радиус линейно растёт до `anchor_r_max`.
+        # Конфиг slot_tracker:
+        #   anchor_lock_sec, anchor_grow_sec, anchor_r_max  (если r_max < 0 →
+        #   используем near_anchor_radius_canonical_px как потолок).
+        self.anchor_lock_sec: float = float(slot_cfg.get("anchor_lock_sec", 0.0))
+        self.anchor_grow_sec: float = float(slot_cfg.get("anchor_grow_sec", 0.0))
+        _r_max_cfg = float(slot_cfg.get("anchor_r_max", -1.0))
+        self.anchor_r_max_px: float = (
+            _r_max_cfg if _r_max_cfg > 0 else self.near_anchor_radius_px)
+        # Фолбэк r0 (минимап-pixels по дефолту 70) если motion_detect не дал
+        # своего значения. Берём из slot_cfg для удобства тюнинга.
+        default_r0 = float(slot_cfg.get("anchor_r0_fallback_canonical_px", 70.0))
+        self.anchor_r0_px: float = (
+            float(anchor_r0_canonical_px) if anchor_r0_canonical_px is not None
+            else default_r0)
+        self.anchor_t0: Optional[float] = None      # фиксируется на первом кадре
+        self.anchor_lost: bool = False              # true когда LOW-якорь не нашёл цели
+        self.anchor_inside_hits: int = 0
         # Post-hoc cleanup threshold: if a slot finished the run with fewer than
         # this many `tracked` frames AND was never activated, all its entries
         # are rewritten to `inactive` in tracks.json.
@@ -1555,6 +1638,43 @@ class SlotTracker:
         if (not self.activated
                 and self.near_anchor_consecutive >= self.min_consecutive_for_active):
             self.activated = True
+
+    def anchor_radius_at(self, t_now: float) -> Optional[float]:
+        """Прогрессивный радиус стартового якоря (canonical px) на момент t_now.
+
+        Возвращает None, когда якорь больше не активен — это значит ассоциатор
+        должен использовать обычный motion-gate без жёсткого фильтра:
+          - якорь не сидирован (init_canonical_px is None), или
+          - anchor_lock_sec == 0 (фича выключена), или
+          - время вышло (t > lock+grow), или
+          - LOW-якорь промахнулся первые lock секунд (anchor_lost=True).
+        """
+        if self.init_canonical_px is None:
+            return None
+        if self.anchor_lock_sec <= 0.0:
+            return None
+        if self.anchor_lost:
+            return None
+        if self.anchor_t0 is None:
+            self.anchor_t0 = float(t_now)
+        dt = float(t_now) - float(self.anchor_t0)
+        lock = self.anchor_lock_sec
+        grow = self.anchor_grow_sec
+        r0 = self.anchor_r0_px
+        r_max = self.anchor_r_max_px
+        # LOW-anchor watchdog: после lock-окна без единого попадания внутрь
+        # отключаем фильтр (motion_detect мог зацепиться за случайный блик).
+        if (dt >= lock and self.anchor_conf == "LOW"
+                and self.anchor_inside_hits == 0):
+            self.anchor_lost = True
+            return None
+        if dt <= lock:
+            return r0
+        if grow <= 0 or dt >= (lock + grow):
+            return None  # отпускаем якорь — дальше обычный motion-gate
+        # Линейный рост r0 → r_max в окне [lock, lock+grow].
+        u = (dt - lock) / grow
+        return r0 + (r_max - r0) * u
 
     def _snapshot(self) -> dict:
         return {
@@ -2064,9 +2184,11 @@ def main():
         elim_t = elim_by_slot.get(t.slot) if t.slot is not None else None
         anchor_conf = str(a.get("conf", "MISS"))
         hud_alive = (t.slot is not None and t.slot in hud_alive_slots)
+        anchor_r0 = a.get("r0_canonical_px")
         slot_trackers[t.id] = SlotTracker(
             t, slot_cfg, init_canon, elim_t=elim_t,
             anchor_conf=anchor_conf, hud_alive=hud_alive,
+            anchor_r0_canonical_px=(float(anchor_r0) if anchor_r0 is not None else None),
         )
     print(f"[info] slot trackers: {sum(1 for s in slot_trackers.values() if s.canonical_px is not None)}/{len(slot_trackers)} seeded with canonical anchor")
     # Pre-seed WorldTracker with HUD wipe times so the sidecar reflects HUD truth

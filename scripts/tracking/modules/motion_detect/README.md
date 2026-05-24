@@ -21,6 +21,7 @@
 | `motion.ps1` | PowerShell-обёртка: запуск + git push логов агенту |
 | `modules/motion_detect/reports/report.txt` | таблица команд (HIGH/MED/LOW/MISS) |
 | `modules/motion_detect/reports/motion_tracks.json` | сырые траектории, по методам |
+| `modules/motion_detect/reports/start_anchors.json` | стартовые координаты команд + базовый радиус r0 (для `track_teams`) |
 | `modules/motion_detect/reports/overlays/motion_*.jpg` | start/mid/end оверлеи с траекториями и консенсус-крестами |
 | `modules/motion_detect/reports/run.log` | stdout последнего запуска |
 
@@ -138,3 +139,23 @@ blob'а берётся медианный H пикселей под контур
 стартует онлайн-трекер. LOW-якоря используются как подсказка,
 HIGH-якоря — как ground truth. Команды с MISS требуют ручной
 правки HSV.
+
+## `start_anchors.json` — для жёсткого захвата в track_teams
+
+Помимо `motion_tracks.json` модуль экспортирует компактный файл со
+стартовыми координатами и базовым радиусом `r0` по уверенности:
+
+```json
+{
+  "r0_by_conf": { "HIGH": 25, "MED": 40, "LOW": 70 },
+  "anchors": {
+    "slot_3":  { "slot": 3,  "x": 812.3, "y": 1402.1, "conf": "HIGH", "r0_minimap_px": 25 },
+    "slot_11": { "slot": 11, "x": 612.7, "y": 1750.0, "conf": "LOW",  "r0_minimap_px": 70 }
+  }
+}
+```
+
+`track_teams` подхватывает этот файл (если лежит рядом с
+`motion_tracks.json`) и использует `r0` как стартовый радиус
+гейта ассоциации. Подробности — в README `track_teams` и
+конфиге `configs/da.start_anchored.yaml`.

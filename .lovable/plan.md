@@ -1,94 +1,81 @@
-## 1. Скрейпер: расписание игр (date + map)
 
-В `scripts/scrape_liquipedia/scrape.py` достроить парсинг блока `div.panel-content.panel-content__game-schedule` рядом с финальной battle-royale таблицей.
+## Идея
 
-- Селектор строк: `div.panel-content__game-schedule > div.panel-content__game-schedule__container` (или эквивалент по разметке Liquipedia: «Game N | Map | DD MMM YYYY — HH:MM»).
-- Поля на игру:
-  - `date` — ISO-8601 в UTC. Liquipedia рендерит время в `<span class="timer-object" data-timestamp="...">`; берём `data-timestamp` (unix sec) и форматируем.
-  - `map` — имя карты (`Storm Point`, `World's Edge`, `E-District`), + нормализованный `map_id` (`storm_point` / `worlds_edge` / `e_district`) по уже существующим ключам из `scripts/tracking/shared/canonical_maps/`.
-- В `extract_teams_and_games` результат сливается с `games[i]`: каждая игра получает `date` и `map` (и `map_id`). Если расписания нет — поля `null`, остальное не ломаем.
-- README: дописать строчку про новые поля.
+Сейчас `motion_detect` уже даёт `consensus_xy` для каждой команды (HIGH/MED/LOW) — это и есть «точные стартовые координаты». Но в `track_teams` они используются мягко: радиус `near_anchor_radius_canonical_px = 120` и общий гейт `fallback_gate_canonical_px = 250`. На стартовых кадрах это позволяет трекеру «перепрыгивать» на чужую плашку того же цвета.
 
-## 2. Скрейпер: POI Drafts → JSON (приоритет)
+Предлагаю превратить стартовые координаты в **жёсткие якоря с прогрессивным радиусом**: первые N секунд матча команда ищется только в маленьком круге вокруг своей стартовой точки, дальше радиус расширяется по мере роста уверенности трека.
 
-Новый модуль внутри того же `scrape.py` (и опция CLI `--poi-only` для повторного прогона без перетаскивания всего турнира).
+## Что делаем
 
-- Детект вкладки: на странице турнира искать заголовок `POI Drafts` (`<h2><span id="POI_Drafts">`). Если нет — пропускаем без ошибки.
-- Внутри блока:
-  - Вкладки `Regular Season` / `Finals` — по `ul.tabs-static` рядом с заголовком.
-  - Под-вкладки по картам (`Storm Point`, `World's Edge`, `E-District`).
-  - Для каждой комбинации (stage × map) парсить таблицу справа: `Rotation`, `Draft #`, `Team` (имя + ссылка на команду → slug), `Spot Picked`.
-- Сохранять рядом с турниром:
-  ```
-  scripts/scrape_liquipedia/data/tournaments/<slug>.json
+### 1. Зафиксировать стартовые точки
+
+Новый файл `modules/motion_detect/reports/start_anchors.json`:
+
+```json
+{
+  "frame_t": 67.2,
+  "anchors": {
+    "slot_1":  { "x": 812.3, "y": 1402.1, "conf": "HIGH", "r0": 25 },
+    "slot_5":  { "x": 1140.0, "y": 980.5, "conf": "MED",  "r0": 40 },
+    "slot_11": { "x": 612.7, "y": 1750.0, "conf": "LOW",  "r0": 70 },
     ...
-    "poi_drafts": {
-      "finals":  { "storm_point": [ {rotation, draft_no, team_slug, team_name, spot}... ], ... },
-      "regular": { ... }
-    }
-  ```
-- В `index.json` помечать `has_poi_drafts: true|false` для быстрой фильтрации.
-- Координаты подписей на картинке карты в этом этапе НЕ берём — они для каждого турнира свои и почти бесполезны вне контекста. Геометрию задаём сами в админке (шаг 3).
+  }
+}
+```
 
-## 3. Канонические POI-зоны на карте (frontend, JSON)
+`r0` зависит от `conf`:
+- HIGH → 25 px (≈ полтора размера плашки)
+- MED  → 40 px
+- LOW  → 70 px (всё ещё в 1.7× меньше текущего 120)
 
-Цель: единый каталог точек интереса на каждой канонической мини-карте + круглая «зона поиска» вокруг каждой.
+Источник — уже существующие `motion_tracks.json` + `consensus_xy`. Просто отдельный экспорт «последнего кадра окна» как точка старта, а не центроид всего окна.
 
-- Хранилище (JSON в репо, БД позже):
-  ```
-  src/data/maps/<map_id>/poi_zones.json
-  ```
-  Схема одного POI:
-  ```json
-  { "id": "storm-catcher", "name": "Storm Catcher",
-    "aliases": ["StormCatcher"], "cx": 0.62, "cy": 0.41, "r": 0.035 }
-  ```
-  `cx/cy/r` — нормализованные координаты относительно canonical-карты (0..1), как в `shared/canonical_maps/`.
-- Алиасы нужны, чтобы матчить разнобой названий из таблиц Liquipedia (`The Wall` vs `Wall`, `Cenote Cave` vs `Cenote` и т.п.).
+### 2. Прогрессивный радиус в `track_teams`
 
-## 4. Админ-инструмент: разметка POI зон
+В `slot_tracker` добавляем новую секцию:
 
-Новый роут `src/routes/admin.poi.tsx` (доступ через существующий `_authenticated`/admin guard, по образцу `admin.zones.tsx`).
+```yaml
+slot_tracker:
+  start_anchors_file: ../../motion_detect/reports/start_anchors.json
+  anchor_lock_sec: 15.0          # держим жёсткий радиус первые 15 сек
+  anchor_grow_sec: 30.0          # расширяемся линейно до anchor_lock_sec+grow_sec
+  anchor_r_max: 120.0            # потолок = текущий near_anchor_radius
+```
 
-UI:
-- Селект карты (storm_point / worlds_edge / e_district) → загружает соответствующую canonical минимапу + текущий `poi_zones.json`.
-- Канва (SVG поверх PNG карты):
-  - клик = создать POI (диалог: name, aliases),
-  - drag центра = переместить, drag по краю = менять `r`,
-  - правый клик / кнопка Delete = удалить.
-- Кнопка `Export JSON` — скачивает обновлённый `poi_zones.json`. Сохранение в файл репо делает разработчик (как в существующих ring/zones admin-страницах). Если позже захотим автосохранение, добавим серверную функцию.
-- Боковая таблица: импорт списка POI из выбранного турнира (`poi_drafts`) — кнопкой «Добавить недостающие POI как новые зоны» (создаёт zone-заглушки в центре карты для всех spot’ов, которых ещё нет, чтобы быстро доразметить).
+Логика на каждом кадре `t`:
+```
+dt = t - anchor_t0
+if dt < anchor_lock_sec:           r = r0
+elif dt < anchor_lock_sec+grow_sec: r = lerp(r0, r_max, (dt-lock)/grow)
+else:                               r = r_max  (= обычное поведение)
+```
 
-## 5. Использование POI в детекте стартовых позиций
+Кандидаты-плашки вне `(anchor.xy, r)` для этого slot'а **исключаются** на стадии ассоциации (DA), а не только штрафуются. Это и есть «захват не прыгает».
 
-`scripts/tracking/modules/track_teams/track_teams.py` (стартовая фаза, та что использует `assets/gt_anchors.json`).
+### 3. Защита от LOW-якорей
 
-Новая опциональная подсказка `--poi-hints <path>`:
+Если `conf=LOW` И за `anchor_lock_sec` внутри радиуса не нашли ни одной детекции → переходим к старому поведению (`r = r_max`) и помечаем slot `anchor_lost: true` в отчёте. Это исключает зависание на ложной точке.
 
-1. На вход — конкретный турнир + карта; скрипт берёт `poi_zones.json` + соответствующий `poi_drafts[stage][map]` из JSON-кэша скрейпера.
-2. Для каждой команды (по team tag → liquipedia team slug через справочник) находит её spot, по spot → POI zone (центр + r).
-3. Если zone найдена — приоритетно искать стартовое плашко-движение команды в круге `(cx,cy,r)`; вне круга — штраф.
-4. Если нет POI-таблицы для турнира — fallback на текущую логику без изменений.
+### 4. Совместимость
 
-Конкретно: добавить в существующий стартовый матчер «prior»-bias по слотам команд, который умножает score-карту на маску круга. Никаких других веток алгоритма не трогаем.
+- Новый `da_weights` блок не трогаем — все веса остаются.
+- Если `start_anchors_file` не задан → ведём себя как сейчас (никаких регрессий для baseline-конфигов).
+- Добавляем sweep-вариант `da.start_anchored.yaml` для сравнения с `winner.config.yaml`.
 
-## 6. Технические детали
+## Технические детали
 
-- Парсинг расписания и POI: только в существующем `scrape.py`, без новых зависимостей. Liquipedia таймстампы — `span.timer-object[data-timestamp]`.
-- Team-resolution: для POI Drafts матчим `<a href="/apexlegends/<TeamSlug>">` → тот же slug, что в `teams[]` турнира; имя команды берём из таблицы, fallback из ссылки.
-- Канонические map-id: `Storm Point→storm_point`, `World's Edge→worlds_edge`, `E-District→e_district`, `Broken Moon→broken_moon`, `Olympus→olympus`, `Kings Canyon→kings_canyon`. Хелпер `normalize_map(name)` положить в `scrape.py`.
-- Никаких миграций БД в этом плане. Таблицы `lp_*` остаются; будущая миграция БД — отдельной задачей.
-- Затрагиваем:
-  - `scripts/scrape_liquipedia/scrape.py` (game schedule + POI Drafts)
-  - `scripts/scrape_liquipedia/README.md`
-  - `src/data/maps/{storm_point,worlds_edge,e_district}/poi_zones.json` (пустые стартовые)
-  - `src/routes/admin.poi.tsx` (новый)
-  - `src/lib/poi-zones.ts` (типы + io)
-  - `scripts/tracking/modules/track_teams/track_teams.py` (поддержка `--poi-hints`)
+**Файлы под изменение** (только tracking, бизнес-логика трекера — не UI):
+- `scripts/tracking/modules/motion_detect/motion_detect.py` — добавить экспорт `start_anchors.json` (последний устойчивый кадр окна + r0 по conf).
+- `scripts/tracking/modules/track_teams/track_teams.py` (или эквивалент в текущей структуре) — загрузка `start_anchors_file`, прогрессивный радиус, исключение вне-радиуса кандидатов.
+- `scripts/tracking/modules/track_teams/configs/da.start_anchored.yaml` — новый конфиг для A/B.
+- README `motion_detect` и `track_teams` — описать `start_anchors.json` и параметры.
 
-## 7. Порядок реализации
+**Параметры по умолчанию** подобраны под 60fps / canonical 2048×2048 (storm_point); потом тюнятся sweep'ом.
 
-1. Расписание игр (`date`, `map`) + рескрейп.
-2. POI Drafts парсер + рескрейп + `has_poi_drafts` в индексе.
-3. Заглушки `poi_zones.json` + `admin.poi.tsx` редактор.
-4. `--poi-hints` в `track_teams.py` + точечный e2e на одном турнире.
+**Метрика успеха**: на `m-test-g1` g1 — снизить число slot-swap'ов на первых 30 секундах (видно в overlay'ах `track_teams`) и поднять долю кадров с `agreed_with_anchor=true` в первые 15 сек до ≥ 95% для HIGH/MED.
+
+## Что НЕ делаем в этом шаге
+
+- Не трогаем OCR/PaddleOCR — это отдельная ветка (whitelist по `event_id`, она уже в работе).
+- Не меняем структуру `tracks.slots.json` — поле `wiped_at_t` и slot-id остаются как есть.
+- Не переписываем `motion_detect` целиком — только добавляем экспорт.

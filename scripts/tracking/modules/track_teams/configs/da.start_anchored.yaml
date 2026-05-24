@@ -1,0 +1,59 @@
+# === A/B вариант к da.color_first.yaml ===
+# Добавляет жёсткий стартовый якорь на ранних кадрах матча: первые
+# `anchor_lock_sec` секунд каждый слот ищется только в круге радиуса r0
+# вокруг своей стартовой точки из motion_detect (HIGH=25, MED=40, LOW=70
+# минимап-px, переведённые в каноник). Дальше радиус линейно растёт до
+# `anchor_r_max` за `anchor_grow_sec`, после чего работает обычный
+# motion-gate (как в winner.config.yaml).
+#
+# Цель: исключить ранние slot-swap'ы между плашками похожего цвета,
+# которые в color_first случались за счёт мягкого near_anchor_radius=120.
+canonical_map: storm_point
+frame_step: 60
+anchors_file: ../../motion_detect/reports/motion_tracks.json
+eliminations_file: ../../hud_read/reports/eliminations.json
+zones_file: ../../../configs/zones.vod.json
+
+da_strategy: detect_first
+da_weights:
+  beta_world: 0.5
+  gamma_shape: 0.3
+  delta_color_mismatch: 5.0
+  eps_hysteresis: 0.3
+  gate_radius_mult: 1.4
+  fallback_gate_canonical_px: 250.0
+  slot_overrides:
+    slot_11: { delta_color_mismatch: 10.0, gate_radius_mult: 0.6, eps_hysteresis: 0.5 }
+    slot_20: { delta_color_mismatch: 10.0, gate_radius_mult: 0.6, eps_hysteresis: 0.5 }
+
+registration: { detector: sift, max_features: 4000, clahe: true, canonical_target_w: 1600,
+                match_ratio: 0.75, ransac_reproj_px: 5.0, min_inliers: 15,
+                roi: [0.21875, 0.0, 0.78125, 1.0] }
+detection: { min_area_px: 40, max_area_px: 2400, morph_kernel: 3 }
+slot_tracker:
+  roi_size: 220
+  min_tracked_for_active: 20
+  min_tracked_ratio_for_active: 0.20
+  near_anchor_radius_canonical_px: 120.0
+  # --- start-anchor lock (новый блок) ---
+  anchor_lock_sec: 15.0          # жёсткий радиус первые 15 с
+  anchor_grow_sec: 30.0          # затем линейный рост 15..45 с
+  anchor_r_max: 120.0            # потолок = near_anchor_radius
+  anchor_r0_fallback_canonical_px: 70.0  # если motion_detect не дал r0
+
+tracking:
+  max_gap_frames: 30
+  gating_world_dist: 50.0
+  process_noise: 1.0
+  measurement_noise: 4.0
+  init_warmup_sec: 30.0
+  init_reject_world_margin: 30.0
+  init_min_score: 0.4
+
+late_game:
+  enabled: true
+  t_min_sec: 300.0
+  cluster_threshold_px: 250.0
+  gate_shrink: 0.4
+
+da_debug_near_miss: true
