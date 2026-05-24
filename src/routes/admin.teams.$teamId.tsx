@@ -734,6 +734,145 @@ function TestPanel({ title, subtitle, children }: { title: string; subtitle?: st
   );
 }
 
+/** Convert ALGS canonical id ("storm_point") → UI map id ("storm-point"). */
+function canonicalToUiMapId(canonical: string | null): string | null {
+  return canonical ? canonical.replace(/_/g, "-") : null;
+}
+
+function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+  // Group picks by map
+  const byMap = useMemo(() => {
+    const m = new Map<string, { mapName: string; mapImage: string | null; picks: TeamPoiPick[]; total: number }>();
+    for (const p of picks) {
+      const uiId = canonicalToUiMapId(p.mapCanonicalId) ?? "unknown";
+      const map = allMaps.find((mp) => mp.id === uiId);
+      const cur = m.get(uiId) ?? {
+        mapName: map?.name ?? p.mapName ?? uiId,
+        mapImage: map?.image ?? null,
+        picks: [],
+        total: 0,
+      };
+      cur.picks.push(p);
+      cur.total += p.count;
+      m.set(uiId, cur);
+    }
+    return Array.from(m.entries())
+      .map(([id, v]) => ({ id, ...v, picks: v.picks.slice().sort((a, b) => b.count - a.count) }))
+      .sort((a, b) => b.total - a.total);
+  }, [picks]);
+
+  if (picks.length === 0) {
+    return (
+      <TestPanel title="POI picks on map" subtitle="grouped by map · click a map to expand">
+        <Empty />
+      </TestPanel>
+    );
+  }
+
+  return (
+    <>
+      <div className="rounded-sm border border-warning/30 bg-surface p-3">
+        <div className="mb-2 flex items-baseline justify-between gap-2">
+          <div className="label-eyebrow text-xs">POI picks on map</div>
+          <div className="text-[10px] text-muted-foreground">{byMap.length} maps · {picks.length} unique POIs · click to expand</div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {byMap.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setExpanded(m.id)}
+              className="group rounded-sm border border-border bg-surface text-left hover:border-primary/40"
+            >
+              <PoiMapImage mapImage={m.mapImage} picks={m.picks} />
+              <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                <span className="truncate text-xs font-semibold">{m.mapName}</span>
+                <span className="text-mono text-[10px] text-muted-foreground">{m.picks.length} POIs · {m.total} picks</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {expanded && (() => {
+        const m = byMap.find((x) => x.id === expanded);
+        if (!m) return null;
+        const maxCount = Math.max(1, ...m.picks.map((p) => p.count));
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+            onClick={() => setExpanded(null)}
+          >
+            <div
+              className="relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-sm border border-border bg-surface shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-border px-4 py-2">
+                <div className="text-sm font-bold uppercase tracking-wider">{m.mapName} · POI picks</div>
+                <button
+                  onClick={() => setExpanded(null)}
+                  className="rounded-sm border border-border bg-surface-2 px-2 py-1 text-xs uppercase tracking-wider hover:bg-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="grid gap-4 p-4 md:grid-cols-[1fr_280px]">
+                <PoiMapImage mapImage={m.mapImage} picks={m.picks} large />
+                <div className="max-h-[70vh] overflow-y-auto">
+                  <ul className="space-y-1">
+                    {m.picks.map((p) => (
+                      <li key={p.spawnLocationId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{p.spawnName}</div>
+                          <div className="text-mono text-[10px] text-muted-foreground">avg pick #{p.avgPickNumber.toFixed(1)}</div>
+                        </div>
+                        <div className="text-mono">
+                          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full bg-primary" style={{ width: `${(p.count / maxCount) * 100}%` }} />
+                          </div>
+                          <div className="text-right">{p.count}×</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </>
+  );
+}
+
+function PoiMapImage({ mapImage, picks, large }: { mapImage: string | null; picks: TeamPoiPick[]; large?: boolean }) {
+  const maxCount = Math.max(1, ...picks.map((p) => p.count));
+  return (
+    <div className={`relative w-full overflow-hidden ${large ? "" : "rounded-t-sm"} bg-surface-2`} style={{ aspectRatio: "1 / 1" }}>
+      {mapImage ? (
+        <img src={mapImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">no map image</div>
+      )}
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        {picks.map((p) => {
+          if (p.xNorm == null || p.yNorm == null) return null;
+          const r = 1 + (p.count / maxCount) * (large ? 3 : 2);
+          return (
+            <g key={p.spawnLocationId}>
+              <circle cx={p.xNorm * 100} cy={p.yNorm * 100} r={r} fill="var(--primary)" fillOpacity={0.7} stroke="white" strokeWidth={0.3} />
+              {large && (
+                <text x={p.xNorm * 100 + r + 0.5} y={p.yNorm * 100 + 0.5} fill="white" fontSize={1.6} style={{ paintOrder: "stroke" }} stroke="black" strokeWidth={0.3}>
+                  {p.spawnName} ({p.count})
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Sparkline — minimal inline SVG line chart                                  */
 /* -------------------------------------------------------------------------- */
