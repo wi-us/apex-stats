@@ -541,6 +541,11 @@ function TeamDetail() {
             </div>
           )}
         </div>
+        <TestInterfaceSection
+          detail={detail}
+          isLoading={detailQuery.isLoading}
+          error={detailQuery.error}
+        />
       </div>
       {/* ---- TEST INTERFACE blocks moved inside main scroll area below ---- */}
       {editing && (
@@ -576,9 +581,9 @@ function TestInterfaceSection({
           {isLoading && (
             <span className="text-xs text-muted-foreground">· loading…</span>
           )}
-          {error && (
+          {error ? (
             <span className="text-xs text-destructive">· {(error as Error).message}</span>
-          )}
+          ) : null}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <TestPanel title="Roster" subtitle={`${detail?.players.length ?? 0} players · aggregated from match_player_stats`}>
