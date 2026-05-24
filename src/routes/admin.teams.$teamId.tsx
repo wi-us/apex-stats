@@ -652,15 +652,16 @@ function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
 
   if (picks.length === 0) {
     return (
-      <TestPanel title="POI picks on map" subtitle="grouped by map · click a map to expand">
+      <div className="hud-panel p-3">
+        <div className="label-eyebrow mb-2 text-xs">POI picks on map</div>
         <Empty />
-      </TestPanel>
+      </div>
     );
   }
 
   return (
     <>
-      <div className="rounded-sm border border-warning/30 bg-surface p-3">
+      <div className="hud-panel p-3">
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <div className="label-eyebrow text-xs">POI picks on map</div>
           <div className="text-xs text-muted-foreground">{byMap.length} maps · {picks.length} unique POIs · click to expand</div>
