@@ -52,6 +52,12 @@ export type MatchExtras = {
   mapVodCommon?: string;
   /** Teams that participated. */
   teamIds?: string[];
+  /** ISO timestamp when the match started (from ALGS). */
+  startedAt?: string | null;
+  /** ISO timestamp when the match completed (from ALGS). */
+  completedAt?: string | null;
+  /** Raw series status from ALGS (e.g. "completed", "live", "scheduled"). */
+  seriesStatus?: string | null;
 };
 export type MatchFull = Match & MatchExtras;
 export type MapConfigKey = "image" | "zones" | "polygons" | "hsv" | "camera" | "minimap";
