@@ -167,9 +167,10 @@ function TeamDetail() {
 
   // Per-map stats over filtered window
   type MapStat = { id: string; count: number; avg: number; top1: number; top5: number };
+  // Map tier list ignores the period filter — it represents all-time profile.
   const mapStats = useMemo<MapStat[]>(() => {
     const acc = new Map<string, { sum: number; count: number; top1: number; top5: number }>();
-    filteredRows.forEach((r) => {
+    teamRows.forEach((r) => {
       const ids = r.match.mapIds ?? [r.match.mapId];
       ids.forEach((id) => {
         const p = pseudoPlacement(id, r.match.id);
@@ -184,7 +185,7 @@ function TeamDetail() {
     return Array.from(acc.entries())
       .map(([id, v]) => ({ id, count: v.count, avg: v.sum / v.count, top1: v.top1, top5: v.top5 }))
       .sort((a, b) => a.avg - b.avg);
-  }, [filteredRows]);
+  }, [teamRows]);
 
   // Tier from average placement (lower is better).
   const tierOf = (avg: number): "S" | "A" | "B" | "C" | "D" | "F" => {
