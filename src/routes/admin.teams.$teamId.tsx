@@ -298,6 +298,8 @@ function TeamDetail() {
         <RosterPanel
           roster={detail?.activeRoster ?? []}
           players={detail?.players ?? []}
+          lastMatchPlayerIds={detail?.lastMatchPlayerIds ?? []}
+          lastMatchAt={detail?.lastMatchAt ?? null}
           isLoading={detailQuery.isLoading}
         />
         <div className="hud-panel mb-4 p-3">
@@ -554,12 +556,14 @@ function TeamDetail() {
                               <div className="truncate text-base font-semibold">{map?.name ?? s.id}</div>
                               <div className="text-mono text-xs text-muted-foreground">{s.count} games · avg <span className="text-foreground font-semibold">#{s.avg.toFixed(1)}</span></div>
                               <div className="mt-1.5 flex items-stretch gap-1.5 text-xs">
-                                <span className="inline-flex flex-1 items-center justify-center gap-1 rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-0.5 text-center font-semibold text-warning" title="Победы">
-                                  TOP 1 {s.top1}
-                                </span>
-                                <span className="inline-flex flex-1 items-center justify-center gap-1 rounded-sm border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-center font-semibold text-primary" title="Топ-5 финиши">
-                                  TOP 5 {s.top5}
-                                </span>
+                                <div className="flex flex-1 flex-col items-center rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-1 text-warning" title="Победы">
+                                  <span className="label-eyebrow text-xs leading-none">TOP 1</span>
+                                  <span className="text-mono text-sm font-bold leading-tight">{s.top1}</span>
+                                </div>
+                                <div className="flex flex-1 flex-col items-center rounded-sm border border-primary/40 bg-primary/10 px-1.5 py-1 text-primary" title="Топ-5 финиши">
+                                  <span className="label-eyebrow text-xs leading-none">TOP 5</span>
+                                  <span className="text-mono text-sm font-bold leading-tight">{s.top5}</span>
+                                </div>
                               </div>
                             </div>
                           </Link>
@@ -574,13 +578,11 @@ function TeamDetail() {
         </div>
 
         {/* ---- Weapon tier list (promoted from test) ---- */}
-        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
+        <div className="mt-4">
+          <PoiMapPanel picks={detail?.poiPicks ?? []} />
+        </div>
 
-        <TestInterfaceSection
-          detail={detail}
-          isLoading={detailQuery.isLoading}
-          error={detailQuery.error}
-        />
+        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
       </div>
       {/* ---- TEST INTERFACE blocks moved inside main scroll area below ---- */}
       {editing && (
@@ -592,40 +594,6 @@ function TeamDetail() {
         />
       )}
     </div>
-  );
-}
-
-function TestInterfaceSection({
-  detail,
-  isLoading,
-  error,
-}: {
-  detail: TeamDetail | undefined;
-  isLoading: boolean;
-  error: unknown;
-}) {
-  return (
-      <div className="mt-6 rounded-sm border border-dashed border-warning/40 bg-warning/[0.03] p-4">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-warning">
-            Test interface
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Дополнительные данные из ALGS, ещё не интегрированные в основной интерфейс
-          </span>
-          {isLoading && (
-            <span className="text-xs text-muted-foreground">· loading…</span>
-          )}
-          {error ? (
-            <span className="text-xs text-destructive">· {(error as Error).message}</span>
-          ) : null}
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="lg:col-span-2">
-            <PoiMapPanel picks={detail?.poiPicks ?? []} />
-          </div>
-        </div>
-      </div>
   );
 }
 
@@ -686,15 +654,16 @@ function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
 
   if (picks.length === 0) {
     return (
-      <TestPanel title="POI picks on map" subtitle="grouped by map · click a map to expand">
+      <div className="hud-panel p-3">
+        <div className="label-eyebrow mb-2 text-xs">POI picks on map</div>
         <Empty />
-      </TestPanel>
+      </div>
     );
   }
 
   return (
     <>
-      <div className="rounded-sm border border-warning/30 bg-surface p-3">
+      <div className="hud-panel p-3">
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <div className="label-eyebrow text-xs">POI picks on map</div>
           <div className="text-xs text-muted-foreground">{byMap.length} maps · {picks.length} unique POIs · click to expand</div>
@@ -805,32 +774,44 @@ function PoiMapImage({ mapImage, picks, large }: { mapImage: string | null; pick
 function RosterPanel({
   roster,
   players,
+  lastMatchPlayerIds,
+  lastMatchAt,
   isLoading,
 }: {
   roster: TeamRosterMember[];
   players: TeamPlayer[];
+  lastMatchPlayerIds: string[];
+  lastMatchAt: string | null;
   isLoading: boolean;
 }) {
+  const lastSet = new Set(lastMatchPlayerIds);
+  const lastDate = lastMatchAt ? new Date(lastMatchAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "2-digit" }) : null;
   return (
     <div className="hud-panel mt-4 p-3">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">Active roster · {roster.length} players</div>
         <div className="text-xs text-muted-foreground">
-          latest event team version · role=player
+          latest event team version · role=player{lastDate ? ` · last match ${lastDate}` : ""}
           {isLoading && " · loading…"}
         </div>
       </div>
       {roster.length === 0 ? <Empty /> : (
-        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="flex flex-wrap gap-3">
           {roster.map((p) => {
             const agg = players.find((x) => x.id === p.id);
+            const playedLast = lastSet.has(p.id);
             return (
-              <div key={p.id} className="overflow-hidden rounded-sm border border-border bg-surface">
-                <div className="relative aspect-[3/4] w-full bg-surface-2">
+              <div key={p.id} className="w-[225px] overflow-hidden rounded-sm border border-border bg-surface">
+                <div className="relative h-[300px] w-full bg-surface-2">
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">no photo</div>
+                  )}
+                  {playedLast && (
+                    <div className="absolute left-1.5 top-1.5 rounded-sm border border-primary/60 bg-primary/90 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground" title={lastDate ? `Играл в последнем матче (${lastDate})` : "Играл в последнем матче"}>
+                      Last match
+                    </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1.5">
                     <div className="truncate text-sm font-bold uppercase tracking-wider text-white">{p.name}</div>
