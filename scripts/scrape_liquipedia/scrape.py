@@ -309,6 +309,7 @@ def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
     html_wide = load(page, t["url"])
     teams_wide = extract_standings_rows(html_wide)
     tabs = extract_game_tabs(html_wide)
+    page_name = extract_tournament_name(html_wide)
 
     games: list[dict[str, Any]] = []
     for i, tab in enumerate(tabs, start=1):
@@ -344,7 +345,12 @@ def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
                 "url": r["team_href"],
             }
         )
-    return {**t, "teams": teams, "games": games}
+    merged = {**t}
+    if not merged.get("name") and page_name:
+        merged["name"] = page_name
+    merged["teams"] = teams
+    merged["games"] = games
+    return merged
 
 
 # --------------------------------------------------------------------------- #
