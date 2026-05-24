@@ -77,7 +77,7 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
     supabase.from("algs_regions").select("id, name"),
     supabase.from("algs_tournaments").select("id, name"),
     supabase.from("algs_teams").select("id, name, short_name, region, disbanded"),
-    supabase.from("algs_team_versions").select("team_id, logo_light, logo_dark"),
+    supabase.from("algs_team_versions").select("version_id, team_id, logo_light, logo_dark").order("version_id", { ascending: true }),
     supabase.from("algs_series").select("id, name, status, starts_at, completed_at, event_id"),
     supabase.from("algs_matches").select("id, series_id, match_number, map_id_ulid, started_at, completed_at"),
     supabase.from("algs_maps").select("id_ulid, name, canonical_id, active"),
@@ -113,13 +113,15 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
   });
 
   // Teams ← ALGS teams + latest team_version logo
+  // Ordered by version_id ASC (ULID → chronological). Always overwrite so the
+  // LAST seen version wins → we end up with the latest known logo per team.
   const logoByTeam = new Map<string, { light?: string; dark?: string }>();
   for (const v of teamVerRes.data ?? []) {
     if (!v.team_id) continue;
     const prev = logoByTeam.get(v.team_id) ?? {};
     logoByTeam.set(v.team_id, {
-      light: prev.light ?? (v.logo_light || undefined),
-      dark: prev.dark ?? (v.logo_dark || undefined),
+      light: (v.logo_light || undefined) ?? prev.light,
+      dark: (v.logo_dark || undefined) ?? prev.dark,
     });
   }
   const teams: Team[] = (teamsRes.data ?? []).map((t) => {
