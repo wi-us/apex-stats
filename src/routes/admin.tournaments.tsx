@@ -82,6 +82,44 @@ function isMatchReady(m: MatchFull): boolean {
   const mapIds = m.mapIds && m.mapIds.length > 0 ? m.mapIds : [m.mapId];
   return Boolean(m.vodLink) && mapIds.length > 0;
 }
+
+type MatchStatus = "finished" | "live" | "upcoming" | "draft";
+function deriveMatchStatus(m: MatchFull): MatchStatus {
+  const raw = (m.seriesStatus ?? "").toLowerCase();
+  if (raw === "completed" || raw === "finished") return "finished";
+  if (raw === "live" || raw === "in_progress" || raw === "running") return "live";
+  if (m.completedAt) return "finished";
+  const now = Date.now();
+  if (m.startedAt) {
+    const start = new Date(m.startedAt).getTime();
+    if (Number.isFinite(start)) {
+      if (start > now) return "upcoming";
+      // started in past with no completion: assume finished if >6h ago, else live
+      return now - start > 6 * 3600 * 1000 ? "finished" : "live";
+    }
+  }
+  if (raw === "scheduled" || raw === "upcoming") return "upcoming";
+  return "draft";
+}
+const matchStatusStyle: Record<MatchStatus, string> = {
+  finished: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+  live:     "border-destructive/40 bg-destructive/15 text-destructive",
+  upcoming: "border-primary/40 bg-primary/10 text-primary",
+  draft:    "border-border bg-surface-2 text-muted-foreground",
+};
+function MatchStatusBadge({ s }: { s: MatchStatus }) {
+  return (
+    <span className={`rounded-sm border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${matchStatusStyle[s]}`}>
+      {s}
+    </span>
+  );
+}
+function fmtShortDate(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "";
+  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}`;
+}
 function fmtRelative(ts: number): string {
   const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
