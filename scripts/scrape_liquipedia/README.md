@@ -51,7 +51,10 @@ Supabase REST API + `SUPABASE_SERVICE_ROLE_KEY` (этот секрет уже е
 
 - Уважает ToS Liquipedia: UA с контактом, пауза 2.5с между запросами.
   Не запускай много параллельных инстансов.
-- Tag берётся с viewport 700×1080 — Liquipedia адаптивно подменяет имя
-  на сокращение в `.team-template-text`.
-- Игры — все вкладки `ul.panel-tabs__list`, кроме `#Overall_standings`.
+- Команды и игры берутся из финального battle-royale блока внутри
+  `.mw-content-ltr.mw-parser-output`, поэтому в финале должно быть 20 команд.
+- Tag берётся из `span.name.visible-xs`; если команда сама называется коротким
+  тегом (`TSM`, `CIMJ`, `DGAP`), он также записывается в `tag`.
+- Игры берутся из вложенных `.cell--game` строк финальной таблицы, без
+  `Overall standings` и без regular-season раундов.
 - Флаг `--headed` показывает браузер для отладки.
