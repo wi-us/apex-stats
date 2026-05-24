@@ -264,6 +264,19 @@ function TeamDetail() {
         <button onClick={() => navigate({ to: "/admin/teams" })} className="text-mono rounded-sm border border-border bg-surface-2 px-2 py-1 text-xs uppercase tracking-wider hover:bg-muted">← Teams</button>
         <TeamLogo team={team} size={28} />
         <h1 className="text-sm font-bold uppercase tracking-wider">{team.tag} · {team.name}</h1>
+        {detail?.currentSeason && (
+          <span
+            className="ml-2 inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary"
+            title="Current season standings"
+          >
+            <span className="label-eyebrow text-[10px] opacity-70">Season</span>
+            <span className="font-semibold normal-case">{detail.currentSeason.seasonName ?? "Current"}</span>
+            <span className="text-mono">·</span>
+            <span className="text-mono">
+              {detail.currentSeason.totalPoints != null ? `${detail.currentSeason.totalPoints} pts` : "— pts"}
+            </span>
+          </span>
+        )}
         <a
           href={
             team.liquipediaUrl ||
