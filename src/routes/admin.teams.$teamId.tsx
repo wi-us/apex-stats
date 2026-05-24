@@ -272,7 +272,7 @@ function TeamDetail() {
             className="ml-2 inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary"
             title="Current season standings"
           >
-            <span className="label-eyebrow text-[10px] opacity-70">Season</span>
+            <span className="label-eyebrow text-xs opacity-70">Season</span>
             <span className="font-semibold normal-case">{detail.currentSeason.seasonName ?? "Current"}</span>
             <span className="text-mono">·</span>
             <span className="text-mono">
@@ -600,7 +600,7 @@ function TestInterfaceSection({
   return (
       <div className="mt-6 rounded-sm border border-dashed border-warning/40 bg-warning/[0.03] p-4">
         <div className="mb-4 flex items-center gap-2">
-          <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">
+          <span className="rounded-sm border border-warning/60 bg-warning/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-warning">
             Test interface
           </span>
           <span className="text-xs text-muted-foreground">
@@ -630,7 +630,7 @@ function TestInterfaceSection({
                     <tr key={e.eventId} className="border-t border-border">
                       <td className="px-2 py-1.5">
                         <div className="truncate font-semibold">{e.eventName}</div>
-                        <div className="text-mono text-[10px] text-muted-foreground">
+                        <div className="text-mono text-xs text-muted-foreground">
                           {e.startDate?.slice(0, 10) ?? "—"} → {e.endDate?.slice(0, 10) ?? "—"}
                         </div>
                       </td>
@@ -657,7 +657,7 @@ function TestInterfaceSection({
                       <span className="truncate font-semibold">{s.seriesName ?? s.seriesId}</span>
                       <span className="text-mono">#{s.position ?? "—"}</span>
                     </div>
-                    <div className="text-mono text-[10px] text-muted-foreground">
+                    <div className="text-mono text-xs text-muted-foreground">
                       {s.startsAt?.slice(0, 10) ?? "—"} · {s.points ?? 0} pts · {s.kills ?? 0} kills
                       {s.wonMatchPoint ? " · MP win" : ""}
                     </div>
@@ -691,7 +691,7 @@ function TestPanel({ title, subtitle, children }: { title: string; subtitle?: st
     <div className="rounded-sm border border-warning/30 bg-surface p-3">
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">{title}</div>
-        {subtitle && <div className="text-[10px] text-muted-foreground">{subtitle}</div>}
+        {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
       </div>
       <div className="max-h-[320px] overflow-y-auto">{children}</div>
     </div>
@@ -739,7 +739,7 @@ function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
       <div className="rounded-sm border border-warning/30 bg-surface p-3">
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <div className="label-eyebrow text-xs">POI picks on map</div>
-          <div className="text-[10px] text-muted-foreground">{byMap.length} maps · {picks.length} unique POIs · click to expand</div>
+          <div className="text-xs text-muted-foreground">{byMap.length} maps · {picks.length} unique POIs · click to expand</div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {byMap.map((m) => (
@@ -751,7 +751,7 @@ function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
               <PoiMapImage mapImage={m.mapImage} picks={m.picks} />
               <div className="flex items-center justify-between gap-2 px-2 py-1.5">
                 <span className="truncate text-xs font-semibold">{m.mapName}</span>
-                <span className="text-mono text-[10px] text-muted-foreground">{m.picks.length} POIs · {m.total} picks</span>
+                <span className="text-mono text-xs text-muted-foreground">{m.picks.length} POIs · {m.total} picks</span>
               </div>
             </button>
           ))}
@@ -787,7 +787,7 @@ function PoiMapPanel({ picks }: { picks: TeamPoiPick[] }) {
                       <li key={p.spawnLocationId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
                         <div className="min-w-0">
                           <div className="truncate font-semibold">{p.spawnName}</div>
-                          <div className="text-mono text-[10px] text-muted-foreground">avg pick #{p.avgPickNumber.toFixed(1)}</div>
+                          <div className="text-mono text-xs text-muted-foreground">avg pick #{p.avgPickNumber.toFixed(1)}</div>
                         </div>
                         <div className="text-mono">
                           <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
@@ -857,7 +857,7 @@ function RosterPanel({
     <div className="hud-panel mt-4 p-3">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">Active roster · {roster.length} players</div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           latest event team version · role=player
           {isLoading && " · loading…"}
         </div>
@@ -900,7 +900,7 @@ function Stat({ label, value, title }: { label: string; value: number; title?: s
   return (
     <div className="px-2 py-1.5" title={title}>
       <div className="text-mono text-sm font-bold">{value}</div>
-      <div className="label-eyebrow text-[10px] text-muted-foreground">{label}</div>
+      <div className="label-eyebrow text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -993,7 +993,7 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
     <div className="hud-panel mt-4 p-3">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div className="label-eyebrow text-xs">Weapon meta · {weapons.length} weapons</div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           tier by team kill share · series-aggregated
           {isLoading && " · loading…"}
         </div>
@@ -1026,20 +1026,20 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
                               className="h-full max-h-12 w-auto max-w-full object-contain [filter:brightness(0)_invert(1)]"
                             />
                           ) : (
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">no icon</span>
+                            <span className="text-xs uppercase tracking-wider text-muted-foreground">no icon</span>
                           )}
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <div className="truncate text-sm font-semibold">{w.weapon}</div>
-                          <span className={`shrink-0 rounded-sm border px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-wider ${ammoCls}`}>
+                          <span className={`shrink-0 rounded-sm border px-1.5 py-[1px] text-xs font-bold uppercase tracking-wider ${ammoCls}`}>
                             {w.ammoType ?? "—"}
                           </span>
                         </div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{w.gunType ?? "—"}</div>
+                        <div className="text-xs uppercase tracking-wider text-muted-foreground">{w.gunType ?? "—"}</div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                           <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                         </div>
-                        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className="text-mono font-semibold text-foreground">{w.kills} kills</span>
                           <span className="text-mono">{w.series} series</span>
                         </div>
@@ -1134,12 +1134,12 @@ function Sparkline({
     <div className="flex h-[260px] flex-col rounded-sm border border-border bg-surface-2/40">
       <div className="flex shrink-0 items-start justify-between gap-2 p-3 pb-2">
         <div>
-          <div className="label-eyebrow text-[10px] tracking-wider">{title}</div>
+          <div className="label-eyebrow text-xs tracking-wider">{title}</div>
           {values.length > 0 && (
             <div className="flex items-baseline gap-2">
               <span className="text-mono text-xl font-bold text-foreground">{formatVal(last)}</span>
               {values.length >= 2 && (
-                <span className={`text-mono text-[10px] font-medium ${goodDir ? "text-emerald-400" : "text-destructive"}`}>
+                <span className={`text-mono text-xs font-medium ${goodDir ? "text-emerald-400" : "text-destructive"}`}>
                   {deltaUp ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}
                 </span>
               )}
