@@ -576,13 +576,11 @@ function TeamDetail() {
         </div>
 
         {/* ---- Weapon tier list (promoted from test) ---- */}
-        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
+        <div className="mt-4">
+          <PoiMapPanel picks={detail?.poiPicks ?? []} />
+        </div>
 
-        <TestInterfaceSection
-          detail={detail}
-          isLoading={detailQuery.isLoading}
-          error={detailQuery.error}
-        />
+        <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
       </div>
       {/* ---- TEST INTERFACE blocks moved inside main scroll area below ---- */}
       {editing && (
