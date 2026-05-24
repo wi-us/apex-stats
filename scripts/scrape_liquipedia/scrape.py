@@ -151,15 +151,20 @@ def extract_standings_rows(html: str) -> list[dict[str, Any]]:
         m = re.match(r"(\d+)", place_text)
         if m:
             place = int(m.group(1))
-        # team cell: first <a> that points to /apexlegends/ team page
-        team_a = None
-        for a in tr.find_all("a", href=True):
-            href = a["href"]
-            if href.startswith("/apexlegends/") and "Special:" not in href:
-                team_a = a
-                break
-        if not team_a:
+        # team cell: collect all /apexlegends/ links; the first one is usually
+        # the icon (image only, empty text), the second is the text link with
+        # the team's display name (or tag on narrow viewports).
+        team_links = [
+            a for a in tr.find_all("a", href=True)
+            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
+        ]
+        if not team_links:
             continue
+        # Prefer the first link that actually has visible text.
+        team_a = next(
+            (a for a in team_links if a.get_text(strip=True)),
+            team_links[0],
+        )
         text = team_a.get_text(" ", strip=True)
         # logo: <img> inside the row (team template icon)
         logo_url = None
@@ -178,7 +183,35 @@ def extract_standings_rows(html: str) -> list[dict[str, Any]]:
                 "logo_url": logo_url,
             }
         )
-    return rows
+    # Dedupe by team_slug — Liquipedia repeats each team per week/game row.
+    # Keep the row with the best (smallest) numeric place, preferring the one
+    # that actually has a visible team name.
+    by_slug: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        prev = by_slug.get(r["team_slug"])
+        if prev is None:
+            by_slug[r["team_slug"]] = r
+            continue
+        # Prefer row with a real name over an empty one.
+        if not prev["team_text"] and r["team_text"]:
+            by_slug[r["team_slug"]] = r
+            continue
+        # Then prefer lower place number.
+        pp, rp = prev.get("place"), r.get("place")
+        if rp is not None and (pp is None or rp < pp):
+            by_slug[r["team_slug"]] = r
+    return sorted(
+        by_slug.values(),
+        key=lambda x: (x.get("place") is None, x.get("place") or 0),
+    )
+
+
+def extract_tournament_name(html: str) -> str | None:
+    soup = BeautifulSoup(html, "html.parser")
+    h1 = soup.select_one("h1#firstHeading, h1.firstHeading")
+    if h1:
+        return h1.get_text(" ", strip=True) or None
+    return None
 
 
 def extract_game_tabs(html: str) -> list[dict[str, Any]]:
@@ -248,14 +281,16 @@ def extract_game_participants(page: Page, tab_id: str) -> list[dict[str, Any]]:
             continue
         m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
         place = int(m.group(1)) if m else None
-        team_a = None
-        for a in tr.find_all("a", href=True):
-            href = a["href"]
-            if href.startswith("/apexlegends/") and "Special:" not in href:
-                team_a = a
-                break
-        if not team_a:
+        team_links = [
+            a for a in tr.find_all("a", href=True)
+            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
+        ]
+        if not team_links:
             continue
+        team_a = next(
+            (a for a in team_links if a.get_text(strip=True)),
+            team_links[0],
+        )
         rows.append(
             {
                 "place": place,
@@ -274,6 +309,7 @@ def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
     html_wide = load(page, t["url"])
     teams_wide = extract_standings_rows(html_wide)
     tabs = extract_game_tabs(html_wide)
+    page_name = extract_tournament_name(html_wide)
 
     games: list[dict[str, Any]] = []
     for i, tab in enumerate(tabs, start=1):
@@ -309,7 +345,12 @@ def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
                 "url": r["team_href"],
             }
         )
-    return {**t, "teams": teams, "games": games}
+    merged = {**t}
+    if not merged.get("name") and page_name:
+        merged["name"] = page_name
+    merged["teams"] = teams
+    merged["games"] = games
+    return merged
 
 
 # --------------------------------------------------------------------------- #
