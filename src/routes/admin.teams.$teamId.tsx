@@ -622,58 +622,9 @@ function TestInterfaceSection({
           ) : null}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <TestPanel title="Event placements" subtitle={`${detail?.events.length ?? 0} events · finalized standings shown when available`}>
-            {!detail || detail.events.length === 0 ? <Empty /> : (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-2 py-1.5 font-medium">Event</th>
-                    <th className="px-2 py-1.5 font-medium">Pos</th>
-                    <th className="px-2 py-1.5 font-medium">Pts</th>
-                    <th className="px-2 py-1.5 font-medium">Prize</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.events.map((e) => (
-                    <tr key={e.eventId} className="border-t border-border">
-                      <td className="px-2 py-1.5">
-                        <div className="truncate font-semibold">{e.eventName}</div>
-                        <div className="text-mono text-xs text-muted-foreground">
-                          {e.startDate?.slice(0, 10) ?? "—"} → {e.endDate?.slice(0, 10) ?? "—"}
-                        </div>
-                      </td>
-                      <td className="text-mono px-2 py-1.5">{e.position ?? "—"}</td>
-                      <td className="text-mono px-2 py-1.5">{e.points ?? "—"}</td>
-                      <td className="text-mono px-2 py-1.5">{e.prizeMoney ? `$${e.prizeMoney}` : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </TestPanel>
-
           <div className="lg:col-span-2">
             <PoiMapPanel picks={detail?.poiPicks ?? []} />
           </div>
-
-          <TestPanel title="Recent series (last 15)" subtitle={`${detail?.series.length ?? 0} total · pos / pts / kills`}>
-            {!detail || detail.series.length === 0 ? <Empty /> : (
-              <ul className="space-y-1">
-                {detail.series.slice(0, 15).map((s) => (
-                  <li key={s.seriesId} className="rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate font-semibold">{s.seriesName ?? s.seriesId}</span>
-                      <span className="text-mono">#{s.position ?? "—"}</span>
-                    </div>
-                    <div className="text-mono text-xs text-muted-foreground">
-                      {s.startsAt?.slice(0, 10) ?? "—"} · {s.points ?? 0} pts · {s.kills ?? 0} kills
-                      {s.wonMatchPoint ? " · MP win" : ""}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TestPanel>
         </div>
       </div>
   );
