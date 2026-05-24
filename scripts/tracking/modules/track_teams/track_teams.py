@@ -2610,6 +2610,9 @@ def main():
             preview_writer.release()
         fout.write("]}")
         fout.close()
+        if da_dbg_fp is not None:
+            da_dbg_fp.close()
+            print(f"[ok] DA-debug log written -> {args.da_debug_log}")
     # sidecar: финальные wiped_at_t per slot (мета пишется стримом до накопления wipes)
     slots_final = []
     for t in teams:
