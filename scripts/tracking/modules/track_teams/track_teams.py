@@ -961,11 +961,23 @@ def associate_hungarian(
             continue
         radius *= gate_mult
 
+        # Прогрессивный стартовый якорь: на ранних кадрах принудительно
+        # ограничиваем поиск кругом (init_canonical_px, r_anchor).
+        anchor_r = st.anchor_radius_at(t_now) if hasattr(st, "anchor_radius_at") else None
+        anchor_cx = anchor_cy = None
+        if anchor_r is not None and st.init_canonical_px is not None:
+            anchor_cx, anchor_cy = st.init_canonical_px
+
         for j, cand in enumerate(candidates):
             cand_cx, cand_cy = cand["canonical_px"]
             d = math.hypot(cand_cx - pred_cx, cand_cy - pred_cy)
             if d > radius:
                 continue
+            # Hard-gate: вне якоря — кандидат недоступен этому слоту.
+            if anchor_r is not None:
+                da = math.hypot(cand_cx - anchor_cx, cand_cy - anchor_cy)
+                if da > anchor_r:
+                    continue
             world_term = d / max(1.0, radius)
             # shape_penalty: blob со слишком низким color_score штрафуем.
             shape_pen = 1.0 - min(1.0, max(0.0, cand["color_score"]))
@@ -1001,6 +1013,13 @@ def associate_hungarian(
             continue
         st = slots[r]
         result[st.team.id] = candidates[c]
+        # Учёт попадания внутрь стартового якоря (для LOW-watchdog).
+        if st.init_canonical_px is not None:
+            cand_cx, cand_cy = candidates[c]["canonical_px"]
+            if math.hypot(cand_cx - st.init_canonical_px[0],
+                          cand_cy - st.init_canonical_px[1]) <= max(
+                              st.anchor_r0_px, st.near_anchor_radius_px):
+                st.anchor_inside_hits += 1
         # Near-miss: кто ещё хотел этого же кандидата?
         if near_miss is not None:
             win_c = cost[r, c]
