@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminStore, updateTeam, updateMatch } from "@/lib/admin-store";
 import { maps as allMaps, type MatchFull } from "@/lib/mock-match";
@@ -297,7 +297,7 @@ function TeamDetail() {
       </header>
       <div className="flex-1 overflow-auto p-6">
         {/* ---- Sticky filters + view switcher ---- */}
-        <div className="sticky top-0 z-30 -mx-6 -mt-6 mb-4 border-b border-border bg-background/95 px-6 pt-6 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="sticky -top-6 z-30 -mx-6 mb-4 border-b border-border bg-background px-6 pt-6 pb-3">
         <div className="hud-panel p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="label-eyebrow text-xs">Period</div>
@@ -1039,8 +1039,18 @@ function Sparkline({
   color: string;
   formatVal: (v: number) => string;
 }) {
-  const w = 300;
-  const h = 100;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cw, setCw] = useState(800);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setCw(Math.max(300, Math.round(e.contentRect.width)));
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+  const w = cw;
+  const h = 180;
   const padX = 0;
   const padTop = 12;
   const padBottom = 16;
@@ -1090,7 +1100,7 @@ function Sparkline({
   const labelStep = Math.max(1, Math.ceil(values.length / 8));
 
   return (
-    <div className="flex h-[260px] flex-col rounded-sm border border-border bg-surface-2/40">
+    <div className="flex h-[320px] flex-col rounded-sm border border-border bg-surface-2/40">
       <div className="flex shrink-0 items-start justify-between gap-2 p-3 pb-2">
         <div>
           <div className="label-eyebrow text-xs tracking-wider">{title}</div>
@@ -1112,12 +1122,12 @@ function Sparkline({
         )}
       </div>
 
-      <div className="relative min-h-0 flex-1 px-4">
+      <div ref={containerRef} className="relative min-h-0 flex-1 px-4">
         {values.length === 0 ? (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No data</div>
         ) : (
           <>
-            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
+            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full overflow-visible">
               {/* Gridlines */}
               {[0.2, 0.5, 0.8].map((f) => (
                 <line
@@ -1166,7 +1176,7 @@ function Sparkline({
                     x={x}
                     y={Math.max(7, y - 5)}
                     textAnchor={anchor}
-                    fontSize="7"
+                    fontSize="10"
                     fill="currentColor"
                     className={isPeak ? "text-foreground font-bold" : "text-muted-foreground"}
                   >
@@ -1186,7 +1196,7 @@ function Sparkline({
                     x={x}
                     y={h - 4}
                     textAnchor={anchor}
-                    fontSize="7"
+                    fontSize="10"
                     fill="currentColor"
                     className="text-muted-foreground"
                   >
