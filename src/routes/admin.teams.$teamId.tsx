@@ -1009,38 +1009,28 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
                 <div className="flex flex-1 flex-wrap gap-2 rounded-sm border border-border bg-surface p-2">
                   {items.map((w) => {
                     const ammoCls = (w.ammoType && AMMO_COLOR[w.ammoType]) || "bg-muted text-muted-foreground border-border";
-                    const pct = (w.kills / max) * 100;
                     const icon = weaponIconUrl(w.weapon);
                     return (
                       <div
                         key={w.weapon}
-                        className="flex w-[240px] flex-col gap-1.5 rounded-sm border border-border bg-background p-2"
+                        className={`flex w-[240px] flex-col gap-1.5 rounded-sm border p-2 ${ammoCls}`}
                         title={`${w.weapon} · ${w.gunType ?? "—"} · ${w.ammoType ?? "—"} · ${w.kills} kills in ${w.series} series`}
                       >
-                        <div className="flex h-12 w-full items-center justify-center rounded-sm bg-surface-2 px-2">
+                        <div className="flex h-14 w-full items-center justify-center px-2">
                           {icon ? (
                             <img
                               src={icon}
                               alt={w.weapon}
                               loading="lazy"
-                              className="h-full max-h-12 w-auto max-w-full object-contain [filter:brightness(0)_invert(1)]"
+                              className="h-full max-h-14 w-auto max-w-full object-contain [filter:brightness(0)_invert(1)]"
                             />
                           ) : (
-                            <span className="text-xs uppercase tracking-wider text-muted-foreground">no icon</span>
+                            <span className="text-xs uppercase tracking-wider opacity-70">no icon</span>
                           )}
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="truncate text-sm font-semibold">{w.weapon}</div>
-                          <span className={`shrink-0 rounded-sm border px-1.5 py-[1px] text-xs font-bold uppercase tracking-wider ${ammoCls}`}>
-                            {w.ammoType ?? "—"}
-                          </span>
-                        </div>
-                        <div className="text-xs uppercase tracking-wider text-muted-foreground">{w.gunType ?? "—"}</div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="text-mono font-semibold text-foreground">{w.kills} kills</span>
+                        <div className="truncate text-sm font-semibold">{w.weapon}</div>
+                        <div className="flex items-center justify-between text-xs opacity-90">
+                          <span className="text-mono font-semibold">{w.kills} kills</span>
                           <span className="text-mono">{w.series} series</span>
                         </div>
                       </div>
