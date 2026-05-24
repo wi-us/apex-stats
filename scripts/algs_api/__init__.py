@@ -1,0 +1,1 @@
+"""ALGS API integration package (client + SQLite cache + importer)."""
