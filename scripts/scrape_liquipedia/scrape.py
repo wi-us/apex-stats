@@ -151,15 +151,20 @@ def extract_standings_rows(html: str) -> list[dict[str, Any]]:
         m = re.match(r"(\d+)", place_text)
         if m:
             place = int(m.group(1))
-        # team cell: first <a> that points to /apexlegends/ team page
-        team_a = None
-        for a in tr.find_all("a", href=True):
-            href = a["href"]
-            if href.startswith("/apexlegends/") and "Special:" not in href:
-                team_a = a
-                break
-        if not team_a:
+        # team cell: collect all /apexlegends/ links; the first one is usually
+        # the icon (image only, empty text), the second is the text link with
+        # the team's display name (or tag on narrow viewports).
+        team_links = [
+            a for a in tr.find_all("a", href=True)
+            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
+        ]
+        if not team_links:
             continue
+        # Prefer the first link that actually has visible text.
+        team_a = next(
+            (a for a in team_links if a.get_text(strip=True)),
+            team_links[0],
+        )
         text = team_a.get_text(" ", strip=True)
         # logo: <img> inside the row (team template icon)
         logo_url = None
@@ -248,14 +253,16 @@ def extract_game_participants(page: Page, tab_id: str) -> list[dict[str, Any]]:
             continue
         m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
         place = int(m.group(1)) if m else None
-        team_a = None
-        for a in tr.find_all("a", href=True):
-            href = a["href"]
-            if href.startswith("/apexlegends/") and "Special:" not in href:
-                team_a = a
-                break
-        if not team_a:
+        team_links = [
+            a for a in tr.find_all("a", href=True)
+            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
+        ]
+        if not team_links:
             continue
+        team_a = next(
+            (a for a in team_links if a.get_text(strip=True)),
+            team_links[0],
+        )
         rows.append(
             {
                 "place": place,
