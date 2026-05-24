@@ -39,8 +39,6 @@ USER_AGENT = os.environ.get(
 # ------------------------------ token bucket ---------------------------------
 
 class _TokenBucket:
-    """Simple thread-safe token bucket. ~rps tokens/sec, capped at burst."""
-
     def __init__(self, rps: float, burst: int) -> None:
         self.rps = max(0.1, float(rps))
         self.capacity = max(1, int(burst))
@@ -103,11 +101,11 @@ class AlgsApiError(RuntimeError):
 
 
 class AlgsNotFound(AlgsApiError):
-    """Raised for 404s. Callers typically want to skip silently."""
+    """Raised for 404/400 'not applicable' responses. Callers usually skip."""
     pass
 
 
-def _request(url: str, *, timeout: float = 20.0) -> Any:
+def _request(url: str, *, timeout: float = 30.0) -> Any:
     req = urllib.request.Request(
         url,
         headers={
@@ -116,42 +114,42 @@ def _request(url: str, *, timeout: float = 20.0) -> Any:
         },
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        ct = resp.headers.get("Content-Type", "")
         raw = resp.read()
-        if "json" not in ct:
-            try:
-                return json.loads(raw)
-            except Exception as e:  # noqa: BLE001
-                raise AlgsApiError(f"non-JSON response from {url}: {ct}") from e
-        return json.loads(raw)
+        try:
+            return json.loads(raw) if raw else None
+        except Exception as e:  # noqa: BLE001
+            raise AlgsApiError(f"non-JSON response from {url}") from e
 
 
 def get(path: str, *, params: dict[str, Any] | None = None,
         cache_ttl: int | None = None, force: bool = False) -> Any:
     """GET a JSON endpoint with throttle + cache + retry/backoff.
 
-    `cache_ttl` overrides the global `ALGS_API_CACHE_TTL` when set.
-    `force=True` bypasses the cache (still writes the fresh result back).
+    `cache_ttl` overrides the global `ALGS_API_CACHE_TTL` when set
+    (use a small number for live data, 0 to bypass on read but still write).
+    `force=True` bypasses the cache for reads.
     """
     if not path.startswith("/"):
         path = "/" + path
     if params:
-        path = f"{path}?{urllib.parse.urlencode(params, doseq=True)}"
+        flat = {k: v for k, v in params.items() if v is not None}
+        if flat:
+            path = f"{path}?{urllib.parse.urlencode(flat, doseq=True)}"
     url = API_BASE + path
     ttl = CACHE_TTL if cache_ttl is None else cache_ttl
 
-    if not force:
+    if not force and ttl > 0:
         cached = _cache_load(url, ttl)
         if cached is not None:
-            if isinstance(cached, dict) and cached.get("__error__") == "not_found":
-                raise AlgsNotFound(f"404 not found (cached): {url}")
+            if isinstance(cached, dict) and cached.get("__error__"):
+                raise AlgsNotFound(f"{cached.get('status')} (cached): {url}")
             return cached
 
     delay = 1.0
     last_err: Exception | None = None
     for attempt in range(6):
         _BUCKET.take(1.0)
-        time.sleep(random.uniform(0.05, 0.25))  # extra jitter
+        time.sleep(random.uniform(0.05, 0.25))
         try:
             data = _request(url)
             _cache_store(url, data)
@@ -167,10 +165,10 @@ def get(path: str, *, params: dict[str, Any] | None = None,
                 time.sleep(wait)
                 delay = min(delay * 2.0, 30.0)
                 continue
-            if e.code == 404:
-                # Cache 404 briefly so we don't re-hammer.
-                _cache_store(url, {"__error__": "not_found", "status": 404})
-                raise AlgsNotFound(f"404 not found: {url}") from e
+            if e.code in (400, 404):
+                _cache_store(url, {"__error__": "not_available",
+                                    "status": e.code})
+                raise AlgsNotFound(f"{e.code} not available: {url}") from e
             raise AlgsApiError(f"HTTP {e.code} for {url}") from e
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             last_err = e
@@ -186,86 +184,138 @@ def get(path: str, *, params: dict[str, Any] | None = None,
 # Only the read endpoints we use from the importer. Auth-protected endpoints
 # (login, voting, observer) are intentionally not exposed.
 
+# ---- reference ----
 def maps() -> list[dict[str, Any]]:
     return get("/v1/maps")["maps"]
-
 
 def characters() -> list[dict[str, Any]]:
     return get("/v1/characters")["characters"]
 
-
+# ---- seasons ----
 def seasons() -> list[dict[str, Any]]:
     data = get("/v1/seasons")
     return data if isinstance(data, list) else data.get("seasons", [])
 
-
 def season_structure(season_id: str) -> dict[str, Any]:
     return get(f"/v1/seasons/{season_id}/structure")
 
+def season_standings_teams(season_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/seasons/{season_id}/standings/teams", **kw)["standings"]
 
+def season_standings_players(season_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/seasons/{season_id}/standings/players", **kw)["standings"]
+
+# ---- events ----
 def event(event_id: str) -> dict[str, Any]:
     return get(f"/v1/events/{event_id}")
-
 
 def event_structure(event_id: str) -> dict[str, Any]:
     return get(f"/v1/events/{event_id}/structure")
 
-
-def event_teams(event_id: str) -> dict[str, Any]:
-    return get(f"/v1/events/{event_id}/teams")
-
+def event_teams(event_id: str) -> list[dict[str, Any]]:
+    return get(f"/v1/events/{event_id}/teams")["teams"]
 
 def event_maps(event_id: str) -> list[dict[str, Any]]:
     return get(f"/v1/events/{event_id}/maps")["maps"]
 
+def event_standings(event_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/events/{event_id}/standings", **kw)["standings"]
 
-def event_standings(event_id: str) -> dict[str, Any]:
-    return get(f"/v1/events/{event_id}/standings")
+def event_schedule(event_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/events/{event_id}/schedule", **kw)["phases"]
 
+def stats_event_first_squad_wipe(event_id: str) -> Any:
+    return get(f"/v1/stats/events/{event_id}/first-squad-wipe")
 
-def series(series_id: str) -> dict[str, Any]:
-    return get(f"/v1/series/{series_id}")
+# ---- phases ----
+def phase_teams(phase_id: str) -> list[dict[str, Any]]:
+    return get(f"/v1/phases/{phase_id}/teams")["teams"]
 
+def stats_phase_standings(phase_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/stats/phases/{phase_id}/standings", **kw)["standings"]
 
-def series_matches(series_id: str) -> list[dict[str, Any]]:
-    return get(f"/v1/series/{series_id}/matches")["matches"]
+def stats_phase_first_squad_wipe(phase_id: str) -> Any:
+    return get(f"/v1/stats/phases/{phase_id}/first-squad-wipe")
 
+# ---- series ----
+def series(series_id: str, **kw) -> dict[str, Any]:
+    return get(f"/v1/series/{series_id}", **kw)
 
-def series_teams(series_id: str) -> list[dict[str, Any]]:
-    return get(f"/v1/series/{series_id}/teams")["teams"]
+def series_matches(series_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/series/{series_id}/matches", **kw)["matches"]
 
+def series_teams(series_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/series/{series_id}/teams", **kw)["teams"]
 
-def series_banned_legends(series_id: str) -> list[dict[str, Any]]:
-    return get(f"/v1/series/{series_id}/banned-legends")["legendBans"]
+def series_banned_legends(series_id: str, **kw) -> list[dict[str, Any]]:
+    return get(f"/v1/series/{series_id}/banned-legends", **kw)["legendBans"]
 
+def series_upcoming(**kw) -> list[dict[str, Any]]:
+    # short cache - this list changes constantly
+    kw.setdefault("cache_ttl", 600)
+    return get("/v1/series/upcoming", **kw)["series"]
 
-def stats_series(series_id: str) -> dict[str, Any]:
-    return get(f"/v1/stats/series/{series_id}")
+# ---- stats ----
+def stats_series(series_id: str, **kw) -> dict[str, Any]:
+    return get(f"/v1/stats/series/{series_id}", **kw)
 
+def stats_series_match(series_id: str, match_number: int, **kw) -> dict[str, Any]:
+    return get(f"/v1/stats/series/{series_id}/match/number/{match_number}", **kw)
 
-def stats_series_match(series_id: str, match_number: int) -> dict[str, Any]:
-    return get(f"/v1/stats/series/{series_id}/match/number/{match_number}")
+def stats_pois(**filters) -> dict[str, Any]:
+    p = {k: filters.get(k) for k in
+         ("sort", "sortOrder", "map", "seasonId", "eventId",
+          "phaseId", "seriesId")}
+    return get("/v1/stats/pois", params=p)
 
+def stats_weapons(**filters) -> dict[str, Any]:
+    p = {k: filters.get(k) for k in
+         ("page", "mapId", "eventId", "phaseId", "seriesId", "matchNumber")}
+    return get("/v1/stats/weapons", params=p)
 
-def stats_pois(*, series_id: str | None = None,
-               event_id: str | None = None) -> Any:
-    params: dict[str, Any] = {}
-    if series_id: params["seriesId"] = series_id
-    if event_id:  params["eventId"]  = event_id
-    return get("/v1/stats/pois", params=params or None)
+def stats_characters(**filters) -> dict[str, Any]:
+    p = {k: filters.get(k) for k in
+         ("mapId", "eventId", "phaseId", "seriesId", "matchNumber")}
+    return get("/v1/stats/characters", params=p)
 
+def stats_characters_composition(**filters) -> dict[str, Any]:
+    p = {k: filters.get(k) for k in
+         ("mapId", "eventId", "phaseId", "seriesId", "matchNumber")}
+    return get("/v1/stats/characters/composition", params=p)
 
+def stats_players(**filters) -> dict[str, Any]:
+    p = {k: filters.get(k) for k in
+         ("sort", "sortOrder", "page", "mapId", "playerIds",
+          "teamId", "phaseId", "eventId", "seriesId", "type")}
+    return get("/v1/stats/players", params=p)
+
+# ---- poi drafts ----
 def poi_draft(draft_id: str) -> dict[str, Any]:
     return get(f"/v1/poi-drafts/{draft_id}")["poiDraft"]
-
 
 def poi_draft_locations(draft_id: str) -> list[dict[str, Any]]:
     return get(f"/v1/poi-drafts/{draft_id}/locations")["spawnLocations"]
 
-
 def poi_draft_picks(draft_id: str) -> list[dict[str, Any]]:
     return get(f"/v1/poi-drafts/{draft_id}/pick")["picks"]
 
-
+# ---- teams ----
 def team(team_id: str) -> dict[str, Any]:
-    return get(f"/v1/teams/{team_id}")
+    return get(f"/v1/teams/{team_id}")["team"]
+
+# ---- streams ----
+def streams_live(**kw) -> list[dict[str, Any]]:
+    # very short cache - this is the live state of the tournament
+    kw.setdefault("cache_ttl", 120)
+    return get("/v1/streams/live", **kw)["series"]
+
+# ---- leaderboards (CC = Challenger Circuit) ----
+def cc_leaderboard_teams(season_id: str, event_id: str, **kw) -> dict[str, Any]:
+    p = {k: kw.pop(k, None) for k in ("region", "limit", "offset", "search")}
+    return get(f"/v1/leaderboards/teams/cc-leaderboard/{season_id}/{event_id}",
+               params=p, **kw)
+
+def cc_leaderboard_players(season_id: str, event_id: str, **kw) -> dict[str, Any]:
+    p = {k: kw.pop(k, None) for k in ("region", "limit", "offset", "search")}
+    return get(f"/v1/leaderboards/players/cc-leaderboard/{season_id}/{event_id}",
+               params=p, **kw)
