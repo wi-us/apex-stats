@@ -422,5 +422,26 @@ export async function fetchTeamDetail(teamId: string): Promise<TeamDetail> {
       .sort((a, b) => b.kills - a.kills);
   }
 
-  return { matches, players, events, seasons, series, phases, poiPicks, currentSeason, activeRoster, weapons };
+  // ---- Last match: most recent completed/started match for this team -------
+  let lastMatchId: string | null = null;
+  let lastMatchAt: string | null = null;
+  for (const m of matches) {
+    const ts = m.completedAt ?? m.startedAt;
+    if (!ts) continue;
+    if (!lastMatchAt || Date.parse(ts) > Date.parse(lastMatchAt)) {
+      lastMatchAt = ts;
+      lastMatchId = m.matchId;
+    }
+  }
+  const lastMatchPlayerIds: string[] = lastMatchId
+    ? Array.from(
+        new Set(
+          (mpsRes.data ?? [])
+            .filter((r) => r.match_id === lastMatchId && r.player_id)
+            .map((r) => r.player_id as string),
+        ),
+      )
+    : [];
+
+  return { matches, players, events, seasons, series, phases, poiPicks, currentSeason, activeRoster, weapons, lastMatchPlayerIds, lastMatchAt };
 }
