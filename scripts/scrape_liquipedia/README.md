@@ -57,4 +57,38 @@ Supabase REST API + `SUPABASE_SERVICE_ROLE_KEY` (этот секрет уже е
   тегом (`TSM`, `CIMJ`, `DGAP`), он также записывается в `tag`.
 - Игры берутся из вложенных `.cell--game` строк финальной таблицы, без
   `Overall standings` и без regular-season раундов.
+- В каждом объекте `games[i]` появились поля:
+  - `date` — ISO-8601 в UTC (из `span.timer-object[data-timestamp]` в
+    блоке `panel-content__game-schedule`);
+  - `map` — название карты как на странице, плюс нормализованный
+    `map_id` (`storm_point` / `worlds_edge` / `e_district` / `broken_moon` /
+    `olympus` / `kings_canyon`).
+  Если у турнира нет game-schedule блока, эти поля равны `null`.
+- POI Drafts (если есть на странице) пишутся как `poi_drafts[stage][map_id] = [...]`
+  и флаг `has_poi_drafts: true` в самом объекте турнира. Структура одного
+  пика: `{rotation, draft_no, team_slug, team_name, spot}`.
 - Флаг `--headed` показывает браузер для отладки.
+
+## 3) POI hints для трекера
+
+Когда у турнира есть `poi_drafts`, а на каноническую карту в админке
+(`/admin/poi`) уже нанесены `poi_zones.json`, можно собрать файл подсказок
+для `scripts/tracking/modules/track_teams/track_teams.py`:
+
+```powershell
+python scripts\scrape_liquipedia\build_poi_hints.py `
+  --tournament scripts\scrape_liquipedia\data\tournaments\<slug>.json `
+  --zones src\data\maps\storm_point\poi_zones.json `
+  --stage finals --map storm_point `
+  --out scripts\tracking\modules\track_teams\reports\poi_hints.json
+```
+
+Затем — прокинуть в трекер:
+```powershell
+python ... track_teams.py --poi-hints scripts\tracking\modules\track_teams\reports\poi_hints.json ...
+```
+
+Хелпер `poi_prior_weight(slot_or_tag, x_norm, y_norm)` в `track_teams.py`
+возвращает множитель для скоров стартового матчера (1.0 внутри круга,
+мягкое затухание снаружи). Само интегрирование prior'а в стартовую фазу
+делается отдельной итерацией (плумминг готов, поведение пока не меняется).

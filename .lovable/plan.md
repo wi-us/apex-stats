@@ -1,74 +1,94 @@
-## Цель
+## 1. Скрейпер: расписание игр (date + map)
 
-Поднять покрытие OCR с 10/20 до 18–20/20 без ручной правки, чтобы можно было доверять `push.ps1` и считать словарь `slot-to-tag.json` производным от детекций, а не вручную поддерживаемым.
+В `scripts/scrape_liquipedia/scrape.py` достроить парсинг блока `div.panel-content.panel-content__game-schedule` рядом с финальной battle-royale таблицей.
 
-## Что сейчас ломается (анализ логов)
+- Селектор строк: `div.panel-content__game-schedule > div.panel-content__game-schedule__container` (или эквивалент по разметке Liquipedia: «Game N | Map | DD MMM YYYY — HH:MM»).
+- Поля на игру:
+  - `date` — ISO-8601 в UTC. Liquipedia рендерит время в `<span class="timer-object" data-timestamp="...">`; берём `data-timestamp` (unix sec) и форматируем.
+  - `map` — имя карты (`Storm Point`, `World's Edge`, `E-District`), + нормализованный `map_id` (`storm_point` / `worlds_edge` / `e_district`) по уже существующим ключам из `scripts/tracking/shared/canonical_maps/`.
+- В `extract_teams_and_games` результат сливается с `games[i]`: каждая игра получает `date` и `map` (и `map_id`). Если расписания нет — поля `null`, остальное не ломаем.
+- README: дописать строчку про новые поля.
 
-- `slot_13 w=0.00 n=30` — OCR вообще ничего не прочитал. Скорее всего crop пустой/чёрный.
-- 7 слотов с `?` и `w∈[0.5..2.5]` — что-то распозналось, но `min_match_ratio=70` отсекает.
-- Большие веса есть у "правильно угаданных" (TL 4.67, CRT 5.05, JDG 4.51) — значит механика голосования работает, проблема в препроцессе/кропе, а не в матчере.
+## 2. Скрейпер: POI Drafts → JSON (приоритет)
 
-Главное подозрение: bbox от `detect_plates` покрывает только цветной чип слева (4–8 символов плашки), а полное имя команды (Elite Esports, Shopify Rebellion, NinjasinPyjamas) лежит справа и обрезается даже с `pad-frac=0.35`.
+Новый модуль внутри того же `scrape.py` (и опция CLI `--poi-only` для повторного прогона без перетаскивания всего турнира).
 
-## План
+- Детект вкладки: на странице турнира искать заголовок `POI Drafts` (`<h2><span id="POI_Drafts">`). Если нет — пропускаем без ошибки.
+- Внутри блока:
+  - Вкладки `Regular Season` / `Finals` — по `ul.tabs-static` рядом с заголовком.
+  - Под-вкладки по картам (`Storm Point`, `World's Edge`, `E-District`).
+  - Для каждой комбинации (stage × map) парсить таблицу справа: `Rotation`, `Draft #`, `Team` (имя + ссылка на команду → slug), `Spot Picked`.
+- Сохранять рядом с турниром:
+  ```
+  scripts/scrape_liquipedia/data/tournaments/<slug>.json
+    ...
+    "poi_drafts": {
+      "finals":  { "storm_point": [ {rotation, draft_no, team_slug, team_name, spot}... ], ... },
+      "regular": { ... }
+    }
+  ```
+- В `index.json` помечать `has_poi_drafts: true|false` для быстрой фильтрации.
+- Координаты подписей на картинке карты в этом этапе НЕ берём — они для каждого турнира свои и почти бесполезны вне контекста. Геометрию задаём сами в админке (шаг 3).
 
-### Шаг 1. Диагностика по debug-кропам (5 мин)
+## 3. Канонические POI-зоны на карте (frontend, JSON)
 
-Открыть `scripts/tracking/modules/ocr_tags/reports/debug_crops/` и собрать по 1 примеру (`*.raw.png` + `*.prep.png`) для каждого "?" слота. Определить класс ошибки:
-- **A**: на raw обрезан текст справа → нужен больший `pad-frac`
-- **B**: raw нормальный, но prep чёрный/белый → нужен другой препроцесс
-- **C**: prep читаемый, но текст не в словаре → нужны новые алиасы
+Цель: единый каталог точек интереса на каждой канонической мини-карте + круглая «зона поиска» вокруг каждой.
 
-### Шаг 2. Правки в `scripts/tracking/modules/ocr_tags/ocr_tags.py`
+- Хранилище (JSON в репо, БД позже):
+  ```
+  src/data/maps/<map_id>/poi_zones.json
+  ```
+  Схема одного POI:
+  ```json
+  { "id": "storm-catcher", "name": "Storm Catcher",
+    "aliases": ["StormCatcher"], "cx": 0.62, "cy": 0.41, "r": 0.035 }
+  ```
+  `cx/cy/r` — нормализованные координаты относительно canonical-карты (0..1), как в `shared/canonical_maps/`.
+- Алиасы нужны, чтобы матчить разнобой названий из таблиц Liquipedia (`The Wall` vs `Wall`, `Cenote Cave` vs `Cenote` и т.п.).
 
-1. **Шире crop вправо**: дефолт `--pad-frac` 0.35 → **1.0** (текст справа бывает шире самого чипа в 2 раза). По вертикали `--pad-frac-v` оставить 0.25.
-2. **Две ветки препроцесса в `preprocess_plate()`**:
-   - "dark-on-light" (текущая) — для чипа с цветным фоном и белым текстом
-   - "light-on-dark" — для правой части (полупрозрачная тёмная подложка): сразу `THRESH_BINARY` с порогом ~180 по L-каналу, без инверсии
-   - Возвращать обе картинки, OCR гнать на обеих, в `vote()` идти по объединению результатов.
-3. **Несколько psm**: для каждой картинки прогнать `--psm 7` (одна строка) и `--psm 6` (блок текста). Объединить результаты.
-4. **Снизить порог при наличии алиаса >= 8 символов**: для длинных алиасов (`SHOPIFYREBELLION`, `NINJASINPYJAMAS`, `ELITEESPORTS`) ставить эффективный `min_match_ratio = 60`, потому что 1–2 ошибки OCR на 16 символах = ratio ~88, но если читается только 10 символов из 16 = ratio падает.
+## 4. Админ-инструмент: разметка POI зон
 
-### Шаг 3. Правки в `configs/teams.m-test-g1.json`
+Новый роут `src/routes/admin.poi.tsx` (доступ через существующий `_authenticated`/admin guard, по образцу `admin.zones.tsx`).
 
-Добавить недостающие тех-варианты, которые часто читаются Tesseract с ошибками:
-- `MR`: `MEDIUM`, `RARE` (могут быть распознаны раздельно)
-- `OBVN`: `ONLIVI`, `NLIVION` (срезанные)
-- `STAL`: `STALLI`, `TALLIONS`
-- `SR`: `HOPIFY`, `REBELLI`
-- `DKK`: добавить варианты, если на трансляции пишется иначе (узнаем из debug-кропов)
+UI:
+- Селект карты (storm_point / worlds_edge / e_district) → загружает соответствующую canonical минимапу + текущий `poi_zones.json`.
+- Канва (SVG поверх PNG карты):
+  - клик = создать POI (диалог: name, aliases),
+  - drag центра = переместить, drag по краю = менять `r`,
+  - правый клик / кнопка Delete = удалить.
+- Кнопка `Export JSON` — скачивает обновлённый `poi_zones.json`. Сохранение в файл репо делает разработчик (как в существующих ring/zones admin-страницах). Если позже захотим автосохранение, добавим серверную функцию.
+- Боковая таблица: импорт списка POI из выбранного турнира (`poi_drafts`) — кнопкой «Добавить недостающие POI как новые зоны» (создаёт zone-заглушки в центре карты для всех spot’ов, которых ещё нет, чтобы быстро доразметить).
 
-### Шаг 4. Параметры запуска
+## 5. Использование POI в детекте стартовых позиций
 
-В `run.ps1` поднять дефолты:
-- `-TopN 60` (с 30) — даст больше шансов поймать чёткий кадр
+`scripts/tracking/modules/track_teams/track_teams.py` (стартовая фаза, та что использует `assets/gt_anchors.json`).
 
-### Шаг 5. Перепрогон и валидация
+Новая опциональная подсказка `--poi-hints <path>`:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/tracking/modules/ocr_tags/run.ps1 -SaveDebug
-type scripts/tracking/modules/ocr_tags/reports/slot_tags.json
-```
+1. На вход — конкретный турнир + карта; скрипт берёт `poi_zones.json` + соответствующий `poi_drafts[stage][map]` из JSON-кэша скрейпера.
+2. Для каждой команды (по team tag → liquipedia team slug через справочник) находит её spot, по spot → POI zone (центр + r).
+3. Если zone найдена — приоритетно искать стартовое плашко-движение команды в круге `(cx,cy,r)`; вне круга — штраф.
+4. Если нет POI-таблицы для турнира — fallback на текущую логику без изменений.
 
-Ожидаемый результат: ≥18/20 назначено, веса ≥ 1.5, нет коллизий.
+Конкретно: добавить в существующий стартовый матчер «prior»-bias по слотам команд, который умножает score-карту на маску круга. Никаких других веток алгоритма не трогаем.
 
-### Шаг 6. Свёрка с ground truth
+## 6. Технические детали
 
-После прогона сверить результат OCR с твоей таблицей (`1=ELTE..20=SR`) и:
-- если совпадает — `push.ps1` спокойно запускаем
-- если расходится по slot_id — это означает, что нумерация `detect_plates` ≠ порядок в HUD, и тогда отдельная задача: добавить в `aggregate_slots.py` сортировку по позиции в HUD.
+- Парсинг расписания и POI: только в существующем `scrape.py`, без новых зависимостей. Liquipedia таймстампы — `span.timer-object[data-timestamp]`.
+- Team-resolution: для POI Drafts матчим `<a href="/apexlegends/<TeamSlug>">` → тот же slug, что в `teams[]` турнира; имя команды берём из таблицы, fallback из ссылки.
+- Канонические map-id: `Storm Point→storm_point`, `World's Edge→worlds_edge`, `E-District→e_district`, `Broken Moon→broken_moon`, `Olympus→olympus`, `Kings Canyon→kings_canyon`. Хелпер `normalize_map(name)` положить в `scrape.py`.
+- Никаких миграций БД в этом плане. Таблицы `lp_*` остаются; будущая миграция БД — отдельной задачей.
+- Затрагиваем:
+  - `scripts/scrape_liquipedia/scrape.py` (game schedule + POI Drafts)
+  - `scripts/scrape_liquipedia/README.md`
+  - `src/data/maps/{storm_point,worlds_edge,e_district}/poi_zones.json` (пустые стартовые)
+  - `src/routes/admin.poi.tsx` (новый)
+  - `src/lib/poi-zones.ts` (типы + io)
+  - `scripts/tracking/modules/track_teams/track_teams.py` (поддержка `--poi-hints`)
 
-## Что НЕ делаем сейчас
+## 7. Порядок реализации
 
-- Не трогаем `slot-to-tag.json` (он сейчас служит safety net в UI)
-- Не меняем логику `detect_plates`
-- Не переходим на нейросетевой OCR (PaddleOCR/EasyOCR) — оставляем как fallback, если Tesseract на втором заходе тоже не вытянет
-
-## Технические детали
-
-Файлы под правку:
-- `scripts/tracking/modules/ocr_tags/ocr_tags.py` — `preprocess_plate()`, `ocr_one()`, новые CLI-флаги
-- `scripts/tracking/modules/ocr_tags/configs/teams.m-test-g1.json` — добавление алиасов
-- `scripts/tracking/modules/ocr_tags/run.ps1` — `-TopN 60`
-
-После всех изменений тебе нужно будет: `git pull` на Windows → запустить `run.ps1 -SaveDebug` → прислать результат.
+1. Расписание игр (`date`, `map`) + рескрейп.
+2. POI Drafts парсер + рескрейп + `has_poi_drafts` в индексе.
+3. Заглушки `poi_zones.json` + `admin.poi.tsx` редактор.
+4. `--poi-hints` в `track_teams.py` + точечный e2e на одном турнире.

@@ -33,6 +33,7 @@ import { Route as AdminTeamsRouteImport } from './routes/admin.teams'
 import { Route as AdminSchemaRouteImport } from './routes/admin.schema'
 import { Route as AdminProcessesRouteImport } from './routes/admin.processes'
 import { Route as AdminPolygonsRouteImport } from './routes/admin.polygons'
+import { Route as AdminPoiRouteImport } from './routes/admin.poi'
 import { Route as AdminMinimapRouteImport } from './routes/admin.minimap'
 import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminMapsRouteImport } from './routes/admin.maps'
@@ -163,6 +164,11 @@ const AdminPolygonsRoute = AdminPolygonsRouteImport.update({
   path: '/polygons',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPoiRoute = AdminPoiRouteImport.update({
+  id: '/poi',
+  path: '/poi',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMinimapRoute = AdminMinimapRouteImport.update({
   id: '/minimap',
   path: '/minimap',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
   '/admin/minimap': typeof AdminMinimapRoute
+  '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
   '/admin/schema': typeof AdminSchemaRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
   '/admin/minimap': typeof AdminMinimapRoute
+  '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
   '/admin/schema': typeof AdminSchemaRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
   '/admin/minimap': typeof AdminMinimapRoute
+  '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
   '/admin/schema': typeof AdminSchemaRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/admin/maps'
     | '/admin/matches'
     | '/admin/minimap'
+    | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
     | '/admin/schema'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/admin/maps'
     | '/admin/matches'
     | '/admin/minimap'
+    | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
     | '/admin/schema'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/admin/maps'
     | '/admin/matches'
     | '/admin/minimap'
+    | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
     | '/admin/schema'
@@ -605,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPolygonsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/poi': {
+      id: '/admin/poi'
+      path: '/poi'
+      fullPath: '/admin/poi'
+      preLoaderRoute: typeof AdminPoiRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/minimap': {
       id: '/admin/minimap'
       path: '/minimap'
@@ -714,6 +733,7 @@ interface AdminRouteChildren {
   AdminMapsRoute: typeof AdminMapsRouteWithChildren
   AdminMatchesRoute: typeof AdminMatchesRouteWithChildren
   AdminMinimapRoute: typeof AdminMinimapRoute
+  AdminPoiRoute: typeof AdminPoiRoute
   AdminPolygonsRoute: typeof AdminPolygonsRoute
   AdminProcessesRoute: typeof AdminProcessesRoute
   AdminSchemaRoute: typeof AdminSchemaRoute
@@ -732,6 +752,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMapsRoute: AdminMapsRouteWithChildren,
   AdminMatchesRoute: AdminMatchesRouteWithChildren,
   AdminMinimapRoute: AdminMinimapRoute,
+  AdminPoiRoute: AdminPoiRoute,
   AdminPolygonsRoute: AdminPolygonsRoute,
   AdminProcessesRoute: AdminProcessesRoute,
   AdminSchemaRoute: AdminSchemaRoute,

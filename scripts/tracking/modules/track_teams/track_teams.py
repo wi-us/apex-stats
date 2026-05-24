@@ -36,6 +36,52 @@ try:
 except ImportError:  # pragma: no cover
     _hungarian = None
 
+# --------------------------- POI hints (optional) ---------------------------
+# Hints are loaded from a JSON map { slot_or_tag: {"cx": .., "cy": .., "r": ..} }
+# in normalized canonical-map coordinates (0..1, square). They are intended as
+# a prior bias for the start-position matcher: a team's initial detection
+# should land inside its POI circle, and detections outside the circle should
+# be penalized. The matcher integration is wired in a follow-up; this module
+# loads and exposes the data so downstream stages can opt in.
+POI_HINTS: dict[str, dict[str, float]] = {}
+
+
+def load_poi_hints(path: Path) -> dict[str, dict[str, float]]:
+    """Load POI hint file. Keys are slot ids ("slot_3") or team tags ("TSM")."""
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        print(f"[poi-hints] failed to load {path}: {e}", file=sys.stderr)
+        return {}
+    out: dict[str, dict[str, float]] = {}
+    for k, v in (raw or {}).items():
+        try:
+            out[str(k)] = {
+                "cx": float(v["cx"]),
+                "cy": float(v["cy"]),
+                "r": float(v["r"]),
+            }
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
+def poi_prior_weight(slot_or_tag: str, x_norm: float, y_norm: float, soft: float = 2.0) -> float:
+    """Return a multiplicative weight in [0..1] for a candidate position.
+
+    1.0 inside the POI circle, smoothly decays outside (Gaussian falloff with
+    sigma = soft * r). Returns 1.0 if no hint is registered for the slot/tag.
+    """
+    hint = POI_HINTS.get(slot_or_tag)
+    if not hint:
+        return 1.0
+    cx, cy, r = hint["cx"], hint["cy"], hint["r"]
+    d2 = (x_norm - cx) ** 2 + (y_norm - cy) ** 2
+    if d2 <= r * r:
+        return 1.0
+    sigma = max(1e-4, soft * r)
+    return float(math.exp(-d2 / (2.0 * sigma * sigma)))
+
 
 # ----------------------------- Config & maps -----------------------------
 
@@ -1831,10 +1877,20 @@ def main():
     ap.add_argument("--from-detections-tolerance-frames", type=int, default=0,
                     help="окно поиска checkpoint вокруг текущего кадра, в кадрах. "
                          "0 = auto (sample_step из detections.json).")
+    ap.add_argument("--poi-hints", type=Path, default=None,
+                    help="JSON {slot|tag: {cx,cy,r}} с приоритетными зонами высадки "
+                         "(нормированные координаты канонической карты). "
+                         "Используется как prior в стартовом матчере (опционально).")
     args = ap.parse_args()
 
     if not args.video.exists():
         print(f"[err] не нашёл видео: {args.video}", file=sys.stderr); sys.exit(2)
+
+    if args.poi_hints:
+        global POI_HINTS
+        POI_HINTS = load_poi_hints(args.poi_hints)
+        print(f"[poi-hints] loaded {len(POI_HINTS)} entries from {args.poi_hints}",
+              file=sys.stderr)
 
     cfg = load_config(args.config)
     # anchors path (CLI overrides config); if present, derive 20 teams from it
