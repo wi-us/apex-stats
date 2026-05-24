@@ -525,7 +525,7 @@ function TeamDetail() {
         {view === "overview" && (
         <>
         {/* ---- Form dynamics ---- */}
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 grid-cols-1">
           <Sparkline
             title="Placement over time"
             hint={["lower is better", "inverted axis"]}
