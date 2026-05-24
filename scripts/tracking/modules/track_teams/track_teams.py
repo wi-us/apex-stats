@@ -1877,10 +1877,20 @@ def main():
     ap.add_argument("--from-detections-tolerance-frames", type=int, default=0,
                     help="окно поиска checkpoint вокруг текущего кадра, в кадрах. "
                          "0 = auto (sample_step из detections.json).")
+    ap.add_argument("--poi-hints", type=Path, default=None,
+                    help="JSON {slot|tag: {cx,cy,r}} с приоритетными зонами высадки "
+                         "(нормированные координаты канонической карты). "
+                         "Используется как prior в стартовом матчере (опционально).")
     args = ap.parse_args()
 
     if not args.video.exists():
         print(f"[err] не нашёл видео: {args.video}", file=sys.stderr); sys.exit(2)
+
+    if args.poi_hints:
+        global POI_HINTS
+        POI_HINTS = load_poi_hints(args.poi_hints)
+        print(f"[poi-hints] loaded {len(POI_HINTS)} entries from {args.poi_hints}",
+              file=sys.stderr)
 
     cfg = load_config(args.config)
     # anchors path (CLI overrides config); if present, derive 20 teams from it
