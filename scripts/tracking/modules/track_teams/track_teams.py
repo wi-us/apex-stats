@@ -2082,6 +2082,14 @@ def main():
                     help="JSON {slot|tag: {cx,cy,r}} с приоритетными зонами высадки "
                          "(нормированные координаты канонической карты). "
                          "Используется как prior в стартовом матчере (опционально).")
+    ap.add_argument("--da-debug-log", type=Path, default=None,
+                    help="JSONL: per-frame DA-разбор (best/second/Δ + компоненты cost "
+                         "по слотам и кандидатам). Тяжёлый файл — используй для "
+                         "целевых отрезков (--start/--end).")
+    ap.add_argument("--da-debug-from", type=float, default=None,
+                    help="С какой секунды начинать писать --da-debug-log (default: с 0).")
+    ap.add_argument("--da-debug-to", type=float, default=None,
+                    help="До какой секунды писать --da-debug-log (default: до конца).")
     args = ap.parse_args()
 
     if not args.video.exists():
