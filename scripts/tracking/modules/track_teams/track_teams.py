@@ -2428,9 +2428,17 @@ def main():
                         late_game_events.append(lg_info)
                     da_weights_dyn = dict(da_weights)
                     da_weights_dyn["_dyn_gate_shrink"] = dyn_shrink
+                    # DA debug sink — пишем только в окне [da_dbg_from, da_dbg_to].
+                    in_dbg_window = (
+                        da_dbg_fp is not None
+                        and (da_dbg_from is None or t_now >= da_dbg_from)
+                        and (da_dbg_to is None or t_now <= da_dbg_to)
+                    )
+                    dbg_sink: Optional[list] = [] if in_dbg_window else None
                     assigns = associate_hungarian(
                         candidates, slot_trackers, t_now, da_weights_dyn,
-                        near_miss=near_miss_counter)
+                        near_miss=near_miss_counter,
+                        debug_sink=dbg_sink)
                     # PR-4: frame-level sanity gate. Если на одном кадре сразу
                     # >= N слотов получили детекцию, скакнувшую дальше
                     # jump_switch_threshold_px от прошлой канонической позиции,
@@ -2460,6 +2468,26 @@ def main():
                             "threshold_px": frame_jump_thresh,
                             "max_jumps": frame_jump_max,
                         }
+                    if dbg_sink is not None and da_dbg_fp is not None:
+                        dbg_record = {
+                            "t": round(t_now, 3),
+                            "frame": int(frame_idx),
+                            "n_candidates": len(candidates),
+                            "dyn_gate_shrink": round(float(dyn_shrink), 3),
+                            "frame_dropped": bool(frame_dropped),
+                            "candidates": [
+                                {
+                                    "j": j,
+                                    "team_id": c["team_id"],
+                                    "canonical_px": [round(c["canonical_px"][0], 1),
+                                                     round(c["canonical_px"][1], 1)],
+                                    "color_score": round(float(c.get("color_score") or 0.0), 3),
+                                }
+                                for j, c in enumerate(candidates)
+                            ],
+                            "slots": dbg_sink,
+                        }
+                        da_dbg_fp.write(json.dumps(dbg_record, ensure_ascii=False) + "\n")
                     for t in teams:
                         st = slot_trackers[t.id]
                         det = assigns.get(t.id)
