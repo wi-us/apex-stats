@@ -940,6 +940,7 @@ def associate_hungarian(
         iou_gate = float(w.get("iou_gate", 0.10))
         gate_mult = float(w.get("gate_radius_mult", 1.0)) * dyn_gate_shrink
         fallback_gate_px = float(w.get("fallback_gate_canonical_px", 200.0))
+        eta_anchor = float(w.get("eta_anchor", 0.5))
         # Prediction in canonical px.
         if st.canonical_px is not None and st.last_seen_t is not None:
             dt = min(getattr(st, "dt_cap_s", 20.0),
