@@ -600,10 +600,12 @@ function TestInterfaceSection({
           ) : null}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <TestPanel title="Roster" subtitle={`${detail?.players.length ?? 0} players · aggregated from match_player_stats`}>
-            {!detail || detail.players.length === 0 ? <Empty /> : (
+          <TestPanel title="Active roster" subtitle={`${detail?.activeRoster.length ?? 0} players · latest event team version (role=player)`}>
+            {!detail || detail.activeRoster.length === 0 ? <Empty /> : (
               <ul className="space-y-1.5">
-                {detail.players.map((p) => (
+                {detail.activeRoster.map((p) => {
+                  const agg = detail.players.find((x) => x.id === p.id);
+                  return (
                   <li key={p.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-2 py-1.5">
                     {p.image ? (
                       <img src={p.image} alt={p.name} className="h-10 w-10 rounded-sm border border-border object-cover" />
@@ -613,16 +615,17 @@ function TestInterfaceSection({
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-semibold">{p.name}</div>
                       <div className="text-mono text-xs text-muted-foreground">
-                        {p.matchesPlayed} matches · {p.kills} kills · {p.knockedDown} knocks
+                        {agg ? `${agg.matchesPlayed} matches · ${agg.kills} kills · ${agg.knockedDown} knocks` : "no aggregated stats"}
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </TestPanel>
 
-          <TestPanel title="Event placements" subtitle={`${detail?.events.length ?? 0} events · position / points / prize`}>
+          <TestPanel title="Event placements" subtitle={`${detail?.events.length ?? 0} events · finalized standings shown when available`}>
             {!detail || detail.events.length === 0 ? <Empty /> : (
               <table className="w-full text-xs">
                 <thead>
@@ -652,56 +655,34 @@ function TestInterfaceSection({
             )}
           </TestPanel>
 
-          <TestPanel title="Season standings" subtitle={`${detail?.seasons.length ?? 0} seasons · total points`}>
-            {!detail || detail.seasons.length === 0 ? <Empty /> : (
-              <ul className="space-y-1">
-                {detail.seasons.map((s) => (
-                  <li key={s.seasonId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
-                    <span className="font-semibold">{s.seasonName ?? s.seasonId}</span>
-                    <span className="text-mono">{s.totalPoints ?? "—"} pts</span>
-                  </li>
-                ))}
-              </ul>
+          <TestPanel title="Weapon meta" subtitle={`${detail?.weapons.length ?? 0} weapons · series-level (top 12 by kills)`}>
+            {!detail || detail.weapons.length === 0 ? <Empty /> : (
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th className="px-2 py-1.5 font-medium">Weapon</th>
+                    <th className="px-2 py-1.5 font-medium">Type</th>
+                    <th className="px-2 py-1.5 font-medium text-right">Kills</th>
+                    <th className="px-2 py-1.5 font-medium text-right">Series</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.weapons.slice(0, 12).map((w) => (
+                    <tr key={w.weapon} className="border-t border-border">
+                      <td className="px-2 py-1.5 font-semibold">{w.weapon}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground">{w.gunType ?? "—"}</td>
+                      <td className="text-mono px-2 py-1.5 text-right">{w.kills}</td>
+                      <td className="text-mono px-2 py-1.5 text-right">{w.series}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </TestPanel>
 
-          <TestPanel title="Phase standings" subtitle={`${detail?.phases.length ?? 0} phases · group / pos / wins`}>
-            {!detail || detail.phases.length === 0 ? <Empty /> : (
-              <ul className="space-y-1">
-                {detail.phases.map((p) => (
-                  <li key={p.phaseId} className="rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate font-semibold">{p.phaseName ?? p.phaseId}</span>
-                      <span className="text-mono">#{p.position ?? "—"} · {p.points ?? 0} pts</span>
-                    </div>
-                    <div className="text-mono text-[10px] text-muted-foreground">
-                      {p.groupName ? `group ${p.groupName} · ` : ""}wins {p.matchWins ?? 0}
-                      {p.qualified ? " · qualified" : ""}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TestPanel>
-
-          <TestPanel title="POI picks (top 10)" subtitle={`${detail?.poiPicks.length ?? 0} unique spawns · pick frequency`}>
-            {!detail || detail.poiPicks.length === 0 ? <Empty /> : (
-              <ul className="space-y-1">
-                {detail.poiPicks.slice(0, 10).map((p) => (
-                  <li key={p.spawnLocationId} className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold">{p.spawnName}</div>
-                      <div className="text-mono text-[10px] text-muted-foreground">{p.mapName ?? "—"}</div>
-                    </div>
-                    <div className="text-mono text-right text-xs">
-                      <div>{p.count}×</div>
-                      <div className="text-[10px] text-muted-foreground">avg pick #{p.avgPickNumber.toFixed(1)}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </TestPanel>
+          <div className="lg:col-span-2">
+            <PoiMapPanel picks={detail?.poiPicks ?? []} />
+          </div>
 
           <TestPanel title="Recent series (last 15)" subtitle={`${detail?.series.length ?? 0} total · pos / pts / kills`}>
             {!detail || detail.series.length === 0 ? <Empty /> : (
