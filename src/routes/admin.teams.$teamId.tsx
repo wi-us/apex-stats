@@ -1100,7 +1100,7 @@ function Sparkline({
   const labelStep = Math.max(1, Math.ceil(values.length / 8));
 
   return (
-    <div className="flex h-[260px] flex-col rounded-sm border border-border bg-surface-2/40">
+    <div className="flex h-[320px] flex-col rounded-sm border border-border bg-surface-2/40">
       <div className="flex shrink-0 items-start justify-between gap-2 p-3 pb-2">
         <div>
           <div className="label-eyebrow text-xs tracking-wider">{title}</div>
@@ -1176,7 +1176,7 @@ function Sparkline({
                     x={x}
                     y={Math.max(7, y - 5)}
                     textAnchor={anchor}
-                    fontSize="7"
+                    fontSize="10"
                     fill="currentColor"
                     className={isPeak ? "text-foreground font-bold" : "text-muted-foreground"}
                   >
@@ -1196,7 +1196,7 @@ function Sparkline({
                     x={x}
                     y={h - 4}
                     textAnchor={anchor}
-                    fontSize="7"
+                    fontSize="10"
                     fill="currentColor"
                     className="text-muted-foreground"
                   >
