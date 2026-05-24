@@ -10,6 +10,7 @@ import {
   fetchTeamDetail,
   type TeamDetail,
   type TeamMatchStat,
+  type TeamPoiPick,
 } from "@/lib/algs-team-fetchers";
 
 export const Route = createFileRoute("/admin/teams/$teamId")({ component: TeamDetail });
