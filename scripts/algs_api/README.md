@@ -3,108 +3,114 @@
 Primary data source for ALGS tournaments. Liquipedia is used only as a
 fallback for non-ALGS events.
 
-## Why
-
-`prod-api.algstools.com` exposes the official ALGS data set (seasons,
-events, series, matches, POI drafts with normalized spawn coordinates,
-per-match stats). It is richer and far more accurate than scraping
-Liquipedia, and does not require an auth token for the read endpoints
-we use.
-
 ## Components
 
-- `client.py`  Throttled HTTP client (token bucket + jittered backoff +
-  on-disk JSON cache). Default budget: ~2 req/s sustained, burst 5, with
-  conservative retry on 429/5xx.
-- `db.py`      SQLite schema + upsert helpers. Tables: `seasons`,
-  `tournaments`, `regions`, `events`, `phases`, `series`, `matches`,
-  `match_banned_legends`, `maps`, `teams`, `team_versions`,
-  `characters`, `spawn_locations`, `poi_drafts`, `poi_picks`,
-  `series_team_stats`, `match_team_stats`, `match_player_stats`.
-  Schema is intentionally close to the API shape so a later migration
-  to Postgres is mechanical.
-- `sync.py`    CLI: walks seasons -> tournaments -> events -> series ->
-  matches/POI/stats and upserts everything into SQLite. Re-runs are safe
-  (idempotent upserts).
-- `export_poi_zones.py`  CLI: reads `spawn_locations` from SQLite and
-  writes `src/data/maps/<map_id>/poi_zones.json` in the format consumed
-  by `src/lib/poi-zones.ts` (cx/cy in 0..1, default radius). Manual
-  radius/aliases tweaks made in the admin editor are preserved by id.
-- `build_poi_hints.py`  CLI: emits a hints JSON for
-  `track_teams.py --poi-hints` from a given `series_id` (uses ALGS picks
-  joined with canonical zones).
+- `client.py` — throttled HTTP client (token bucket + jittered backoff +
+  on-disk JSON cache). All public read endpoints we use are wrapped here.
+- `db.py` — SQLite schema + upserts. Tables mirror the API shape so a
+  later migration to Postgres is mechanical.
+- `sync.py` — CLI: walks the API and upserts everything into SQLite.
+- `export_poi_zones.py` — writes `src/data/maps/<id>/poi_zones.json`.
+- `build_poi_hints.py` — emits hints JSON for `track_teams.py`.
 
 ## SQLite location
 
-Default DB path is `scripts/algs_api/data/algs.sqlite` (gitignored). It
-is a local cache; nothing in the app reads from SQLite at runtime yet.
-The same data can later be mirrored to the Lovable Cloud database.
+Default DB path: `scripts/algs_api/data/algs.sqlite` (gitignored).
 
-## Typical workflow
+## Tables (new)
+
+In addition to the existing season/event/series/match/POI tables:
+
+- `series_weapon_stats` — kills per weapon (with ammo & gun type)
+- `series_character_stats` — kills + total damage per legend
+- `series_character_compositions` — popular legend trios
+- `series_player_agg` — per-player kills, **assists**, averages
+- `series_banned_legends_agg` — series-wide bans
+- `series_poi_stats` — per-POI avg pick / damage / survival / placement
+- `event_teams`, `event_standings`, `event_schedule`
+- `phase_teams`, `phase_standings`
+- `season_standings_teams`, `season_standings_players`
+- `cc_leaderboard_teams`, `cc_leaderboard_players` — Challenger Circuit
+- `live_streams` — Twitch/etc streams per live series
+- `sync_state` — `(kind, ident) -> (fetched_at, status)`, used as the
+  TTL gate to skip recently-synced resources.
+- `matches.winner_damage`, `matches.winner_kills`, `matches.winner_team_id`
+- `match_player_stats.character_id`
+
+## Sub-commands
 
 ```bash
-# 1. Pull every available season in one go
-python -m scripts.algs_api.sync all
+# Reference + full walk (heavy)
+python -m scripts.algs_api.sync reference
+python -m scripts.algs_api.sync all                # every season
+python -m scripts.algs_api.sync all --skip-existing
 
-# Resume an interrupted run without re-hitting the API for series
-# that already have matches in the local SQLite DB:
-python -m scripts.algs_api.sync --skip-existing all
+# Targeted
+python -m scripts.algs_api.sync season    --id <SEASON_ULID>
+python -m scripts.algs_api.sync event     --id <EVENT_ULID>
+python -m scripts.algs_api.sync series    --id <SERIES_ULID>
 
-# ...or pull a specific season / event / series
-python -m scripts.algs_api.sync seasons
-python -m scripts.algs_api.sync season --id 01KEAJYDXP9CBK44PPW7XWDNB3
-python -m scripts.algs_api.sync event  --id 01KH2GCEGZH7ZYY3FFKW8R4BAF
-python -m scripts.algs_api.sync series --id 01KH2HGJB9A69D3G3NW8XN73Q6
+# Standings & leaderboards
+python -m scripts.algs_api.sync standings --season <SEASON_ULID>
+python -m scripts.algs_api.sync cc        --season <SEASON_ULID> --event <EVENT_ULID>
 
-# 2. Refresh canonical POI zones for the UI
-python -m scripts.algs_api.export_poi_zones --all
+# Live state (cheap, safe to call often)
+python -m scripts.algs_api.sync upcoming
+python -m scripts.algs_api.sync live
+python -m scripts.algs_api.sync refresh            # upcoming+live+live-series
 
-# 3. Build POI hints for a specific series and feed them to the tracker
-python -m scripts.algs_api.build_poi_hints \
-    --series 01KH2HGJB9A69D3G3NW8XN73Q6 \
-    --map    storm_point \
-    --out    scripts/tracking/modules/track_teams/configs/poi_hints.json
+# Bypass freshness gates
+python -m scripts.algs_api.sync --force series --id ...
 ```
 
-## 404s during sync
+## Update cadence (how to avoid getting blocked)
 
-Some series are listed in an event's structure but their downstream
-endpoints (`/matches`, `/stats/series/...`, `/poi-drafts/...`) are not
-published yet (matches not finished, POI draft cancelled, etc.). Those
-now log as `[sync] skip ...: ... (404)` and the run keeps going instead
-of treating them as errors. 404 responses are cached so subsequent runs
-skip them locally without another network round-trip until the cache TTL
-expires.
+Three layers protect us:
 
-## Rate limiting / blocking protection
+1. **Token-bucket throttle** in `client.py` — default 2 req/s, burst 5,
+   with 50–250 ms jitter and exponential backoff on 429/5xx.
+2. **On-disk HTTP cache** under `scripts/algs_api/data/cache/` — every
+   successful response is keyed by URL; default TTL 24 h.
+3. **`sync_state` freshness gate** in `sync.py` — skips resources that
+   were already synced inside their freshness window.
 
-`client.py` enforces a token-bucket limit by default (`2.0` req/s, burst
-`5`), adds 50-250 ms jitter between requests, and retries with
-exponential backoff on `429` / `5xx` (respecting `Retry-After` when
-present). All successful responses are cached on disk under
-`scripts/algs_api/data/cache/` keyed by URL hash so re-runs of the
-importer are essentially free until the cache is invalidated.
+Recommended schedule:
 
-Override via env vars or CLI flags:
+| Job | Command | Frequency |
+|---|---|---|
+| Live tickers | `sync refresh` | every **2–5 min** during play windows |
+| Upcoming list | `sync upcoming` | every **10 min** |
+| Standings refresh | `sync standings --season <year>` | every **6 h** |
+| Full season walk | `sync all --skip-existing` | **daily** (off-peak) |
+| Reference data | `sync reference` | **weekly** |
 
-- `ALGS_API_BASE`            (default `https://prod-api.algstools.com`)
-- `ALGS_API_RPS`             (default `2.0`)
-- `ALGS_API_BURST`           (default `5`)
-- `ALGS_API_CACHE_TTL`       seconds, default `86400`
-- `ALGS_API_CACHE_DIR`       default `scripts/algs_api/data/cache`
-- `ALGS_API_DB`              default `scripts/algs_api/data/algs.sqlite`
+Built-in TTLs (override with `--force`):
+
+- live streams: 2 min · upcoming: 10 min · standings/CC: 6 h
+- team detail: 7 d · completed series: 30 d (effectively "once")
+- in-progress series: re-fetched at most every 5 min
+
+404 / 400 responses are cached so we never re-hammer endpoints that
+don't exist for a given id. Series listed in an event's structure but
+without published matches yet are logged as `skip ... (404)` and the
+walk continues.
+
+## What the API does NOT expose
+
+- Per-kill feed (killer → victim, weapon, distance) — does not exist.
+- Per-player damage at match level — only `winner.damage` per match
+  (team total) and `damage` per legend over a series.
+- Older ALGS years (Year 1–4) — only Year 5 and Year 6 are returned by
+  `GET /v1/seasons`. For older tournaments, use the Liquipedia scraper.
 
 ## Map id translation
 
-ALGS uses ULIDs for map ids. We map them to the canonical short ids used
-everywhere else in the project (`storm_point`, `worlds_edge`, ...).
-The mapping lives in `db.MAP_ID_BY_ULID`.
+ALGS uses ULIDs for map ids. Mapping to our canonical short ids
+(`storm_point`, `worlds_edge`, …) lives in `db.MAP_ID_BY_ULID`.
 
-## Available seasons
+## Env vars
 
-`GET /v1/seasons` currently returns only **Year 5** (`01JK2JQ40W0DDTZCWDB8WTWCBA`)
-and **Year 6** (`01KEAJYDXP9CBK44PPW7XWDNB3`). Older ALGS years are not
-exposed by the public API — for those tournaments fall back to the
-Liquipedia scraper under `scripts/scrape_liquipedia/`. If the official
-endpoint starts returning more season ULIDs later, `sync all` will pick
-them up automatically.
+- `ALGS_API_BASE` (default `https://prod-api.algstools.com`)
+- `ALGS_API_RPS` (default `2.0`), `ALGS_API_BURST` (default `5`)
+- `ALGS_API_CACHE_TTL` (seconds, default `86400`)
+- `ALGS_API_CACHE_DIR`, `ALGS_API_DB`
