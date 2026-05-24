@@ -102,6 +102,11 @@ class AlgsApiError(RuntimeError):
     pass
 
 
+class AlgsNotFound(AlgsApiError):
+    """Raised for 404s. Callers typically want to skip silently."""
+    pass
+
+
 def _request(url: str, *, timeout: float = 20.0) -> Any:
     req = urllib.request.Request(
         url,
@@ -163,7 +168,7 @@ def get(path: str, *, params: dict[str, Any] | None = None,
             if e.code == 404:
                 # Cache 404 briefly so we don't re-hammer.
                 _cache_store(url, {"__error__": "not_found", "status": 404})
-                raise AlgsApiError(f"404 not found: {url}") from e
+                raise AlgsNotFound(f"404 not found: {url}") from e
             raise AlgsApiError(f"HTTP {e.code} for {url}") from e
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             last_err = e
