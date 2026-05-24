@@ -232,7 +232,7 @@ export async function fetchTeamDetail(teamId: string): Promise<TeamDetail> {
 
   // ---- Events: enrich with event name + dates ----
   const eventIds = (esRes.data ?? []).map((r) => r.event_id);
-  let eventMeta = new Map<string, { name: string; start_date: string | null; end_date: string | null }>();
+  let eventMeta = new Map<string, { id: string; name: string | null; start_date: string | null; end_date: string | null }>();
   if (eventIds.length > 0) {
     const eventsRes = await supabase
       .from("algs_events")
