@@ -2344,6 +2344,16 @@ def main():
     fout.write('{"meta":'); json.dump(meta, fout, ensure_ascii=False); fout.write(',"frames":[')
     first = True
 
+    # ---- DA debug log (optional, JSONL) -------------------------------------
+    da_dbg_fp = None
+    da_dbg_from = float(args.da_debug_from) if args.da_debug_from is not None else None
+    da_dbg_to = float(args.da_debug_to) if args.da_debug_to is not None else None
+    if args.da_debug_log is not None:
+        args.da_debug_log.parent.mkdir(parents=True, exist_ok=True)
+        da_dbg_fp = open(args.da_debug_log, "w", encoding="utf-8")
+        print(f"[info] DA-debug log -> {args.da_debug_log} "
+              f"(from={da_dbg_from}, to={da_dbg_to})")
+
     pbar = tqdm(total=(end_frame - start_frame), unit="f", desc="track")
     frame_idx = start_frame
     processed = 0
