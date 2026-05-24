@@ -1,3 +1,59 @@
+
+## Push to Lovable Cloud (Supabase)
+
+После локальной синхронизации SQLite можно одной командой залить весь
+кэш в Lovable Cloud:
+
+```bash
+pip install -r scripts/algs_api/requirements.txt
+python -m scripts.algs_api.push_supabase
+# или выборочно:
+python -m scripts.algs_api.push_supabase --only series matches series_poi_stats
+```
+
+Скрипт делает batched `upsert(on_conflict=<pk>)` в таблицы `public.algs_*`
+(те же имена, что в SQLite, но с префиксом `algs_`). Безопасно гонять
+повторно — обновятся только изменившиеся строки.
+
+### Получение `SUPABASE_SERVICE_ROLE_KEY`
+
+`SUPABASE_URL` уже лежит в `.env`. А вот сервисный ключ — приватный
+(он обходит RLS и должен быть только у тебя, никогда не коммить и не
+класть в код фронта).
+
+1. Открой проект в Lovable → кнопка **Cloud** (иконка облака в правом
+   верхнем углу редактора) → **Backend** → ссылка **Open Supabase
+   project**. Это откроет admin-панель этого проекта.
+2. В Supabase: **Project Settings → API → Project API keys**.
+3. Скопируй значение `service_role` (`secret`). Это длинный JWT.
+4. Положи его в локальный `.env` рядом с уже существующим
+   `SUPABASE_URL`:
+
+   ```
+   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+   ```
+
+   `python-dotenv` подцепит его автоматически при запуске скрипта.
+   Альтернатива — экспорт в shell:
+
+   ```powershell
+   $env:SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOi..."
+   ```
+
+5. Проверь, что `.env` уже в `.gitignore` (он там стандартно).
+
+> Service role обходит RLS — используй его только в этом скрипте,
+> запускаемом локально/из CI. На фронте всегда `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+### Рекомендуемое расписание
+
+| Команда | Частота |
+| --- | --- |
+| `sync refresh` (live + upcoming) | каждые 2–5 мин |
+| `sync upcoming` | 10 мин |
+| `sync standings --season <id>` | 6 ч |
+| `sync all --skip-existing` | 1 раз в сутки |
+| `push_supabase` | после каждого успешного `sync` |
 # ALGS API integration
 
 Primary data source for ALGS tournaments. Liquipedia is used only as a

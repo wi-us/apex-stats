@@ -1,2 +1,6 @@
 # Pure stdlib for client/db. httpx kept optional for future async use.
 # No third-party deps required.
+
+# Optional, only for push_supabase.py:
+supabase>=2.5.0
+python-dotenv
