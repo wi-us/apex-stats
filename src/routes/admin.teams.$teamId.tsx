@@ -921,6 +921,55 @@ const AMMO_COLOR: Record<string, string> = {
   "mythic-arrow": "bg-violet-500/30 text-violet-200 border-violet-400/60",
 };
 
+/** ALGS weapon name → apexlegends.wiki.gg image filename (svg). */
+const WEAPON_ICON: Record<string, string> = {
+  "P2020": "P2020_Icon.svg",
+  "RE-45": "RE-45_Auto_Icon.svg",
+  "RE-45 Auto": "RE-45_Auto_Icon.svg",
+  "Wingman": "Wingman_Icon.svg",
+  "Mozambique": "Mozambique_Shotgun_Icon.svg",
+  "EVA-8": "EVA-8_Auto_Icon.svg",
+  "Peacekeeper": "Peacekeeper_Icon.svg",
+  "Mastiff": "Mastiff_Shotgun_Icon.svg",
+  "R-99": "R-99_SMG_Icon.svg",
+  "Alternator": "Alternator_SMG_Icon.svg",
+  "Volt": "Volt_SMG_Icon.svg",
+  "Prowler": "Prowler_Burst_PDW_Icon.svg",
+  "C.A.R. SMG": "C.A.R._SMG_Icon.svg",
+  "C.A.R.": "C.A.R._SMG_Icon.svg",
+  "R-301 Carbine": "R-301_Carbine_Icon.svg",
+  "R-301": "R-301_Carbine_Icon.svg",
+  "Flatline": "VK-47_Flatline_Icon.svg",
+  "VK-47 Flatline": "VK-47_Flatline_Icon.svg",
+  "Hemlok": "Hemlok_Burst_AR_Icon.svg",
+  "Havoc": "HAVOC_Rifle_Icon.svg",
+  "HAVOC": "HAVOC_Rifle_Icon.svg",
+  "Nemesis": "Nemesis_Burst_AR_Icon.svg",
+  "Devotion": "Devotion_LMG_Icon.svg",
+  "L-STAR": "L-STAR_EMG_Icon.svg",
+  "Spitfire": "M600_Spitfire_Icon.svg",
+  "M600 Spitfire": "M600_Spitfire_Icon.svg",
+  "Rampage": "Rampage_LMG_Icon.svg",
+  "G7 Scout": "G7_Scout_Icon.svg",
+  "30-30": "30-30_Repeater_Icon.svg",
+  "30-30 Repeater": "30-30_Repeater_Icon.svg",
+  "Triple Take": "Triple_Take_Icon.svg",
+  "Bocek": "Bocek_Compound_Bow_Icon.svg",
+  "Longbow": "Longbow_DMR_Icon.svg",
+  "Charge Rifle": "Charge_Rifle_Icon.svg",
+  "Sentinel": "Sentinel_Icon.svg",
+  "Kraber": "Kraber_.50-Cal_Sniper_Icon.svg",
+  "Frag Grenade": "Frag_Grenade_Icon.svg",
+  "Arc Star": "Arc_Star_Icon.svg",
+  "Thermite Grenade": "Thermite_Grenade_Icon.svg",
+  "A-13 Sentry": "A-13_Sentry_Icon.svg",
+  "EPG-1": "EPG-1_Launcher_Icon.svg",
+};
+function weaponIconUrl(name: string): string | null {
+  const file = WEAPON_ICON[name];
+  return file ? `https://apexlegends.wiki.gg/images/${file}` : null;
+}
+
 function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; isLoading: boolean }) {
   const max = Math.max(1, ...weapons.map((w) => w.kills));
   const tierOf = (kills: number): "S" | "A" | "B" | "C" | "D" | "F" => {
@@ -961,12 +1010,25 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
                   {items.map((w) => {
                     const ammoCls = (w.ammoType && AMMO_COLOR[w.ammoType]) || "bg-muted text-muted-foreground border-border";
                     const pct = (w.kills / max) * 100;
+                    const icon = weaponIconUrl(w.weapon);
                     return (
                       <div
                         key={w.weapon}
-                        className="flex w-[220px] flex-col gap-1.5 rounded-sm border border-border bg-background p-2"
+                        className="flex w-[240px] flex-col gap-1.5 rounded-sm border border-border bg-background p-2"
                         title={`${w.weapon} · ${w.gunType ?? "—"} · ${w.ammoType ?? "—"} · ${w.kills} kills in ${w.series} series`}
                       >
+                        <div className="flex h-12 w-full items-center justify-center rounded-sm bg-surface-2 px-2">
+                          {icon ? (
+                            <img
+                              src={icon}
+                              alt={w.weapon}
+                              loading="lazy"
+                              className="h-full max-h-12 w-auto max-w-full object-contain [filter:brightness(0)_invert(1)]"
+                            />
+                          ) : (
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">no icon</span>
+                          )}
+                        </div>
                         <div className="flex items-center justify-between gap-2">
                           <div className="truncate text-sm font-semibold">{w.weapon}</div>
                           <span className={`shrink-0 rounded-sm border px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-wider ${ammoCls}`}>
