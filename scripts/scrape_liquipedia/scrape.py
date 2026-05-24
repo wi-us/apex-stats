@@ -614,11 +614,28 @@ def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
     teams, games = extract_teams_and_games(html)
     page_name = extract_tournament_name(html)
 
+    # Enrich each game with date + map from the schedule panel.
+    soup_full = BeautifulSoup(html, "html.parser")
+    content_root = soup_full.select_one("div.mw-content-ltr.mw-parser-output") or soup_full
+    schedule = _extract_game_schedule(content_root)
+    if schedule:
+        for g in games:
+            entry = schedule.get(g.get("game_no"))
+            if entry:
+                g["date"] = entry.get("date")
+                g["map"] = entry.get("map")
+                g["map_id"] = entry.get("map_id")
+
+    # Optional POI Drafts section (priority info when available).
+    poi_drafts = _extract_poi_drafts(soup_full)
+
     merged = {**t}
     if not merged.get("name") and page_name:
         merged["name"] = page_name
     merged["teams"] = teams
     merged["games"] = games
+    merged["poi_drafts"] = poi_drafts
+    merged["has_poi_drafts"] = bool(poi_drafts)
     return merged
 
 
