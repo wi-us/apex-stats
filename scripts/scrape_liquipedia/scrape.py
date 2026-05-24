@@ -374,6 +374,228 @@ def extract_tournament_name(html: str) -> str | None:
     return None
 
 
+# --------------------------------------------------------------------------- #
+# Game schedule: date + map per game
+# --------------------------------------------------------------------------- #
+def _ts_to_iso(ts: str | int | None) -> str | None:
+    if ts is None:
+        return None
+    try:
+        n = int(str(ts).strip())
+    except (TypeError, ValueError):
+        return None
+    if n <= 0:
+        return None
+    return datetime.fromtimestamp(n, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _map_name_from_node(node) -> str | None:
+    """Pick a map name out of a schedule row.
+
+    Liquipedia variants: <a title="Storm Point">, <span class="map">…</span>,
+    or a plain <a> linking to the map page.
+    """
+    if node is None:
+        return None
+    # Prefer explicit map elements first.
+    for sel in (".panel-content__game-schedule__game-map", ".game-schedule__map", ".cell--map"):
+        el = node.select_one(sel)
+        if el:
+            txt = el.get_text(" ", strip=True)
+            if txt:
+                return txt
+    # Fall back to any link with a known map name in title/text.
+    for a in node.find_all("a"):
+        title = (a.get("title") or "").strip()
+        if normalize_map(title):
+            return title
+        txt = a.get_text(" ", strip=True)
+        if normalize_map(txt):
+            return txt
+    return None
+
+
+def _extract_game_schedule(content) -> dict[int, dict[str, Any]]:
+    """Return {game_no: {date, map, map_id}} from any panel-content__game-schedule
+    block under `content`.
+    """
+    out: dict[int, dict[str, Any]] = {}
+    blocks = content.select("div.panel-content__game-schedule")
+    for block in blocks:
+        rows = block.select(
+            "div.panel-content__game-schedule__container, "
+            "div.panel-content__game-schedule__game, "
+            "tr"
+        )
+        for i, row in enumerate(rows, start=1):
+            # Game number: look for "Game N" text, then fall back to row order.
+            game_no: int | None = None
+            m = re.search(r"\bGame\s*(\d+)\b", row.get_text(" ", strip=True), re.IGNORECASE)
+            if m:
+                game_no = int(m.group(1))
+            else:
+                game_no = i
+            timer = row.select_one("span.timer-object[data-timestamp]")
+            date = _ts_to_iso(timer.get("data-timestamp")) if timer else None
+            map_name = _map_name_from_node(row)
+            map_id = normalize_map(map_name)
+            if date is None and map_name is None:
+                continue
+            out.setdefault(game_no, {"date": date, "map": map_name, "map_id": map_id})
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# POI Drafts (optional section: stage × map → list of picks)
+# --------------------------------------------------------------------------- #
+def _poi_section_root(soup) -> Any | None:
+    """Locate the wrapper that contains the POI Drafts tabs + tables."""
+    anchor = soup.select_one("#POI_Drafts, span#POI_Drafts")
+    if not anchor:
+        return None
+    # Walk up to the heading, then take its next siblings until the next h2.
+    h = anchor
+    while h is not None and h.name not in ("h2", "h3"):
+        h = h.parent
+    if h is None:
+        return h
+    # Collect siblings until next h2/h3.
+    frag = BeautifulSoup("<div></div>", "html.parser")
+    holder = frag.div
+    for sib in h.next_siblings:
+        if getattr(sib, "name", None) in ("h2", "h3"):
+            break
+        holder.append(sib if isinstance(sib, str) else sib.__copy__())  # type: ignore[attr-defined]
+    return holder
+
+
+_STAGE_KEYS = {
+    "regular season": "regular",
+    "regular": "regular",
+    "finals": "finals",
+    "final": "finals",
+    "playoffs": "playoffs",
+    "playoff": "playoffs",
+    "group stage": "groups",
+    "groups": "groups",
+}
+
+
+def _stage_key(label: str) -> str:
+    k = re.sub(r"\s+", " ", label or "").strip().lower()
+    return _STAGE_KEYS.get(k, slugify(k))
+
+
+def _parse_poi_table(table) -> list[dict[str, Any]]:
+    """Parse the right-hand POI table (Rotation | Draft # | Team | Spot Picked)."""
+    rows: list[dict[str, Any]] = []
+    headers = [th.get_text(" ", strip=True).lower() for th in table.select("thead th, tr:first-child th")]
+
+    def col(*keys: str) -> int | None:
+        for k in keys:
+            for i, h in enumerate(headers):
+                if k in h:
+                    return i
+        return None
+
+    c_rot = col("rotation")
+    c_draft = col("draft")
+    c_team = col("team")
+    c_spot = col("spot")
+
+    for tr in table.select("tbody tr, tr"):
+        tds = tr.find_all("td")
+        if len(tds) < 3:
+            continue
+        team_cell = tds[c_team] if c_team is not None and c_team < len(tds) else None
+        if team_cell is None:
+            continue
+        a = next(
+            (a for a in team_cell.find_all("a", href=True) if _is_team_href(a["href"])),
+            None,
+        )
+        if a is None:
+            continue
+        team_name = a.get_text(" ", strip=True)
+        team_slug = slugify(a["href"].replace("/apexlegends/", ""))
+        rotation_txt = tds[c_rot].get_text(" ", strip=True) if c_rot is not None and c_rot < len(tds) else ""
+        draft_txt = tds[c_draft].get_text(" ", strip=True) if c_draft is not None and c_draft < len(tds) else ""
+        spot = tds[c_spot].get_text(" ", strip=True) if c_spot is not None and c_spot < len(tds) else ""
+        rows.append(
+            {
+                "rotation": _parse_int(rotation_txt),
+                "draft_no": _parse_int(draft_txt),
+                "team_slug": team_slug,
+                "team_name": team_name,
+                "spot": spot or None,
+            }
+        )
+    return rows
+
+
+def _extract_poi_drafts(soup) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    """Parse POI Drafts section. Returns {stage_key: {map_id: [picks]}}.
+
+    Liquipedia renders the section as nested toggle areas:
+      - outer toggle = stage (Regular Season / Finals)
+      - inner toggle = map (Storm Point / World's Edge / E-District)
+    Each map panel contains the POI map image on the left and the picks table
+    on the right. We only care about the table.
+    """
+    root = _poi_section_root(soup)
+    if root is None:
+        return {}
+
+    out: dict[str, dict[str, list[dict[str, Any]]]] = {}
+
+    # Look for nested tabs structure. Each `.tabs-static` is one tab strip;
+    # `[data-toggle-area-content]` rows / divs are the content panels.
+    stage_tabs = root.select("ul.tabs-static")
+    if not stage_tabs:
+        # No tab strip — there might be a single stage + single map table.
+        for table in root.select("table.wikitable, table.table2__table"):
+            picks = _parse_poi_table(table)
+            if picks:
+                out.setdefault("default", {})["default"] = picks
+        return out
+
+    # Walk every toggle-area-content panel, then for each: find its containing
+    # stage label + map label by walking up through enclosing `data-toggle-area`s.
+    for panel in root.select("[data-toggle-area-content]"):
+        # Identify stage + map by climbing parents that have `data-toggle-area`
+        # along with the matching tab strip's <li>.
+        labels: list[str] = []
+        node = panel
+        while node is not None and getattr(node, "name", None) is not None:
+            ta_id = node.get("data-toggle-area-content") if hasattr(node, "get") else None
+            if ta_id:
+                area = node.find_parent(attrs={"data-toggle-area": True})
+                if area is not None:
+                    li_list = area.select("ul.tabs-static > li, ul.panel-tabs__list > li")
+                    try:
+                        idx = int(ta_id) - 1
+                    except ValueError:
+                        idx = -1
+                    if 0 <= idx < len(li_list):
+                        labels.append(li_list[idx].get_text(" ", strip=True))
+            node = node.parent
+
+        # Outer label = stage, inner = map (panels are reached innermost-first).
+        stage_label = labels[-1] if labels else "default"
+        map_label = labels[0] if labels else "default"
+
+        stage = _stage_key(stage_label)
+        map_id = normalize_map(map_label) or slugify(map_label)
+
+        for table in panel.select("table.wikitable, table.table2__table"):
+            picks = _parse_poi_table(table)
+            if not picks:
+                continue
+            out.setdefault(stage, {}).setdefault(map_id, []).extend(picks)
+
+    return out
+
+
 def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
     """Returns enriched tournament dict with teams + games.
 
