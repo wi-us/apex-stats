@@ -16,6 +16,21 @@ import type {
   TournamentStatus,
 } from "@/lib/mock-match";
 import type { CustomMap } from "@/lib/admin-store";
+import worldsEdgeImg from "@/assets/maps/worlds-edge.webp";
+import kingsCanyonImg from "@/assets/maps/kings-canyon.webp";
+import stormPointImg from "@/assets/maps/storm-point.webp";
+import brokenMoonImg from "@/assets/maps/broken-moon.webp";
+import olympusImg from "@/assets/maps/olympus.webp";
+import eDistrictImg from "@/assets/maps/e-district.webp";
+
+const MAP_IMAGE_BY_CANONICAL: Record<string, string> = {
+  worlds_edge: worldsEdgeImg,
+  kings_canyon: kingsCanyonImg,
+  storm_point: stormPointImg,
+  broken_moon: brokenMoonImg,
+  olympus: olympusImg,
+  e_district: eDistrictImg,
+};
 
 /** UI map id from canonical_id ("worlds_edge" → "worlds-edge"). */
 function toUiMapId(canonical: string | null | undefined): string | null {
@@ -72,6 +87,8 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
     seriesRes,
     matchRowsRes,
     mapsRes,
+    matchTeamsRes,
+    eventTeamsRes,
   ] = await Promise.all([
     supabase.from("algs_events").select("id, name, start_date, end_date, tournament_id, region_id").order("start_date", { ascending: false }),
     supabase.from("algs_regions").select("id, name"),
@@ -81,15 +98,34 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
     supabase.from("algs_series").select("id, name, status, starts_at, completed_at, event_id"),
     supabase.from("algs_matches").select("id, series_id, match_number, map_id_ulid, started_at, completed_at"),
     supabase.from("algs_maps").select("id_ulid, name, canonical_id, active"),
+    supabase.from("algs_match_team_stats").select("match_id, team_id"),
+    supabase.from("algs_event_teams").select("event_id, team_id"),
   ]);
 
-  for (const r of [eventsRes, regionsRes, tournRes, teamsRes, teamVerRes, seriesRes, matchRowsRes, mapsRes]) {
+  for (const r of [eventsRes, regionsRes, tournRes, teamsRes, teamVerRes, seriesRes, matchRowsRes, mapsRes, matchTeamsRes, eventTeamsRes]) {
     if (r.error) throw new Error(r.error.message);
   }
 
   const regionName = new Map((regionsRes.data ?? []).map((r) => [r.id, r.name as string]));
   const tournName = new Map((tournRes.data ?? []).map((t) => [t.id, t.name as string]));
   const mapById = new Map((mapsRes.data ?? []).map((m) => [m.id_ulid, m]));
+
+  // teamIds per match (from match_team_stats)
+  const teamsByMatch = new Map<string, string[]>();
+  for (const r of matchTeamsRes.data ?? []) {
+    if (!r.match_id || !r.team_id) continue;
+    const arr = teamsByMatch.get(r.match_id) ?? [];
+    if (!arr.includes(r.team_id)) arr.push(r.team_id);
+    teamsByMatch.set(r.match_id, arr);
+  }
+  // teamIds per event (fallback for matches without per-match stats)
+  const teamsByEvent = new Map<string, string[]>();
+  for (const r of eventTeamsRes.data ?? []) {
+    if (!r.event_id || !r.team_id) continue;
+    const arr = teamsByEvent.get(r.event_id) ?? [];
+    if (!arr.includes(r.team_id)) arr.push(r.team_id);
+    teamsByEvent.set(r.event_id, arr);
+  }
 
   // Tournaments ← ALGS events (one event = one UI tournament)
   const tournaments: Tournament[] = (eventsRes.data ?? []).map((ev) => {
@@ -147,8 +183,19 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
   const maps: CustomMap[] = (mapsRes.data ?? []).map((m) => ({
     id: m.id_ulid,
     name: (m.name as string) ?? "",
-    image: "",
+    image: (m.canonical_id && MAP_IMAGE_BY_CANONICAL[m.canonical_id]) || "",
   }));
+  // Also register a UI-id alias (e.g. "worlds-edge") so seedMaps lookups
+  // from the admin UI resolve to ALGS map images.
+  for (const m of mapsRes.data ?? []) {
+    const uiId = toUiMapId(m.canonical_id ?? null);
+    if (!uiId) continue;
+    maps.push({
+      id: uiId,
+      name: (m.name as string) ?? "",
+      image: (m.canonical_id && MAP_IMAGE_BY_CANONICAL[m.canonical_id]) || "",
+    });
+  }
 
   // Matches ← ALGS series + games derived from algs_matches
   const matchesBySeries = new Map<string, typeof matchRowsRes.data>();
@@ -180,6 +227,12 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
         return 1200;
       });
       const firstMap = mapIds[0] ?? "storm-point";
+      const matchTeamIds = new Set<string>();
+      for (const g of games) {
+        for (const tid of teamsByMatch.get(g.id) ?? []) matchTeamIds.add(tid);
+      }
+      const eventTeamIds = teamsByEvent.get(s.event_id as string) ?? [];
+      const teamIds = matchTeamIds.size > 0 ? Array.from(matchTeamIds) : eventTeamIds;
       return {
         id: s.id,
         name: (s.name as string) ?? "Series",
@@ -188,7 +241,7 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
         durationSec: gameDurations[0] ?? 1200,
         mapIds: mapIds.length > 0 ? mapIds : undefined,
         gameDurations: gameDurations.length > 0 ? gameDurations : undefined,
-        teamIds: [],
+        teamIds,
         teamVods: {},
         vodLink: "",
       };
