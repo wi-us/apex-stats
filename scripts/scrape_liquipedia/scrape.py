@@ -131,79 +131,141 @@ def parse_index(html: str) -> list[dict[str, Any]]:
 # --------------------------------------------------------------------------- #
 # Tournament page: standings-ffa + game tabs
 # --------------------------------------------------------------------------- #
-def extract_standings_rows(html: str) -> list[dict[str, Any]]:
-    """Returns list of {place, team_text, logo_url} from the FIRST .standings-ffa table."""
+def _is_team_href(href: str) -> bool:
+    """True if href looks like a real Liquipedia team article."""
+    if not href.startswith("/apexlegends/"):
+        return False
+    if "Special:" in href or "index.php" in href or "?" in href:
+        return False
+    return True
+
+
+def _team_from_row(tr) -> dict[str, Any] | None:
+    """Extract team info from one standings <tr>.
+
+    Liquipedia renders the team cell as a `div.block-team` with:
+      - `span.team-template-image-icon` → icon links (no text)
+      - `span.name.hidden-xs` → full team name
+      - `span.name.visible-xs` → abbreviation / tag
+    All three are present in the DOM regardless of viewport; CSS hides them.
+    """
+    bt = tr.select_one("div.block-team") or tr
+    # Logo (lightmode preferred, then any image in the icon span)
+    logo_url: str | None = None
+    icon = bt.select_one(
+        "span.team-template-image-icon.team-template-lightmode img, "
+        "span.team-template-image-icon img"
+    )
+    if icon:
+        src = icon.get("src") or icon.get("data-src")
+        if src:
+            logo_url = urljoin(BASE, src)
+
+    # Real team link (skip redlinks / icon-only links that point to /index.php?...)
+    team_a = None
+    for a in bt.find_all("a", href=True):
+        if _is_team_href(a["href"]):
+            team_a = a
+            break
+    if team_a is None:
+        return None
+    team_href = urljoin(BASE, team_a["href"])
+    slug = slugify(team_a["href"].replace("/apexlegends/", ""))
+
+    name_span = bt.select_one("span.name.hidden-xs") or bt.select_one("span.name")
+    tag_span = bt.select_one("span.name.visible-xs")
+    name = name_span.get_text(" ", strip=True) if name_span else team_a.get_text(" ", strip=True)
+    tag = tag_span.get_text(" ", strip=True) if tag_span else None
+    # If wide & short variants are identical, the team simply has no abbreviation.
+    if tag and tag == name:
+        tag = None
+
+    # Place from first cell
+    tds = tr.find_all("td")
+    place: int | None = None
+    if tds:
+        m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
+        if m:
+            place = int(m.group(1))
+
+    return {
+        "place": place,
+        "slug": slug,
+        "name": name,
+        "tag": tag,
+        "logo_url": logo_url,
+        "url": team_href,
+    }
+
+
+def extract_teams_and_games(html: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Parse the standings-ffa table once.
+
+    Liquipedia stores per-game placements as separate <tr>s tagged with
+    `data-toggle-area-content="<game_no>"`. Tabs in `ul.panel-tabs__list`
+    label them (item 0 = "Overall standings", item N = "Game N").
+    """
     soup = BeautifulSoup(html, "html.parser")
     cont = soup.select_one("div.standings-ffa")
     if not cont:
-        return []
+        return [], []
     table = cont.select_one("table.table2__table")
     if not table:
-        return []
-    rows: list[dict[str, Any]] = []
-    for tr in table.select("tbody tr, tr"):
-        # place: first cell often has rank
-        tds = tr.find_all("td")
-        if not tds:
+        return [], []
+
+    # Build {tab_index_str: label} from the panel tabs.
+    tab_labels: dict[str, str] = {}
+    ul = cont.find_previous("ul", class_="panel-tabs__list") or soup.select_one("ul.panel-tabs__list")
+    if ul:
+        for idx, li in enumerate(ul.select("li.panel-tabs__list-item, li")):
+            tab_labels[str(idx)] = li.get_text(" ", strip=True)
+
+    # Walk all body rows, bucket by data-toggle-area-content.
+    games_buckets: dict[str, list[dict[str, Any]]] = {}
+    teams_by_slug: dict[str, dict[str, Any]] = {}
+    for tr in table.select("tr"):
+        if not tr.find("td"):
             continue
-        place_text = tds[0].get_text(" ", strip=True)
-        place: int | None = None
-        m = re.match(r"(\d+)", place_text)
-        if m:
-            place = int(m.group(1))
-        # team cell: collect all /apexlegends/ links; the first one is usually
-        # the icon (image only, empty text), the second is the text link with
-        # the team's display name (or tag on narrow viewports).
-        team_links = [
-            a for a in tr.find_all("a", href=True)
-            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
+        info = _team_from_row(tr)
+        if info is None:
+            continue
+        toggle = tr.get("data-toggle-area-content")
+        if toggle:
+            games_buckets.setdefault(toggle, []).append(info)
+        # Aggregate unique team list.
+        prev = teams_by_slug.get(info["slug"])
+        if prev is None:
+            teams_by_slug[info["slug"]] = {
+                "slug": info["slug"],
+                "name": info["name"],
+                "tag": info["tag"],
+                "logo_url": info["logo_url"],
+                "url": info["url"],
+            }
+        else:
+            # Fill in fields that were missing in earlier rows.
+            for k in ("name", "tag", "logo_url"):
+                if not prev.get(k) and info.get(k):
+                    prev[k] = info[k]
+
+    games: list[dict[str, Any]] = []
+    for key in sorted(games_buckets.keys(), key=lambda x: int(x) if x.isdigit() else 9999):
+        participants = [
+            {"place": p["place"], "team_slug": p["slug"], "team_text": p["name"]}
+            for p in games_buckets[key]
         ]
-        if not team_links:
-            continue
-        # Prefer the first link that actually has visible text.
-        team_a = next(
-            (a for a in team_links if a.get_text(strip=True)),
-            team_links[0],
-        )
-        text = team_a.get_text(" ", strip=True)
-        # logo: <img> inside the row (team template icon)
-        logo_url = None
-        img = tr.find("img")
-        if img:
-            src = img.get("src") or img.get("data-src")
-            if src:
-                logo_url = urljoin(BASE, src)
-        team_href = urljoin(BASE, team_a["href"])
-        rows.append(
+        label = tab_labels.get(key) or f"Game {key}"
+        games.append(
             {
-                "place": place,
-                "team_text": text,
-                "team_href": team_href,
-                "team_slug": slugify(team_a["href"].replace("/apexlegends/", "")),
-                "logo_url": logo_url,
+                "game_no": int(key) if key.isdigit() else None,
+                "tab_id": key,
+                "label": label,
+                "participants": participants,
             }
         )
-    # Dedupe by team_slug — Liquipedia repeats each team per week/game row.
-    # Keep the row with the best (smallest) numeric place, preferring the one
-    # that actually has a visible team name.
-    by_slug: dict[str, dict[str, Any]] = {}
-    for r in rows:
-        prev = by_slug.get(r["team_slug"])
-        if prev is None:
-            by_slug[r["team_slug"]] = r
-            continue
-        # Prefer row with a real name over an empty one.
-        if not prev["team_text"] and r["team_text"]:
-            by_slug[r["team_slug"]] = r
-            continue
-        # Then prefer lower place number.
-        pp, rp = prev.get("place"), r.get("place")
-        if rp is not None and (pp is None or rp < pp):
-            by_slug[r["team_slug"]] = r
-    return sorted(
-        by_slug.values(),
-        key=lambda x: (x.get("place") is None, x.get("place") or 0),
-    )
+
+    teams = sorted(teams_by_slug.values(), key=lambda x: x["name"].lower())
+    return teams, games
 
 
 def extract_tournament_name(html: str) -> str | None:
@@ -214,137 +276,24 @@ def extract_tournament_name(html: str) -> str | None:
     return None
 
 
-def extract_game_tabs(html: str) -> list[dict[str, Any]]:
-    """Returns [{tab_id, label}], skipping Overall_standings."""
-    soup = BeautifulSoup(html, "html.parser")
-    tabs: list[dict[str, Any]] = []
-    for ul in soup.select("ul.panel-tabs__list"):
-        for li in ul.select("li"):
-            tab_id = li.get("id") or ""
-            if tab_id == "Overall_standings" or not tab_id:
-                continue
-            label = li.get_text(" ", strip=True)
-            tabs.append({"id": tab_id, "label": label})
-    # dedupe
-    seen: set[str] = set()
-    uniq: list[dict[str, Any]] = []
-    for t in tabs:
-        if t["id"] in seen:
-            continue
-        seen.add(t["id"])
-        uniq.append(t)
-    return uniq
-
-
-def extract_game_participants(page: Page, tab_id: str) -> list[dict[str, Any]]:
-    """
-    After clicking a panel tab, the corresponding standings table becomes visible.
-    We grab the .standings-ffa table that is currently visible / matches the tab.
-    """
-    # Click the tab
-    try:
-        page.locator(f"li#{tab_id}").first.click(timeout=5_000)
-        time.sleep(0.4)
-    except Exception:
-        pass
-    # After click, scrape the active panel
-    html = page.content()
-    soup = BeautifulSoup(html, "html.parser")
-    # Find the panel content for this tab: Liquipedia uses data-target or id linkage.
-    # Fallback: take all .standings-ffa tables and pick the one whose ancestor panel is active.
-    candidates = soup.select("div.standings-ffa")
-    table = None
-    for c in candidates:
-        # active panels typically lose `is-hidden` / get `is-active`
-        cls = " ".join(c.get("class", []))
-        anc = c
-        hidden = False
-        for _ in range(6):
-            if anc is None:
-                break
-            ancc = " ".join(anc.get("class", []) if hasattr(anc, "get") else [])
-            if "is-hidden" in ancc or "panel-content--hidden" in ancc:
-                hidden = True
-                break
-            anc = anc.parent
-        if hidden:
-            continue
-        table = c.select_one("table.table2__table")
-        if table is not None:
-            break
-    if table is None:
-        return []
-    rows: list[dict[str, Any]] = []
-    for tr in table.select("tbody tr, tr"):
-        tds = tr.find_all("td")
-        if not tds:
-            continue
-        m = re.match(r"(\d+)", tds[0].get_text(" ", strip=True))
-        place = int(m.group(1)) if m else None
-        team_links = [
-            a for a in tr.find_all("a", href=True)
-            if a["href"].startswith("/apexlegends/") and "Special:" not in a["href"]
-        ]
-        if not team_links:
-            continue
-        team_a = next(
-            (a for a in team_links if a.get_text(strip=True)),
-            team_links[0],
-        )
-        rows.append(
-            {
-                "place": place,
-                "team_slug": slugify(team_a["href"].replace("/apexlegends/", "")),
-                "team_text": team_a.get_text(" ", strip=True),
-            }
-        )
-    return rows
-
-
 def scrape_tournament(browser: Browser, t: dict[str, Any]) -> dict[str, Any]:
-    """Returns enriched tournament dict with teams + games."""
-    # Pass A: wide viewport — logos + full names + game tabs
-    ctx_wide = browser.new_context(viewport={"width": 1400, "height": 1080}, user_agent=UA)
-    page = ctx_wide.new_page()
-    html_wide = load(page, t["url"])
-    teams_wide = extract_standings_rows(html_wide)
-    tabs = extract_game_tabs(html_wide)
-    page_name = extract_tournament_name(html_wide)
+    """Returns enriched tournament dict with teams + games.
 
-    games: list[dict[str, Any]] = []
-    for i, tab in enumerate(tabs, start=1):
-        participants = extract_game_participants(page, tab["id"])
-        games.append(
-            {
-                "game_no": i,
-                "tab_id": tab["id"],
-                "label": tab["label"],
-                "participants": participants,
-            }
-        )
-    ctx_wide.close()
+    Liquipedia exposes both the full team name (`span.name.hidden-xs`) and the
+    short tag (`span.name.visible-xs`) in the DOM regardless of viewport, and
+    splits per-game standings via `data-toggle-area-content` on each row, so
+    one render + one parse is enough.
+    """
+    ctx = browser.new_context(viewport={"width": 1400, "height": 1080}, user_agent=UA)
+    page = ctx.new_page()
+    try:
+        html = load(page, t["url"])
+    finally:
+        ctx.close()
 
-    # Pass B: narrow viewport — team tags
-    ctx_narrow = browser.new_context(viewport={"width": 700, "height": 1080}, user_agent=UA)
-    page2 = ctx_narrow.new_page()
-    html_narrow = load(page2, t["url"])
-    teams_narrow = extract_standings_rows(html_narrow)
-    ctx_narrow.close()
+    teams, games = extract_teams_and_games(html)
+    page_name = extract_tournament_name(html)
 
-    # Merge: tag = team_text from narrow viewport
-    tag_by_slug = {r["team_slug"]: r["team_text"] for r in teams_narrow}
-    teams: list[dict[str, Any]] = []
-    for r in teams_wide:
-        teams.append(
-            {
-                "place": r["place"],
-                "slug": r["team_slug"],
-                "name": r["team_text"],
-                "tag": tag_by_slug.get(r["team_slug"]),
-                "logo_url": r["logo_url"],
-                "url": r["team_href"],
-            }
-        )
     merged = {**t}
     if not merged.get("name") and page_name:
         merged["name"] = page_name
