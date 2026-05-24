@@ -1064,6 +1064,7 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
         iou_gate = float(w.get("iou_gate", 0.10))
         gate_mult = float(w.get("gate_radius_mult", 1.0)) * dyn_gate_shrink
         fallback_gate_px = float(w.get("fallback_gate_canonical_px", 200.0))
+        eta_anchor = float(w.get("eta_anchor", 0.5))
         # δ ≥ 1.0 — фактически запрет кросс-цвета (как color_first.yaml).
         allow_cross_color = delta < 1.0
         if st.canonical_px is not None:
@@ -1088,13 +1089,16 @@ def _associate_greedy(candidates, slot_trackers, t_now, weights,
             d = math.hypot(cx - pred[0], cy - pred[1])
             if d > radius:
                 continue
+            anchor_pen = 0.0
             if anchor_r is not None:
-                if math.hypot(cx - anchor_cx, cy - anchor_cy) > anchor_r:
-                    continue
+                da_an = math.hypot(cx - anchor_cx, cy - anchor_cy)
+                if da_an > anchor_r:
+                    anchor_pen = (da_an / max(1.0, anchor_r)) - 1.0
             world_term = d / max(1.0, radius)
             shape_pen = 1.0 - min(1.0, max(0.0, cand.get("color_score", 1.0)))
             color_mismatch = 0.0 if same_color else delta
-            c = beta * world_term + gamma * shape_pen + color_mismatch
+            c = (beta * world_term + gamma * shape_pen + color_mismatch
+                 + eta_anchor * anchor_pen)
             lfp = getattr(st, "last_frame_px", None)
             if lfp is not None:
                 cfx, cfy = cand["frame_px"]
