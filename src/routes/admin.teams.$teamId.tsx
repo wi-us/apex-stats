@@ -840,6 +840,163 @@ function PoiMapImage({ mapImage, picks, large }: { mapImage: string | null; pick
 /* -------------------------------------------------------------------------- */
 /* Sparkline — minimal inline SVG line chart                                  */
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/* Active roster — photo-card grid                                            */
+/* -------------------------------------------------------------------------- */
+function RosterPanel({
+  roster,
+  players,
+  isLoading,
+}: {
+  roster: TeamRosterMember[];
+  players: TeamPlayer[];
+  isLoading: boolean;
+}) {
+  return (
+    <div className="hud-panel mt-4 p-3">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <div className="label-eyebrow text-xs">Active roster · {roster.length} players</div>
+        <div className="text-[10px] text-muted-foreground">
+          latest event team version · role=player
+          {isLoading && " · loading…"}
+        </div>
+      </div>
+      {roster.length === 0 ? <Empty /> : (
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {roster.map((p) => {
+            const agg = players.find((x) => x.id === p.id);
+            return (
+              <div key={p.id} className="overflow-hidden rounded-sm border border-border bg-surface">
+                <div className="relative aspect-[3/4] w-full bg-surface-2">
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">no photo</div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1.5">
+                    <div className="truncate text-sm font-bold uppercase tracking-wider text-white">{p.name}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-border border-t border-border text-center">
+                  <Stat label="Matches" value={agg?.matchesPlayed ?? 0} />
+                  <Stat label="Kills" value={agg?.kills ?? 0} />
+                  <Stat
+                    label="Downed"
+                    value={agg?.knockedDown ?? 0}
+                    title="Matches in which the player was knocked down at least once (per-match boolean from ALGS). Not knockdowns inflicted."
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, title }: { label: string; value: number; title?: string }) {
+  return (
+    <div className="px-2 py-1.5" title={title}>
+      <div className="text-mono text-sm font-bold">{value}</div>
+      <div className="label-eyebrow text-[10px] text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Weapon tier list — kill-share grouped, all weapons                         */
+/* -------------------------------------------------------------------------- */
+const AMMO_COLOR: Record<string, string> = {
+  light: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+  heavy: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+  energy: "bg-red-500/20 text-red-300 border-red-500/40",
+  shotgun: "bg-rose-500/20 text-rose-300 border-rose-500/40",
+  sniper: "bg-sky-500/20 text-sky-300 border-sky-500/40",
+  arrow: "bg-violet-500/20 text-violet-300 border-violet-500/40",
+  grenade: "bg-orange-500/20 text-orange-300 border-orange-500/40",
+  "mythic-light": "bg-amber-500/30 text-amber-200 border-amber-400/60",
+  "mythic-sniper": "bg-sky-500/30 text-sky-200 border-sky-400/60",
+  "mythic-arrow": "bg-violet-500/30 text-violet-200 border-violet-400/60",
+};
+
+function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; isLoading: boolean }) {
+  const max = Math.max(1, ...weapons.map((w) => w.kills));
+  const tierOf = (kills: number): "S" | "A" | "B" | "C" | "D" | "F" => {
+    const share = kills / max;
+    if (share >= 0.6) return "S";
+    if (share >= 0.35) return "A";
+    if (share >= 0.18) return "B";
+    if (share >= 0.08) return "C";
+    if (share >= 0.03) return "D";
+    return "F";
+  };
+  const tierColor = (t: string) =>
+    t === "S" ? "bg-destructive/20 text-destructive border-destructive/40"
+    : t === "A" ? "bg-primary/20 text-primary border-primary/40"
+    : t === "B" ? "bg-emerald-500/25 text-emerald-300 border-emerald-500/50"
+    : t === "C" ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+    : t === "D" ? "bg-muted text-foreground/80 border-border"
+    : "bg-surface-2 text-muted-foreground border-border";
+
+  return (
+    <div className="hud-panel mt-4 p-3">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <div className="label-eyebrow text-xs">Weapon meta · {weapons.length} weapons</div>
+        <div className="text-[10px] text-muted-foreground">
+          tier by team kill share · series-aggregated
+          {isLoading && " · loading…"}
+        </div>
+      </div>
+      {weapons.length === 0 ? <Empty /> : (
+        <div className="space-y-2">
+          {(["S", "A", "B", "C", "D", "F"] as const).map((row) => {
+            const items = weapons.filter((w) => tierOf(w.kills) === row);
+            if (items.length === 0) return null;
+            return (
+              <div key={row} className="flex items-stretch gap-2">
+                <div className={`flex w-14 shrink-0 items-center justify-center rounded-sm border text-2xl font-bold ${tierColor(row)}`}>{row}</div>
+                <div className="flex flex-1 flex-wrap gap-2 rounded-sm border border-border bg-surface p-2">
+                  {items.map((w) => {
+                    const ammoCls = (w.ammoType && AMMO_COLOR[w.ammoType]) || "bg-muted text-muted-foreground border-border";
+                    const pct = (w.kills / max) * 100;
+                    return (
+                      <div
+                        key={w.weapon}
+                        className="flex w-[220px] flex-col gap-1.5 rounded-sm border border-border bg-background p-2"
+                        title={`${w.weapon} · ${w.gunType ?? "—"} · ${w.ammoType ?? "—"} · ${w.kills} kills in ${w.series} series`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="truncate text-sm font-semibold">{w.weapon}</div>
+                          <span className={`shrink-0 rounded-sm border px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-wider ${ammoCls}`}>
+                            {w.ammoType ?? "—"}
+                          </span>
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{w.gunType ?? "—"}</div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                          <span className="text-mono font-semibold text-foreground">{w.kills} kills</span>
+                          <span className="text-mono">{w.series} series</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sparkline — minimal inline SVG line chart                                  */
+/* -------------------------------------------------------------------------- */
 function Sparkline({
   title,
   hint,
