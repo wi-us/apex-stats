@@ -1111,7 +1111,8 @@ class SlotTracker:
 
     def __init__(self, team: TeamCfg, slot_cfg: dict, init_canonical_px: Optional[tuple[float, float]],
                  elim_t: Optional[float] = None,
-                 anchor_conf: str = "MISS", hud_alive: bool = False):
+                 anchor_conf: str = "MISS", hud_alive: bool = False,
+                 anchor_r0_canonical_px: Optional[float] = None):
         self.team = team
         self.canonical_px: Optional[tuple[float, float]] = init_canonical_px
         # Immutable copy of the seed anchor (canonical px). Used by the strict
@@ -1197,6 +1198,27 @@ class SlotTracker:
         self.min_consecutive_for_active: int = int(slot_cfg.get("min_consecutive_for_active", 3))
         self.near_anchor_consecutive: int = 0
         self.activated: bool = False
+        # ------------------------------------------------------------------
+        # Прогрессивный стартовый якорь (см. README): первые `anchor_lock_sec`
+        # секунд кандидаты должны лежать внутри (init_canonical_px, r0).
+        # Дальше за `anchor_grow_sec` радиус линейно растёт до `anchor_r_max`.
+        # Конфиг slot_tracker:
+        #   anchor_lock_sec, anchor_grow_sec, anchor_r_max  (если r_max < 0 →
+        #   используем near_anchor_radius_canonical_px как потолок).
+        self.anchor_lock_sec: float = float(slot_cfg.get("anchor_lock_sec", 0.0))
+        self.anchor_grow_sec: float = float(slot_cfg.get("anchor_grow_sec", 0.0))
+        _r_max_cfg = float(slot_cfg.get("anchor_r_max", -1.0))
+        self.anchor_r_max_px: float = (
+            _r_max_cfg if _r_max_cfg > 0 else self.near_anchor_radius_px)
+        # Фолбэк r0 (минимап-pixels по дефолту 70) если motion_detect не дал
+        # своего значения. Берём из slot_cfg для удобства тюнинга.
+        default_r0 = float(slot_cfg.get("anchor_r0_fallback_canonical_px", 70.0))
+        self.anchor_r0_px: float = (
+            float(anchor_r0_canonical_px) if anchor_r0_canonical_px is not None
+            else default_r0)
+        self.anchor_t0: Optional[float] = None      # фиксируется на первом кадре
+        self.anchor_lost: bool = False              # true когда LOW-якорь не нашёл цели
+        self.anchor_inside_hits: int = 0
         # Post-hoc cleanup threshold: if a slot finished the run with fewer than
         # this many `tracked` frames AND was never activated, all its entries
         # are rewritten to `inactive` in tracks.json.
