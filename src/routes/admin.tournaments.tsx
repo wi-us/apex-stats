@@ -336,20 +336,21 @@ function TournamentsAdmin() {
                                 <div className="hud-panel p-3">
                                   <div className="label-eyebrow mb-2 text-xs">Matches ({tMatches.length})</div>
                                   {tMatches.length === 0 ? <Empty /> : (
-                                    <ol className="grid grid-cols-1 gap-1 sm:grid-cols-2 2xl:grid-cols-3">
+                                    <ol className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 2xl:grid-cols-3">
                                       {tMatches.map((m) => {
                                         const ids = m.mapIds && m.mapIds.length > 0 ? m.mapIds : [m.mapId];
                                         const names = Array.from(new Set(ids.map((id) => seedMaps.find((x) => x.id === id)?.name ?? id))).join(", ");
+                                        const ms = deriveMatchStatus(m);
                                         return (
                                           <li key={m.id}>
                                             <Link
                                               to={"/admin/matches/$matchId" as "/admin/matches"}
                                               params={{ matchId: m.id } as never}
-                                              className="flex items-center gap-2 rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted"
+                                              className="flex items-center gap-2 rounded-sm border border-border/60 bg-surface px-2 py-0.5 text-xs hover:bg-muted"
                                             >
                                               <span className="flex-1 truncate font-semibold">{m.name}</span>
                                               <span className="truncate text-muted-foreground">{names}</span>
-                                              <span className={`rounded-sm border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${isMatchReady(m) ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" : "border-border bg-surface-2 text-muted-foreground"}`}>{isMatchReady(m) ? "ready" : "draft"}</span>
+                                              <MatchStatusBadge s={ms} />
                                             </Link>
                                           </li>
                                         );
@@ -364,22 +365,23 @@ function TournamentsAdmin() {
                               <div className="hud-panel p-3">
                                 <div className="label-eyebrow mb-2 text-xs">Matches ({tMatches.length})</div>
                                 {tMatches.length === 0 ? <Empty /> : (
-                                  <ul className="space-y-1">
+                                  <ul className="divide-y divide-border/40 rounded-sm border border-border/40 bg-surface">
                                     {tMatches.map((m) => {
                                       const ids = m.mapIds && m.mapIds.length > 0 ? m.mapIds : [m.mapId];
                                       const names = Array.from(new Set(ids.map((id) => seedMaps.find((x) => x.id === id)?.name ?? id))).join(", ");
+                                      const ms = deriveMatchStatus(m);
+                                      const when = fmtShortDate(m.startedAt ?? m.completedAt);
                                       return (
                                         <li key={m.id}>
                                           <Link
                                             to={"/admin/matches/$matchId" as "/admin/matches"}
                                             params={{ matchId: m.id } as never}
-                                            className="flex items-center justify-between rounded-sm border border-border bg-surface px-2 py-1.5 text-xs hover:bg-muted"
+                                            className="flex items-center gap-2 px-2 py-1 text-xs hover:bg-muted"
                                           >
-                                            <span className="font-semibold">{m.name}</span>
-                                            <span className="flex items-center gap-2 text-muted-foreground">
-                                              <span>{names}</span>
-                                              <span className={`rounded-sm border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${isMatchReady(m) ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" : "border-border bg-surface-2 text-muted-foreground"}`}>{isMatchReady(m) ? "ready" : "draft"}</span>
-                                            </span>
+                                            <span className="w-12 shrink-0 text-mono text-[10px] tabular-nums text-muted-foreground">{when || "—"}</span>
+                                            <span className="flex-1 truncate font-semibold">{m.name}</span>
+                                            <span className="hidden truncate text-muted-foreground sm:inline-block sm:max-w-[40%]">{names}</span>
+                                            <MatchStatusBadge s={ms} />
                                           </Link>
                                         </li>
                                       );
