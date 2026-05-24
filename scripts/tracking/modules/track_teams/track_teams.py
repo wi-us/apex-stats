@@ -973,16 +973,21 @@ def associate_hungarian(
             d = math.hypot(cand_cx - pred_cx, cand_cy - pred_cy)
             if d > radius:
                 continue
-            # Hard-gate: вне якоря — кандидат недоступен этому слоту.
+            # Soft-gate: вне якоря не исключаем, а штрафуем cost-ом,
+            # пропорционально (d_anchor/r - 1). Сам якорь продолжает
+            # притягивать к стартовой точке, но при отсутствии цели
+            # внутри r ассоциация всё равно случится.
+            anchor_pen = 0.0
             if anchor_r is not None:
-                da = math.hypot(cand_cx - anchor_cx, cand_cy - anchor_cy)
-                if da > anchor_r:
-                    continue
+                da_an = math.hypot(cand_cx - anchor_cx, cand_cy - anchor_cy)
+                if da_an > anchor_r:
+                    anchor_pen = (da_an / max(1.0, anchor_r)) - 1.0
             world_term = d / max(1.0, radius)
             # shape_penalty: blob со слишком низким color_score штрафуем.
             shape_pen = 1.0 - min(1.0, max(0.0, cand["color_score"]))
             color_mismatch = 0.0 if cand["team_id"] == st.team.id else delta
-            c = beta * world_term + gamma * shape_pen + color_mismatch
+            c = (beta * world_term + gamma * shape_pen + color_mismatch
+                 + eta_anchor * anchor_pen)
             # Hysteresis: предыдущий tracked-blob этого же слота получает скидку
             if getattr(st, "last_frame_px", None) is not None:
                 lfx, lfy = st.last_frame_px
