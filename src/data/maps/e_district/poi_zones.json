@@ -1,1 +1,162 @@
-[]
+[
+  {
+    "id": "01JH1ES1TX7CCGV474E8G1PBVB",
+    "name": "Blossom Drive",
+    "cx": 0.12,
+    "cy": 0.53,
+    "r": 0.03,
+    "inGameDropId": 10
+  },
+  {
+    "id": "01JH1ERAW548AZ0T4CGK0FZPNG",
+    "name": "Boardwalk",
+    "cx": 0.15,
+    "cy": 0.36,
+    "r": 0.03,
+    "inGameDropId": 4
+  },
+  {
+    "id": "01JH1ERKADN4ECRMDCXJEZ9EBJ",
+    "name": "Canal Plaza",
+    "cx": 0.5,
+    "cy": 0.33,
+    "r": 0.03,
+    "inGameDropId": 6
+  },
+  {
+    "id": "01JH1ERG0X1KHWD3KE2ZZ2YBWM",
+    "name": "City Hall",
+    "cx": 0.33,
+    "cy": 0.41,
+    "r": 0.03,
+    "inGameDropId": 5
+  },
+  {
+    "id": "01JH1ESSHTXT5P5PG0DKQPZQDP",
+    "name": "Draft Point",
+    "cx": 0.43,
+    "cy": 0.68,
+    "r": 0.03,
+    "inGameDropId": 17
+  },
+  {
+    "id": "01JH1ED35600QVFFVMYNBGPVAP",
+    "name": "Electro Dam",
+    "cx": 0.67,
+    "cy": 0.2,
+    "r": 0.03,
+    "inGameDropId": 3
+  },
+  {
+    "id": "01JH1ES8XJ24PY3H54X956922N",
+    "name": "Energy Bank",
+    "cx": 0.53,
+    "cy": 0.42,
+    "r": 0.03,
+    "inGameDropId": 12
+  },
+  {
+    "id": "01JH1ERPF4DX4Z436P1VQZAY5F",
+    "name": "Galleria",
+    "cx": 0.64,
+    "cy": 0.36,
+    "r": 0.03,
+    "inGameDropId": 7
+  },
+  {
+    "id": "01JH1ERXY0ZRPN0RAX5WCM6A61",
+    "name": "Heights",
+    "cx": 0.81,
+    "cy": 0.36,
+    "r": 0.03,
+    "inGameDropId": 9
+  },
+  {
+    "id": "01JH1ET3K4DEQZG9K2498DESHJ",
+    "name": "Humbert Labs",
+    "cx": 0.7,
+    "cy": 0.79,
+    "r": 0.03,
+    "inGameDropId": 20
+  },
+  {
+    "id": "01JH1ES5KK2Z99RGA3AXRYC5G1",
+    "name": "Neon Square",
+    "cx": 0.26,
+    "cy": 0.54,
+    "r": 0.03,
+    "inGameDropId": 11
+  },
+  {
+    "id": "01JH1ET09E1PAB7AZBV67E9XCC",
+    "name": "Old Town",
+    "cx": 0.64,
+    "cy": 0.9,
+    "r": 0.03,
+    "inGameDropId": 19
+  },
+  {
+    "id": "01JH1D9H9538PZJYC0N5GF9959",
+    "name": "Resort",
+    "cx": 0.19,
+    "cy": 0.19,
+    "r": 0.03,
+    "inGameDropId": 1
+  },
+  {
+    "id": "01JH1ESCGC303GWZ087ZPFSN7R",
+    "name": "Settlement",
+    "cx": 0.65,
+    "cy": 0.63,
+    "r": 0.03,
+    "inGameDropId": 13
+  },
+  {
+    "id": "01JH1ESWV1VKE7EEXJADT38AMH",
+    "name": "Shipyard Arcade",
+    "cx": 0.45,
+    "cy": 0.91,
+    "r": 0.03,
+    "inGameDropId": 18
+  },
+  {
+    "id": "01JH1ESFVF30G1A0X9XT89ABT5",
+    "name": "Stadium",
+    "cx": 0.79,
+    "cy": 0.59,
+    "r": 0.03,
+    "inGameDropId": 14
+  },
+  {
+    "id": "01JH1ESK08Z7EN9B3CARS9KSXS",
+    "name": "Street Market",
+    "cx": 0.22,
+    "cy": 0.72,
+    "r": 0.03,
+    "inGameDropId": 15
+  },
+  {
+    "id": "01JH1E8FCNYS3HXPMDVFGZMQ46",
+    "name": "The Lotus",
+    "cx": 0.44,
+    "cy": 0.16,
+    "r": 0.03,
+    "inGameDropId": 2
+  },
+  {
+    "id": "01JH1ERT5GD09YGKES4X0B5M22",
+    "name": "Uptown",
+    "cx": 0.71,
+    "cy": 0.5,
+    "r": 0.03,
+    "inGameDropId": 8
+  },
+  {
+    "id": "01JH1ESP3D49ND224QSNJVFK19",
+    "name": "Viaduct",
+    "cx": 0.34,
+    "cy": 0.78,
+    "r": 0.03,
+    "inGameDropId": 16
+  }
+]
