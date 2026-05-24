@@ -616,6 +616,7 @@ def main():
     (args.out_dir / "report.txt").write_text("".join(lines), encoding="utf-8")
 
     print(f"[ok] motion tracks -> {args.out_dir / 'motion_tracks.json'}")
+    print(f"[ok] start anchors -> {args.out_dir / 'start_anchors.json'}")
     print(f"[ok] overlays      -> {args.out_dir / 'overlays'}/motion_*.jpg")
     print(f"[ok] report        -> {args.out_dir / 'report.txt'}")
     print(f"[ok] HIGH={n_high} MED={n_med} LOW={n_low} MISS={n_miss}")
