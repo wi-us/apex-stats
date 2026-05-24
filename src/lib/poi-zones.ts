@@ -33,6 +33,8 @@ export type PoiZone = {
   cy: number;
   /** Radius in [0..1] of the canonical map image. */
   r: number;
+  /** Optional ALGS in-game drop id (1..N) when sourced from the API. */
+  inGameDropId?: number;
 };
 
 export type MapId =

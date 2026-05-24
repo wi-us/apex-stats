@@ -1,0 +1,3 @@
+# Local SQLite cache and HTTP cache live here.
+*
+!.gitignore

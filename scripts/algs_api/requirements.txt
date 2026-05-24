@@ -1,0 +1,2 @@
+# Pure stdlib for client/db. httpx kept optional for future async use.
+# No third-party deps required.

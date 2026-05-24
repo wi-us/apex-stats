@@ -1,1 +1,186 @@
-[]
+[
+  {
+    "id": "01JH1B9PJ57P5THJ72YFVCXRH5",
+    "name": "Barometer",
+    "cx": 0.36,
+    "cy": 0.73,
+    "r": 0.03,
+    "inGameDropId": 8
+  },
+  {
+    "id": "01JH1BH5QAVPHQAJYX858ZRHS6",
+    "name": "Basin Armory",
+    "cx": 0.25,
+    "cy": 0.57,
+    "r": 0.03,
+    "inGameDropId": 6
+  },
+  {
+    "id": "01J650EJ4F7KZKEV6TTV7QAYXZ",
+    "name": "Cascade Falls",
+    "cx": 0.51,
+    "cy": 0.38,
+    "r": 0.03,
+    "inGameDropId": 10
+  },
+  {
+    "id": "01J650EJ4F7F1MWAPH1F1YAKG9",
+    "name": "Cenote Cave",
+    "cx": 0.21,
+    "cy": 0.69,
+    "r": 0.03,
+    "inGameDropId": 7
+  },
+  {
+    "id": "01J650EJ4FET8YVQA35318X368",
+    "name": "Ceto Station",
+    "cx": 0.38,
+    "cy": 0.5,
+    "r": 0.03,
+    "inGameDropId": 9
+  },
+  {
+    "id": "01JH1B75SE07Z20N2KNFJQ1T99",
+    "name": "Checkpoint",
+    "cx": 0.32,
+    "cy": 0.29,
+    "r": 0.03,
+    "inGameDropId": 1
+  },
+  {
+    "id": "01J650EJ4F9HMP8PVKK2Z1NQNP",
+    "name": "Coastal Camp",
+    "cx": 0.52,
+    "cy": 0.84,
+    "r": 0.03,
+    "inGameDropId": 20
+  },
+  {
+    "id": "01J650EJ4FVVYB8FG3S1FNA1HH",
+    "name": "Command Center",
+    "cx": 0.69,
+    "cy": 0.33,
+    "r": 0.03,
+    "inGameDropId": 11
+  },
+  {
+    "id": "01J650EJ4F0B6DAZTJ0DQJXDN6",
+    "name": "Devastated Coast",
+    "cx": 0.82,
+    "cy": 0.73,
+    "r": 0.03,
+    "inGameDropId": 18
+  },
+  {
+    "id": "01J650EJ4FWKV4FXAR3MXXPCQ1",
+    "name": "Downed Beast",
+    "cx": 0.16,
+    "cy": 0.29,
+    "r": 0.03,
+    "inGameDropId": 4
+  },
+  {
+    "id": "01J650EJ4FAGPYQ790PTN0WN24",
+    "name": "East Trail",
+    "cx": 0.91,
+    "cy": 0.37,
+    "r": 0.03,
+    "inGameDropId": 15
+  },
+  {
+    "id": "01J650EJ4FFA7AZ6AM8AY318HG",
+    "name": "Echo HQ",
+    "cx": 0.66,
+    "cy": 0.83,
+    "r": 0.03,
+    "inGameDropId": 19
+  },
+  {
+    "id": "01J650EJ4F0XD2J7PPET8N3NKT",
+    "name": "Forbidden Zone",
+    "cx": 0.49,
+    "cy": 0.58,
+    "r": 0.03,
+    "inGameDropId": 22
+  },
+  {
+    "id": "01J650EJ4FJZMANVVH6AEWBQ87",
+    "name": "Launch Pad",
+    "cx": 0.75,
+    "cy": 0.63,
+    "r": 0.03,
+    "inGameDropId": 17
+  },
+  {
+    "id": "01J650EJ4FMPD76N8P89F8MZ12",
+    "name": "Lightning Rod",
+    "cx": 0.81,
+    "cy": 0.23,
+    "r": 0.03,
+    "inGameDropId": 14
+  },
+  {
+    "id": "01J650EJ4FZG8Z03XH7C7EDD9D",
+    "name": "Mountain Lift",
+    "cx": 0.6,
+    "cy": 0.47,
+    "r": 0.03,
+    "inGameDropId": 23
+  },
+  {
+    "id": "01J650EJ4FXH9PH2ZJE3FFXD12",
+    "name": "North Pad",
+    "cx": 0.24,
+    "cy": 0.13,
+    "r": 0.03,
+    "inGameDropId": 3
+  },
+  {
+    "id": "01J650EJ4FCAK2M36NYS1DKQZC",
+    "name": "Outpost North",
+    "cx": 0.39,
+    "cy": 0.22,
+    "r": 0.03,
+    "inGameDropId": 2
+  },
+  {
+    "id": "01J650EJ4F4JHGSMR6T095N0H5",
+    "name": "Storm Catcher",
+    "cx": 0.76,
+    "cy": 0.37,
+    "r": 0.03,
+    "inGameDropId": 16
+  },
+  {
+    "id": "01J650EJ4FPBFVFP05DRKBDPAM",
+    "name": "The Mill",
+    "cx": 0.13,
+    "cy": 0.48,
+    "r": 0.03,
+    "inGameDropId": 5
+  },
+  {
+    "id": "01J650EJ4F30NQQAA0E7ZTSWBS",
+    "name": "The Pylon",
+    "cx": 0.59,
+    "cy": 0.67,
+    "r": 0.03,
+    "inGameDropId": 21
+  },
+  {
+    "id": "01J650EJ4FQM10WA2G33CGW8M8",
+    "name": "The Wall",
+    "cx": 0.55,
+    "cy": 0.15,
+    "r": 0.03,
+    "inGameDropId": 12
+  },
+  {
+    "id": "01J650EJ4FRVMMWEN5ZXYZ8NVP",
+    "name": "Zeus Station",
+    "cx": 0.79,
+    "cy": 0.08,
+    "r": 0.03,
+    "inGameDropId": 13
+  }
+]

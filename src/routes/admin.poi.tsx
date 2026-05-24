@@ -12,6 +12,20 @@ import {
   slugifyPoi,
 } from "@/lib/poi-zones";
 
+/** ALGS spawn-location id -> canonical map id used in src/data/maps/<id>/. */
+const MAP_ID_BY_ULID: Record<string, MapId> = {
+  "01J6508ZVM8PZKJ9VSKA9SF33P": "olympus",
+  "01J6508ZVMQGRZDC3XSNER795R": "kings_canyon",
+  "01J6508ZVME92QPVXGJN21ZWCA": "storm_point",
+  "01J6508ZVM9M8WFR5KVFB6R1FD": "worlds_edge",
+  "01J6M00SDXM1G05TA8D96559MJ": "e_district",
+  "01J6508ZVMSXSMEN6J4M5G5V38": "broken_moon",
+};
+
+function canonicalMapId(ulid: string | undefined | null): MapId | null {
+  return ulid && MAP_ID_BY_ULID[ulid] ? MAP_ID_BY_ULID[ulid] : null;
+}
+
 export const Route = createFileRoute("/admin/poi")({ component: PoiAdmin });
 
 type Drag = { id: string; mode: "move" | "resize"; ox: number; oy: number; or: number };
@@ -152,12 +166,78 @@ function PoiAdmin() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
+
+      // 1. ALGS /v1/poi-drafts/{id}/locations — { spawnLocations: [...] }
+      if (Array.isArray(data?.spawnLocations)) {
+        let added = 0;
+        let skippedWrongMap = 0;
+        const next = [...zones];
+        const ids = new Set(next.map((z) => z.id));
+        for (const loc of data.spawnLocations as Array<{
+          id: string;
+          name: string;
+          x: string | number;
+          y: string | number;
+          inGameDropId?: number;
+          map?: { id?: string };
+        }>) {
+          const targetMap = canonicalMapId(loc.map?.id);
+          if (targetMap && targetMap !== mapId) {
+            skippedWrongMap++;
+            continue;
+          }
+          if (ids.has(loc.id)) continue;
+          const cx = Number(loc.x) / 100;
+          const cy = Number(loc.y) / 100;
+          if (!Number.isFinite(cx) || !Number.isFinite(cy)) continue;
+          next.push({ id: loc.id, name: loc.name, cx, cy, r: 0.03 });
+          ids.add(loc.id);
+          added++;
+        }
+        setZones(next);
+        alert(
+          `Imported ${added} ALGS spawn locations.` +
+            (skippedWrongMap
+              ? ` Skipped ${skippedWrongMap} for other maps.`
+              : ""),
+        );
+        return;
+      }
+
+      // 2. ALGS /v1/poi-drafts/{id}/pick — { picks: [...] }
+      if (Array.isArray(data?.picks)) {
+        const picks: typeof importedPicks = [];
+        for (const p of data.picks as Array<{
+          spawnLocation?: { name?: string };
+          team?: { name?: string; shortName?: string };
+          map?: { id?: string; name?: string };
+        }>) {
+          const mid = canonicalMapId(p.map?.id) ?? mapId;
+          const spot = p.spawnLocation?.name;
+          const name = p.team?.name ?? p.team?.shortName;
+          if (!spot || !name) continue;
+          picks.push({
+            stage: "algs",
+            map_id: mid,
+            spot,
+            team_name: name,
+            team_slug: (p.team?.shortName ?? name).toLowerCase(),
+          });
+        }
+        setImportedPicks(picks);
+        return;
+      }
+
+      // 3. Legacy Liquipedia tournament JSON ({ poi_drafts: { stage: { map: [...] } } })
       const picks: typeof importedPicks = [];
       const drafts = data?.poi_drafts as
         | Record<string, Record<string, { team_slug: string; team_name: string; spot: string | null }[]>>
         | undefined;
       if (!drafts) {
-        alert("This tournament JSON has no poi_drafts.");
+        alert(
+          "Unknown JSON shape. Expected ALGS spawnLocations/picks or " +
+            "Liquipedia poi_drafts.",
+        );
         return;
       }
       for (const [stage, byMap] of Object.entries(drafts)) {
@@ -241,7 +321,7 @@ function PoiAdmin() {
             />
           </label>
           <label className="cursor-pointer rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted">
-            Load tournament JSON
+            Load ALGS / tournament JSON
             <input
               type="file"
               accept="application/json"
