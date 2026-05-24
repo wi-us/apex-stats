@@ -151,6 +151,8 @@ def main() -> None:
                     help="0 = все файлы; иначе случайная выборка для быстрого теста")
     ap.add_argument("--lang", default="en")
     ap.add_argument("--use-gpu", action="store_true")
+    ap.add_argument("--device", default=None,
+                    help="Например cpu | gpu | gpu:0. По умолчанию авто.")
     ap.add_argument("--upscale", type=float, default=2.0,
                     help="Множитель апскейла кропа перед OCR (плашки мелкие).")
     args = ap.parse_args()
@@ -186,8 +188,12 @@ def main() -> None:
         files = random.sample(files, args.limit)
     print(f"[info] файлов на обработку: {len(files)}")
 
-    ocr = PaddleOCR(use_angle_cls=True, lang=args.lang,
-                    use_gpu=args.use_gpu, show_log=False)
+    ocr_kwargs = {"lang": args.lang, "use_textline_orientation": True}
+    if args.device:
+        ocr_kwargs["device"] = args.device
+    elif args.use_gpu:
+        ocr_kwargs["device"] = "gpu"
+    ocr = PaddleOCR(**ocr_kwargs)
 
     # OpenCV для апскейла
     import cv2
@@ -208,13 +214,26 @@ def main() -> None:
             img = cv2.resize(img, None, fx=args.upscale, fy=args.upscale,
                              interpolation=cv2.INTER_CUBIC)
         try:
-            raw = ocr.ocr(img, cls=True)
+            if hasattr(ocr, "predict"):
+                raw = ocr.predict(img)
+            else:
+                raw = ocr.ocr(img)
         except Exception as e:
             results.append({"file": str(path), "error": str(e), "gt": gt})
             continue
-        # raw = [[ [box, (text, conf)], ... ]]
         items: List[Tuple[str, float]] = []
-        if raw and raw[0]:
+        # Новый API (>=3.x): list[dict] с rec_texts / rec_scores
+        if raw and isinstance(raw, list) and raw and isinstance(raw[0], dict):
+            res0 = raw[0]
+            texts = res0.get("rec_texts") or []
+            scores = res0.get("rec_scores") or []
+            for t, s in zip(texts, scores):
+                try:
+                    items.append((str(t), float(s)))
+                except (TypeError, ValueError):
+                    continue
+        # Старый API: [[ [box, (text, conf)], ... ]]
+        elif raw and raw[0]:
             for line in raw[0]:
                 try:
                     text, conf = line[1][0], float(line[1][1])
