@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   tournaments as seedT,
   maps as seedMaps,
@@ -11,6 +11,7 @@ import {
   type MatchFull,
 } from "@/lib/mock-match";
 import { useAdminStore, type AnalysisProcess } from "@/lib/admin-store";
+import { fetchAlgsBundle } from "@/lib/algs-fetchers";
 import { TeamLogo } from "@/components/admin/TeamLogo";
 
 export const Route = createFileRoute("/admin/tournaments")({ component: TournamentsAdmin });
@@ -98,6 +99,25 @@ type TabKey = "overview" | "matches" | "teams" | "maps";
 function TournamentsAdmin() {
   const { matches: allMatches, teams: allTeams, processes } = useAdminStore();
   const [rows, setRows] = useState<Tournament[]>(seedT);
+  const [algsMatches, setAlgsMatches] = useState<MatchFull[]>([]);
+  const [loadingAlgs, setLoadingAlgs] = useState(true);
+  const [algsError, setAlgsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingAlgs(true);
+    fetchAlgsBundle()
+      .then((b) => {
+        if (cancelled) return;
+        if (b.tournaments.length > 0) setRows(b.tournaments);
+        setAlgsMatches(b.matches);
+        setAlgsError(null);
+      })
+      .catch((e) => !cancelled && setAlgsError(e?.message ?? String(e)))
+      .finally(() => !cancelled && setLoadingAlgs(false));
+    return () => { cancelled = true; };
+  }, []);
+  const matchesSource = algsMatches.length > 0 ? algsMatches : allMatches;
   const [editing, setEditing] = useState<Tournament | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [tabById, setTabById] = useState<Record<string, TabKey>>({});
@@ -180,7 +200,7 @@ function TournamentsAdmin() {
             <tbody>
               {filtered.map((row) => {
                 const isOpen = expandedId === row.id;
-                const tMatches = allMatches.filter((m) => m.tournamentId === row.id);
+                const tMatches = matchesSource.filter((m) => m.tournamentId === row.id);
                 const tMapIds = Array.from(new Set(tMatches.flatMap((m) => (m.mapIds && m.mapIds.length > 0 ? m.mapIds : [m.mapId]))));
                 const tMaps = tMapIds.map((id) => seedMaps.find((mp) => mp.id === id)).filter(Boolean) as typeof seedMaps;
                 const tTeamIds = Array.from(new Set(tMatches.flatMap((m) => m.teamIds ?? [])));
