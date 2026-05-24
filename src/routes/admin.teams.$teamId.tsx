@@ -431,7 +431,7 @@ function TeamDetail() {
           <Panel title={`Tournaments (${filteredTournaments.length})`}>
             {filteredTournaments.length === 0 ? <Empty /> : (
               <ScrollList>
-                {filteredTournaments.map((t) => {
+                {[...filteredTournaments].sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? "")).map((t) => {
                   const st = tourStatus(t);
                   return (
                     <li key={t.id}>
@@ -457,8 +457,12 @@ function TeamDetail() {
           <Panel title={`Matches (${filteredRows.length})`}>
             {filteredRows.length === 0 ? <Empty /> : (
               <ScrollList>
-                {filteredRows.map((r) => {
+                {[...filteredRows].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0)).map((r) => {
                   const map = allMaps.find((mp) => mp.id === r.match.mapId);
+                  const ids = r.match.mapIds ?? [r.match.mapId];
+                  const places = ids.map((id) => pseudoPlacement(id, r.match.id));
+                  const avgPlace = places.reduce((s, v) => s + v, 0) / places.length;
+                  const kills = pseudoKills(r.match.id);
                   return (
                     <li key={r.match.id}>
                       <Link
@@ -468,7 +472,11 @@ function TeamDetail() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate font-semibold">{r.match.name}</span>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">{map?.name}</span>
+                          <span className="flex items-center gap-2 whitespace-nowrap text-xs">
+                            <span className="text-mono rounded-sm border border-primary/40 bg-primary/10 px-1.5 py-[1px] font-semibold text-primary">#{avgPlace.toFixed(0)}</span>
+                            <span className="text-mono rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-[1px] font-semibold text-warning">{kills} K</span>
+                            <span className="text-muted-foreground">{map?.name}</span>
+                          </span>
                         </div>
                         <div className="text-mono text-xs text-muted-foreground">{fmtDate(r.date)} · {fmtTime(r.date)}</div>
                       </Link>
