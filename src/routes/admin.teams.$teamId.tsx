@@ -294,6 +294,12 @@ function TeamDetail() {
         </a>
       </header>
       <div className="flex-1 overflow-auto p-6">
+        {/* ---- Active roster moved to top ---- */}
+        <RosterPanel
+          roster={detail?.activeRoster ?? []}
+          players={detail?.players ?? []}
+          isLoading={detailQuery.isLoading}
+        />
         <div className="hud-panel mb-4 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="label-eyebrow text-xs">Period</div>
@@ -566,13 +572,6 @@ function TeamDetail() {
             </div>
           )}
         </div>
-
-        {/* ---- Active roster (promoted from test) ---- */}
-        <RosterPanel
-          roster={detail?.activeRoster ?? []}
-          players={detail?.players ?? []}
-          isLoading={detailQuery.isLoading}
-        />
 
         {/* ---- Weapon tier list (promoted from test) ---- */}
         <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
