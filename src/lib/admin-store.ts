@@ -188,6 +188,34 @@ export function setTournaments(tournaments: Tournament[]) {
   emit();
 }
 
+/**
+ * Replace teams/tournaments/matches in bulk with data fetched from ALGS
+ * (algs_* tables). Existing customMaps from local edits are preserved;
+ * incoming ALGS maps are merged by id (ALGS wins on name).
+ */
+export function replaceFromAlgs(payload: {
+  teams: Team[];
+  tournaments: Tournament[];
+  matches: MatchFull[];
+  maps: CustomMap[];
+}) {
+  const byId = new Map<string, CustomMap>(state.customMaps.map((m) => [m.id, m]));
+  for (const m of payload.maps) {
+    const prev = byId.get(m.id);
+    byId.set(m.id, { ...prev, ...m, image: m.image || prev?.image || "" });
+  }
+  const customMaps = Array.from(byId.values());
+  persistCustomMaps(customMaps);
+  state = {
+    ...state,
+    teams: payload.teams.length > 0 ? payload.teams : state.teams,
+    tournaments: payload.tournaments.length > 0 ? payload.tournaments : state.tournaments,
+    matches: payload.matches.length > 0 ? payload.matches : state.matches,
+    customMaps,
+  };
+  emit();
+}
+
 export function setPolygons(polygons: Polygon[]) {
   state = { ...state, polygons };
   emit();
