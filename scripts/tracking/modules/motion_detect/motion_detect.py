@@ -549,6 +549,39 @@ def main():
         "results": results,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # ---- start_anchors.json (derived view, consumed by track_teams) ----
+    # Стартовые координаты команд + базовый радиус r0 по уверенности.
+    # Используется track_teams для жёсткого захвата в первые N секунд матча
+    # (см. slot_tracker.anchor_lock_sec / anchor_grow_sec в конфиге).
+    r0_by_conf = {"HIGH": 25.0, "MED": 40.0, "LOW": 70.0}
+    # Approx t последнего семпла окна (для справки; track_teams использует
+    # свой t_now первого обработанного кадра как anchor_t0).
+    frame_t_approx = float(args.start_sec) + float(args.window * args.step) / max(fps, 1e-6)
+    start_anchors = {
+        "video": args.video.name,
+        "fps": fps,
+        "frame_t_approx": round(frame_t_approx, 3),
+        "zone_tag": args.zone_tag,
+        "r0_by_conf": r0_by_conf,
+        "anchors": {},
+    }
+    for r in results:
+        if not r.get("consensus_xy"):
+            continue
+        slot_key = f"slot_{r['slot']}"
+        conf = r.get("confidence", "MISS")
+        start_anchors["anchors"][slot_key] = {
+            "slot": r["slot"],
+            "x": float(r["consensus_xy"][0]),
+            "y": float(r["consensus_xy"][1]),
+            "conf": conf,
+            "r0_minimap_px": float(r0_by_conf.get(conf, 70.0)),
+            "zone": r.get("zone"),
+            "hex": r.get("hex"),
+        }
+    (args.out_dir / "start_anchors.json").write_text(
+        json.dumps(start_anchors, ensure_ascii=False, indent=2), encoding="utf-8")
+
     # ---- отчёт ----
     conf_order = {"HIGH": 0, "MED": 1, "LOW": 2, "MISS": 3}
     lines = [
