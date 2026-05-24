@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Activity, CheckCircle2, XCircle, Loader2, RotateCw, Bug, ExternalLink, History, AlertTriangle, Palette, Shapes, Video } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, Loader2, RotateCw, Bug, ExternalLink, History, AlertTriangle, Palette, Shapes, Video, Database, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { fetchAlgsBundle } from "@/lib/algs-fetchers";
+import { replaceFromAlgs, useAdminStore } from "@/lib/admin-store";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
@@ -64,6 +67,8 @@ function AdminDashboard() {
 
 
       <div className="flex-1 overflow-auto p-6 space-y-8">
+        <AlgsSyncCard />
+
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <section className="xl:col-span-2">
             <SectionHead icon={Activity} title="Active processes" hint={`${activeTasks.filter(t => t.status === "processing" || t.status === "queued").length} running`} />
