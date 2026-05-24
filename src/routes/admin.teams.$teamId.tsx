@@ -558,7 +558,7 @@ function TeamDetail() {
         </>
         )}
 
-        {(view === "overview" || view === "maps") && (
+        {view === "maps" && (
         <div className="hud-panel mt-4 p-3">
           <div className="label-eyebrow mb-3 text-xs">Map tier list · avg placement, top 1 & top 5</div>
           {mapStats.length === 0 ? <Empty /> : (
@@ -607,13 +607,13 @@ function TeamDetail() {
         </div>
         )}
 
-        {(view === "overview" || view === "maps") && (
+        {view === "maps" && (
         <div className="mt-4">
           <PoiMapPanel picks={detail?.poiPicks ?? []} />
         </div>
         )}
 
-        {(view === "overview" || view === "weapons") && (
+        {view === "weapons" && (
           <WeaponTierPanel weapons={detail?.weapons ?? []} isLoading={detailQuery.isLoading} />
         )}
       </div>
