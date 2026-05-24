@@ -226,8 +226,8 @@ function AlgsSyncCard() {
   useEffect(() => {
     if (ranOnce.current) return;
     ranOnce.current = true;
-    const stale = !lastSync || Date.now() - lastSync > STALE_MS;
-    if (stale) void doSync();
+    // Always auto-sync on dashboard mount (manual button still available as fallback).
+    void doSync();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
