@@ -220,6 +220,53 @@ def _team_from_row(tr) -> dict[str, Any] | None:
     }
 
 
+def _extract_battle_royale(br) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Extract Final battle-royale standings from Liquipedia's panel table.
+
+    This is the block under `.mw-content-ltr.mw-parser-output` with rows like
+    `div.panel-table__row[data-js-battle-royale="row"]`. It contains exactly
+    the final lobby teams plus one nested `.cell--game` per played game.
+    """
+    rows = br.select('div.panel-table__row[data-js-battle-royale="row"]')
+    if not rows:
+        return [], []
+
+    header = br.select_one("div.panel-table__row.row--header")
+    game_labels: list[str] = []
+    if header:
+        for cell in header.select(":scope > div.cell--game-container div.cell--game"):
+            label = cell.select_one(".panel-table__cell-text")
+            game_labels.append(label.get_text(" ", strip=True) if label else f"Game {len(game_labels) + 1}")
+
+    teams: list[dict[str, Any]] = []
+    games: list[dict[str, Any]] = [
+        {"game_no": i + 1, "tab_id": str(i + 1), "label": label or f"Game {i + 1}", "participants": []}
+        for i, label in enumerate(game_labels)
+    ]
+    for row in rows:
+        info = _team_from_row(row)
+        if info is None:
+            continue
+        teams.append({k: info[k] for k in ("slug", "name", "tag", "logo_url", "url")})
+        for i, game_cell in enumerate(row.select(":scope > div.cell--game-container > div.cell--game")):
+            while i >= len(games):
+                games.append({"game_no": i + 1, "tab_id": str(i + 1), "label": f"Game {i + 1}", "participants": []})
+            placement = game_cell.select_one(".panel-table__cell__game-placement")
+            kills = game_cell.select_one(".panel-table__cell__game-kills")
+            games[i]["participants"].append(
+                {
+                    "place": _parse_place(placement.get_text(" ", strip=True) if placement else ""),
+                    "team_slug": info["slug"],
+                    "team_text": info["name"],
+                    "kills": _parse_int(kills.get_text(" ", strip=True) if kills else ""),
+                }
+            )
+
+    for game in games:
+        game["participants"].sort(key=lambda p: p["place"] if p["place"] is not None else 9999)
+    return teams, games
+
+
 def extract_teams_and_games(html: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Parse the standings-ffa table once.
 
@@ -228,7 +275,14 @@ def extract_teams_and_games(html: str) -> tuple[list[dict[str, Any]], list[dict[
     label them (item 0 = "Overall standings", item N = "Game N").
     """
     soup = BeautifulSoup(html, "html.parser")
-    cont = soup.select_one("div.standings-ffa")
+    content = soup.select_one("div.mw-content-ltr.mw-parser-output") or soup
+    battle_blocks = content.select("div.battle-royale[data-js-battle-royale-id]")
+    for br in reversed(battle_blocks):
+        teams, games = _extract_battle_royale(br)
+        if teams and games:
+            return teams, games
+
+    cont = content.select_one("div.standings-ffa")
     if not cont:
         return [], []
     table = cont.select_one("table.table2__table")
