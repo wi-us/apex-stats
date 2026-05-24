@@ -183,7 +183,35 @@ def extract_standings_rows(html: str) -> list[dict[str, Any]]:
                 "logo_url": logo_url,
             }
         )
-    return rows
+    # Dedupe by team_slug — Liquipedia repeats each team per week/game row.
+    # Keep the row with the best (smallest) numeric place, preferring the one
+    # that actually has a visible team name.
+    by_slug: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        prev = by_slug.get(r["team_slug"])
+        if prev is None:
+            by_slug[r["team_slug"]] = r
+            continue
+        # Prefer row with a real name over an empty one.
+        if not prev["team_text"] and r["team_text"]:
+            by_slug[r["team_slug"]] = r
+            continue
+        # Then prefer lower place number.
+        pp, rp = prev.get("place"), r.get("place")
+        if rp is not None and (pp is None or rp < pp):
+            by_slug[r["team_slug"]] = r
+    return sorted(
+        by_slug.values(),
+        key=lambda x: (x.get("place") is None, x.get("place") or 0),
+    )
+
+
+def extract_tournament_name(html: str) -> str | None:
+    soup = BeautifulSoup(html, "html.parser")
+    h1 = soup.select_one("h1#firstHeading, h1.firstHeading")
+    if h1:
+        return h1.get_text(" ", strip=True) or None
+    return None
 
 
 def extract_game_tabs(html: str) -> list[dict[str, Any]]:
