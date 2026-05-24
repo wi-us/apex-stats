@@ -25,6 +25,7 @@ const calibrationItems: NavItem[] = [
   { to: "/admin/zones",    label: "HUD Zones",    hint: "HUD areas (1920×1080)" },
   { to: "/admin/polygons", label: "Map Polygons", hint: "Forbidden / safe areas" },
   { to: "/admin/camera",   label: "Camera",       hint: "Observer camera tracking" },
+  { to: "/admin/poi",      label: "POI Zones",    hint: "Drop points on canonical maps" },
 ];
 
 const analysisItems: NavItem[] = [
