@@ -614,31 +614,6 @@ function TestInterfaceSection({
           ) : null}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <TestPanel title="Active roster" subtitle={`${detail?.activeRoster.length ?? 0} players · latest event team version (role=player)`}>
-            {!detail || detail.activeRoster.length === 0 ? <Empty /> : (
-              <ul className="space-y-1.5">
-                {detail.activeRoster.map((p) => {
-                  const agg = detail.players.find((x) => x.id === p.id);
-                  return (
-                  <li key={p.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-2 py-1.5">
-                    {p.image ? (
-                      <img src={p.image} alt={p.name} className="h-10 w-10 rounded-sm border border-border object-cover" />
-                    ) : (
-                      <div className="h-10 w-10 rounded-sm border border-border bg-surface-2" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold">{p.name}</div>
-                      <div className="text-mono text-xs text-muted-foreground">
-                        {agg ? `${agg.matchesPlayed} matches · ${agg.kills} kills · ${agg.knockedDown} knocks` : "no aggregated stats"}
-                      </div>
-                    </div>
-                  </li>
-                  );
-                })}
-              </ul>
-            )}
-          </TestPanel>
-
           <TestPanel title="Event placements" subtitle={`${detail?.events.length ?? 0} events · finalized standings shown when available`}>
             {!detail || detail.events.length === 0 ? <Empty /> : (
               <table className="w-full text-xs">
@@ -662,31 +637,6 @@ function TestInterfaceSection({
                       <td className="text-mono px-2 py-1.5">{e.position ?? "—"}</td>
                       <td className="text-mono px-2 py-1.5">{e.points ?? "—"}</td>
                       <td className="text-mono px-2 py-1.5">{e.prizeMoney ? `$${e.prizeMoney}` : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </TestPanel>
-
-          <TestPanel title="Weapon meta" subtitle={`${detail?.weapons.length ?? 0} weapons · series-level (top 12 by kills)`}>
-            {!detail || detail.weapons.length === 0 ? <Empty /> : (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-2 py-1.5 font-medium">Weapon</th>
-                    <th className="px-2 py-1.5 font-medium">Type</th>
-                    <th className="px-2 py-1.5 font-medium text-right">Kills</th>
-                    <th className="px-2 py-1.5 font-medium text-right">Series</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.weapons.slice(0, 12).map((w) => (
-                    <tr key={w.weapon} className="border-t border-border">
-                      <td className="px-2 py-1.5 font-semibold">{w.weapon}</td>
-                      <td className="px-2 py-1.5 text-muted-foreground">{w.gunType ?? "—"}</td>
-                      <td className="text-mono px-2 py-1.5 text-right">{w.kills}</td>
-                      <td className="text-mono px-2 py-1.5 text-right">{w.series}</td>
                     </tr>
                   ))}
                 </tbody>
