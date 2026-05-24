@@ -36,6 +36,52 @@ try:
 except ImportError:  # pragma: no cover
     _hungarian = None
 
+# --------------------------- POI hints (optional) ---------------------------
+# Hints are loaded from a JSON map { slot_or_tag: {"cx": .., "cy": .., "r": ..} }
+# in normalized canonical-map coordinates (0..1, square). They are intended as
+# a prior bias for the start-position matcher: a team's initial detection
+# should land inside its POI circle, and detections outside the circle should
+# be penalized. The matcher integration is wired in a follow-up; this module
+# loads and exposes the data so downstream stages can opt in.
+POI_HINTS: dict[str, dict[str, float]] = {}
+
+
+def load_poi_hints(path: Path) -> dict[str, dict[str, float]]:
+    """Load POI hint file. Keys are slot ids ("slot_3") or team tags ("TSM")."""
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        print(f"[poi-hints] failed to load {path}: {e}", file=sys.stderr)
+        return {}
+    out: dict[str, dict[str, float]] = {}
+    for k, v in (raw or {}).items():
+        try:
+            out[str(k)] = {
+                "cx": float(v["cx"]),
+                "cy": float(v["cy"]),
+                "r": float(v["r"]),
+            }
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
+def poi_prior_weight(slot_or_tag: str, x_norm: float, y_norm: float, soft: float = 2.0) -> float:
+    """Return a multiplicative weight in [0..1] for a candidate position.
+
+    1.0 inside the POI circle, smoothly decays outside (Gaussian falloff with
+    sigma = soft * r). Returns 1.0 if no hint is registered for the slot/tag.
+    """
+    hint = POI_HINTS.get(slot_or_tag)
+    if not hint:
+        return 1.0
+    cx, cy, r = hint["cx"], hint["cy"], hint["r"]
+    d2 = (x_norm - cx) ** 2 + (y_norm - cy) ** 2
+    if d2 <= r * r:
+        return 1.0
+    sigma = max(1e-4, soft * r)
+    return float(math.exp(-d2 / (2.0 * sigma * sigma)))
+
 
 # ----------------------------- Config & maps -----------------------------
 
