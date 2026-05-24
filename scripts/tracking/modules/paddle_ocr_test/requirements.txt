@@ -1,0 +1,12 @@
+# Установить отдельно — paddlepaddle тяжёлый.
+#
+# CPU:
+#   pip install -r requirements.txt
+# GPU (CUDA 11.8):
+#   pip install paddlepaddle-gpu -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+#   pip install -r requirements.txt
+paddlepaddle>=2.6
+paddleocr>=2.7
+rapidfuzz>=3.5
+opencv-contrib-python>=4.9
+numpy>=1.26

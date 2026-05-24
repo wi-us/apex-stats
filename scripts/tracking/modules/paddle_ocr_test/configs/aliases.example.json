@@ -1,0 +1,13 @@
+{
+  "_doc": "Опциональные алиасы поверх SQLite-словаря. Используется, если в teams.short_name нет нужного тега или нужно вручную свести варианты OCR.",
+  "aliases": {
+    "GMBL":  ["GAMBLERS", "GAMBLER", "GMBL"],
+    "CRT":   ["CRAZY", "THIEVES", "CRAZYTHIEVES"],
+    "MR":    ["MEDIUMRARE", "MEDIUM", "RARE"],
+    "SR":    ["SHOPIFY", "REBELLION", "SHOPIFYREBELLION"],
+    "NIP":   ["NINJAS", "PYJAMAS", "NINJASINPYJAMAS"],
+    "ELTE":  ["ELITE", "ELITEESPORTS"],
+    "ROC":   ["ROCESPORTS", "ESPORTS"],
+    "STAL":  ["STALLIONS"]
+  }
+}
