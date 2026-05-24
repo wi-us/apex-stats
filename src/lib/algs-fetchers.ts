@@ -244,6 +244,9 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
         teamIds,
         teamVods: {},
         vodLink: "",
+        startedAt: (s.starts_at as string | null) ?? null,
+        completedAt: (s.completed_at as string | null) ?? null,
+        seriesStatus: (s.status as string | null) ?? null,
       };
     });
 
