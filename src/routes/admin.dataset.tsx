@@ -15,9 +15,11 @@ import {
   type HSVPreset,
   type ZonesCfg,
   boxToYolo,
+  buildHSVMaskCanvas,
   detectPlates,
   makeBatchId,
   pickMinimapZone,
+  refineBoxesByPeaks,
 } from "@/lib/plate-detector";
 
 export const Route = createFileRoute("/admin/dataset")({
@@ -73,6 +75,15 @@ function DatasetBuilder() {
   const [erosion, setErosion] = useState(0);
   const [maxPerTeam, setMaxPerTeam] = useState(6);
 
+  // Peak refine
+  const [autoPeakRefine, setAutoPeakRefine] = useState(true);
+  const [peakVThr, setPeakVThr] = useState(190);
+  const [peakMinRun, setPeakMinRun] = useState(6);
+
+  // HSV mask overlay
+  const [maskMode, setMaskMode] = useState<"off" | "active" | "all">("off");
+  const [maskAlpha, setMaskAlpha] = useState(130);
+
   // tool state
   const [activeTeam, setActiveTeam] = useState<number>(1);
   const [tool, setTool] = useState<"select" | "draw">("select");
@@ -81,6 +92,8 @@ function DatasetBuilder() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const maskRef = useRef<HTMLCanvasElement | null>(null);
+  const rgbaRef = useRef<{ data: Uint8ClampedArray; w: number; h: number } | null>(null);
   const dragRef = useRef<DragMode>(null);
   const undoRef = useRef<Box[][]>([]); // стек прошлых состояний boxes текущего кадра
 
@@ -152,26 +165,55 @@ function DatasetBuilder() {
     pushUndo();
     setBusy("Детекция кадра…");
     try {
-      const boxes = await detectFrame(activeIdx);
+      let boxes = await detectFrame(activeIdx);
+      if (autoPeakRefine && rgbaRef.current) {
+        const { data, w, h } = rgbaRef.current;
+        boxes = refineBoxesByPeaks(data, w, h, boxes, {
+          vThreshold: peakVThr, minRunPx: peakMinRun,
+        }).map((b) => ({ ...b, source: "auto" as const }));
+      }
       setFrames((arr) => arr.map((f, i) => (i === activeIdx ? { ...f, boxes, detected: true } : f)));
       setSelectedBox(-1);
     } finally {
       setBusy(null);
     }
-  }, [activeIdx, detectFrame, pushUndo]);
+  }, [activeIdx, detectFrame, pushUndo, autoPeakRefine, peakVThr, peakMinRun]);
 
   const runDetectAll = useCallback(async () => {
     setBusy("Детекция всех кадров…");
     try {
       for (let i = 0; i < frames.length; i++) {
-        const boxes = await detectFrame(i);
+        let boxes = await detectFrame(i);
+        if (autoPeakRefine) {
+          // нужен rgba для конкретного кадра
+          const f = frames[i];
+          const img = await loadImage(f.url);
+          const cv = document.createElement("canvas");
+          cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+          const cx = cv.getContext("2d", { willReadFrequently: true })!;
+          cx.drawImage(img, 0, 0);
+          const data = cx.getImageData(0, 0, cv.width, cv.height).data;
+          boxes = refineBoxesByPeaks(data, cv.width, cv.height, boxes, {
+            vThreshold: peakVThr, minRunPx: peakMinRun,
+          }).map((b) => ({ ...b, source: "auto" as const }));
+        }
         setFrames((arr) => arr.map((f, j) => (j === i ? { ...f, boxes, detected: true } : f)));
         setBusy(`Детекция ${i + 1}/${frames.length}`);
       }
     } finally {
       setBusy(null);
     }
-  }, [frames, detectFrame]);
+  }, [frames, detectFrame, autoPeakRefine, peakVThr, peakMinRun]);
+
+  const refineNow = useCallback(() => {
+    if (!active || !rgbaRef.current) return;
+    pushUndo();
+    const { data, w, h } = rgbaRef.current;
+    setActiveBoxes((bs) => refineBoxesByPeaks(data, w, h, bs, {
+      vThreshold: peakVThr, minRunPx: peakMinRun,
+    }));
+    setSelectedBox(-1);
+  }, [active, pushUndo, setActiveBoxes, peakVThr, peakMinRun]);
 
   const copyFromPrev = useCallback(() => {
     if (activeIdx <= 0) return;
@@ -226,14 +268,38 @@ function DatasetBuilder() {
       const c = canvasRef.current!;
       c.width = img.naturalWidth;
       c.height = img.naturalHeight;
-      drawScene(c, img, active.boxes, preset, selectedBox);
+      // cache rgba для peak-refine и mask
+      const tmp = document.createElement("canvas");
+      tmp.width = img.naturalWidth; tmp.height = img.naturalHeight;
+      const tx = tmp.getContext("2d", { willReadFrequently: true })!;
+      tx.drawImage(img, 0, 0);
+      rgbaRef.current = { data: tx.getImageData(0, 0, tmp.width, tmp.height).data, w: tmp.width, h: tmp.height };
+      maskRef.current = null;
+      drawScene(c, img, active.boxes, preset, selectedBox, null);
     });
     return () => { cancelled = true; };
   }, [active?.url]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // пересоздание маски при смене параметров/команды
+  useEffect(() => {
+    if (!active || !rgbaRef.current || maskMode === "off") {
+      maskRef.current = null;
+    } else {
+      const { data, w, h } = rgbaRef.current;
+      const roi = restrictROI ? pickMinimapZone(ZONES, w, h) : { x: 0, y: 0, w, h };
+      maskRef.current = buildHSVMaskCanvas(data, w, h, preset, roi, {
+        hTolExtra: hExtra, sTolExtra: sExtra, vTolExtra: vExtra,
+        alpha: maskAlpha, mode: maskMode === "active" ? "active" : "all", activeSlot: activeTeam,
+      });
+    }
+    if (canvasRef.current && imgRef.current && active) {
+      drawScene(canvasRef.current, imgRef.current, active.boxes, preset, selectedBox, maskRef.current);
+    }
+  }, [active, maskMode, maskAlpha, hExtra, sExtra, vExtra, activeTeam, preset, restrictROI, selectedBox]);
+
   useEffect(() => {
     if (!active || !canvasRef.current || !imgRef.current) return;
-    drawScene(canvasRef.current, imgRef.current, active.boxes, preset, selectedBox);
+    drawScene(canvasRef.current, imgRef.current, active.boxes, preset, selectedBox, maskRef.current);
   }, [active, preset, selectedBox]);
 
   const eventToCanvasXY = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -320,7 +386,7 @@ function DatasetBuilder() {
       // показываем превью: перерисуем сцену + временный rect
       const c = canvasRef.current!;
       const img = imgRef.current!;
-      drawScene(c, img, active.boxes, preset, selectedBox);
+      drawScene(c, img, active.boxes, preset, selectedBox, maskRef.current);
       const ctx = c.getContext("2d")!;
       ctx.strokeStyle = "#fff";
       ctx.setLineDash([4, 3]);
