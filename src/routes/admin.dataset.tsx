@@ -32,7 +32,7 @@ const PRESETS: Record<string, HSVPreset> = {
   "storm-point": stormPreset as HSVPreset,
   "worlds-edge": worldsPreset as HSVPreset,
 };
-const ZONES = zonesCfgJson as ZonesCfg;
+const ZONES = zonesCfgJson as unknown as ZonesCfg;
 
 type FrameItem = {
   name: string;
