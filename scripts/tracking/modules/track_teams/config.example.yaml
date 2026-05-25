@@ -60,3 +60,29 @@ tracking:
 output:
   include_frame_px: true
   include_canonical_px: true
+
+# Slot-tracker (ALGS-anchored). Уменьшаем «зону обнаружения», чтобы соседние
+# команды с похожим цветом не слипались. При frame_step=60 (≈1 Гц) шаг гейта
+# = v_max_px_s * 1s + gate_slack_px, и капается gate_cap_px.
+slot_tracker:
+  # Активация: первые N подряд кадров candidate должен лежать в этом радиусе
+  # от POI-якоря. Уменьшаем со 120 → 80 px (≈4% от 2048).
+  near_anchor_radius_canonical_px: 80
+  min_consecutive_for_active: 3
+
+  # Прогрессивный якорь: жёстко держим у POI первые 10 сек, затем за 30 сек
+  # радиус линейно растёт до anchor_r_max.
+  anchor_lock_sec: 10.0
+  anchor_grow_sec: 30.0
+  anchor_r_max: 130.0
+  anchor_r0_fallback_canonical_px: 70.0
+
+  # Защита от перепрыгивания на чужую плашку.
+  jump_switch_threshold_px: 50.0
+  switch_confirm_frames: 8
+
+  motion:
+    v_max_px_s: 45.0          # baseline скорости в canonical-пикселях/сек
+    gate_slack_px: 10.0       # запас поверх v*dt
+    gate_cap_px: 160.0        # ЖЁСТКИЙ потолок радиуса поиска (~8% карты)
+    v_observed_boost: 1.2     # было 1.8 — меньше раздувание после случайных прыжков
