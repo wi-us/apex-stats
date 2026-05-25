@@ -38,13 +38,16 @@ def _load_canonical_size(canonical_json: Path) -> tuple[int, int]:
 
 
 def _motion_drop_xy(motion_json: Path, *, warmup_sec: float = 30.0,
-                    min_pts: int = 8) -> dict[str, tuple[float, float, int]]:
+                    min_pts: int = 8) -> tuple[dict[str, tuple[float, float, int]], str | None]:
     """Per slot: median (x,y) of first stable cluster after warmup_sec.
 
-    Возвращает canonical-px координаты + число использованных точек.
+    Возвращает координаты blob'ов в **локальных px ROI-зоны minimap**
+    (как записано motion_detect: cx,cy относительно (x1,y1) zone-кропа)
+    + число точек, + zone_tag из файла.
     """
     data = json.loads(motion_json.read_text(encoding="utf-8"))
     fps = float(data.get("fps") or 60.0)
+    zone_tag = data.get("zone_tag")
     out: dict[str, tuple[float, float, int]] = {}
     for r in data.get("results", []):
         slot = int(r["slot"])
@@ -67,7 +70,16 @@ def _motion_drop_xy(motion_json: Path, *, warmup_sec: float = 30.0,
         mx = (xs[mid] + xs[~mid]) / 2.0
         my = (ys[mid] + ys[~mid]) / 2.0
         out[f"slot_{slot}"] = (mx, my, len(pts))
-    return out
+    return out, zone_tag
+
+
+def _load_zone_size(zones_json: Path, zone_tag: str) -> tuple[int, int]:
+    """Возвращает (w, h) первой zone с tag==zone_tag (в base-координатах)."""
+    cfg = json.loads(zones_json.read_text(encoding="utf-8"))
+    for z in cfg.get("zones", []):
+        if z.get("tag") == zone_tag:
+            return int(z["w"]), int(z["h"])
+    raise SystemExit(f"[build_start_coords] zone tag={zone_tag} not found in {zones_json}")
 
 
 def main() -> None:
@@ -77,6 +89,10 @@ def main() -> None:
     ap.add_argument("--motion", type=Path, required=True)
     ap.add_argument("--canonical", type=Path, required=True,
                     help="canonical_maps/<map>.json (для canonical_size)")
+    ap.add_argument("--zones", type=Path, required=True,
+                    help="motion_detect/configs/zones.vod.json — нужен размер minimap-зоны")
+    ap.add_argument("--zone-tag", default=None,
+                    help="по умолчанию берётся zone_tag из motion_tracks.json")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--warmup-sec", type=float, default=30.0)
     args = ap.parse_args()
@@ -90,14 +106,19 @@ def main() -> None:
                                 default_radius=0.03)
     algs_by_slot = {k: v for k, v in algs.items() if k.startswith("slot_")}
 
-    # 2) motion_detect → canonical-px → нормализованные xy
-    motion_px = _motion_drop_xy(args.motion, warmup_sec=args.warmup_sec)
+    # 2) motion_detect → minimap-zone px → нормализованные xy (0..1 от minimap)
+    motion_px, tag_in_file = _motion_drop_xy(args.motion,
+                                             warmup_sec=args.warmup_sec)
+    zone_tag = args.zone_tag or tag_in_file or "minimap"
+    zw, zh = _load_zone_size(args.zones, zone_tag)
 
     out: dict = {
         "meta": {
             "series_id": args.series,
             "map": args.map_id,
             "canonical_size": [W, H],
+            "minimap_zone_tag": zone_tag,
+            "minimap_zone_size": [zw, zh],
             "warmup_sec": args.warmup_sec,
         },
         "slots": {},
@@ -113,14 +134,14 @@ def main() -> None:
         if m:
             mx, my, n = m
             entry["motion"] = {
-                "cx_norm": round(mx / W, 4),
-                "cy_norm": round(my / H, 4),
+                "cx_norm": round(mx / zw, 4),
+                "cy_norm": round(my / zh, 4),
                 "cx_px": round(mx, 1), "cy_px": round(my, 1),
                 "n_points": n,
             }
         if a and m:
-            dx = (mx / W) - a["cx"]
-            dy = (my / H) - a["cy"]
+            dx = (mx / zw) - a["cx"]
+            dy = (my / zh) - a["cy"]
             entry["delta_norm"] = round(math.hypot(dx, dy), 4)
         out["slots"][slot] = entry
 
