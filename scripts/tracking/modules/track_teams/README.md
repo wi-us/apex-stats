@@ -43,7 +43,27 @@ powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\ru
 | `-End`     | -1 | конец в секундах (-1 = до конца) |
 | `-FromDetections` | `modules/detect_plates/reports/detections.json` | checkpoints из `detect_plates` (см. ниже) |
 | `-NoFromDetections` | — | отключить режим checkpoints и пойти классическим путём |
+| `-StartCoords` | `modules/track_teams/eval/reports/start_coords.json` | **ALGS POI picks** — точные старты команд + team_tag/name/color (если есть, имеет приоритет над `-Anchors`) |
+| `-Show` | — | live-окно cv2 с canonical-картой, POI-планом (жёлтые круги + теги) и треками. Q/Esc — выход |
+| `-ShowScale` | 0.5 | масштаб окна относительно canonical 2048 (0.5 = 1024px) |
+| `-ShowEvery` | 1 | рисовать каждый N-й обработанный кадр (>=1) |
 | `-NoPush`  | — | (только push.ps1) без коммита |
+
+### Старт от ALGS POI picks
+
+Если в `eval/reports/start_coords.json` есть слоты с заполненным `algs.cx_norm`
+(их собирает `eval/build_start_coords.py` из ALGS API + POI Zones),
+`track_teams.py` инициализирует команды от **точных координат POI**, а имена/теги/цвета
+берёт из ALGS picks + HUD VOD-палитры. Это надёжнее `motion_detect` (который сейчас
+стягивает все drops к центру минимапы) и даёт сразу осмысленные подписи на треках:
+`BB`, `CRT`, `DINO`… вместо `slot_1`, `slot_2`.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\run.ps1 `
+  -Video D:\videos\game_sp2.mp4 `
+  -StartCoords scripts\tracking\modules\track_teams\eval\reports\start_coords.json `
+  -Show
+```
 
 `track_teams.py` дополнительно поддерживает `--anchors <motion_tracks.json>`
 — тогда треки инициализируются от консенсус-точек `motion_detect`
