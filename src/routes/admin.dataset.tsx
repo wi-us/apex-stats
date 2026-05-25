@@ -701,10 +701,18 @@ function loadDims(url: string): Promise<{ width: number; height: number }> {
   return loadImage(url).then((i) => ({ width: i.naturalWidth, height: i.naturalHeight }));
 }
 
-function drawScene(c: HTMLCanvasElement, img: HTMLImageElement, boxes: Box[], preset: HSVPreset, selectedIdx: number) {
+function drawScene(
+  c: HTMLCanvasElement,
+  img: HTMLImageElement,
+  boxes: Box[],
+  preset: HSVPreset,
+  selectedIdx: number,
+  mask: HTMLCanvasElement | null,
+) {
   const ctx = c.getContext("2d")!;
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.drawImage(img, 0, 0);
+  if (mask) ctx.drawImage(mask, 0, 0);
   ctx.font = "bold 12px ui-sans-serif, system-ui, sans-serif";
   for (let i = 0; i < boxes.length; i++) {
     const b = boxes[i];
