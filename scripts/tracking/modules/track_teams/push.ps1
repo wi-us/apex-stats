@@ -4,6 +4,10 @@ param(
   [string]$Config = "scripts/tracking/modules/track_teams/config.example.yaml",
   [string]$Out = "scripts/tracking/modules/track_teams/reports/tracks.json",
   [string]$Anchors = "scripts/tracking/modules/motion_detect/reports/motion_tracks.json",
+  [string]$StartCoords = "scripts/tracking/modules/track_teams/eval/reports/start_coords.json",
+  [switch]$Show,
+  [double]$ShowScale = 0.5,
+  [int]$ShowEvery = 1,
   [string]$Eliminations = "scripts/tracking/modules/hud_read/reports/eliminations.json",
   [string]$FromDetections = "scripts/tracking/modules/detect_plates/reports/detections.json",
   [switch]$NoFromDetections,
@@ -20,11 +24,18 @@ $repo = (git rev-parse --show-toplevel).Trim()
 Set-Location $repo
 $args = @("--video", $Video, "--config", $Config, "--out", $Out, "--start", $Start, "--end", $End)
 if ($FrameStep -gt 0) { $args += @("--frame-step", $FrameStep) }
-if ($Anchors -and (Test-Path $Anchors)) {
+if ($StartCoords -and (Test-Path $StartCoords)) {
+  $args += @("--start-coords", $StartCoords)
+  Write-Host "[track_teams] using ALGS POI start-coords: $StartCoords" -ForegroundColor Green
+} elseif ($Anchors -and (Test-Path $Anchors)) {
   $args += @("--anchors", $Anchors)
-  Write-Host "[track_teams] using anchors: $Anchors" -ForegroundColor Cyan
+  Write-Host "[track_teams] using motion anchors: $Anchors" -ForegroundColor Cyan
 } else {
-  Write-Host "[track_teams] no anchors file (looked at: $Anchors) - starting without motion anchors" -ForegroundColor Yellow
+  Write-Host "[track_teams] no start-coords / motion anchors — fallback to YAML teams" -ForegroundColor Yellow
+}
+if ($Show) {
+  $args += @("--show", "--show-scale", $ShowScale, "--show-every", $ShowEvery)
+  Write-Host "[track_teams] live overlay enabled (scale=$ShowScale, every=$ShowEvery)" -ForegroundColor Green
 }
 if ($Eliminations -and (Test-Path $Eliminations)) {
   $args += @("--eliminations", $Eliminations)

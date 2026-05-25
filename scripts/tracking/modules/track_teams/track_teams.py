@@ -31,6 +31,13 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 from collections import Counter
+
+# Local import — file lives next to this script.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _slot_palette import (  # noqa: E402
+    slot_color_bgr as _slot_color_bgr,
+    slot_color_hex as _slot_color_hex,
+)
 try:
     from scipy.optimize import linear_sum_assignment as _hungarian
 except ImportError:  # pragma: no cover
@@ -499,6 +506,129 @@ def load_anchors(path: Path,
             "conf": conf,
             "world": (wx, wy), "canonical_px": (cx, cy),
             "r0_canonical_px": r0_canon,
+        }
+    return out
+
+
+def teams_from_start_coords(path: Path,
+                            hsv_preset: dict[int, dict] | None = None) -> list[TeamCfg]:
+    """Build TeamCfg list from start_coords.json (ALGS POI picks + slot palette).
+
+    Each slot becomes one team:
+      - id / slot_id: ``slot_N``
+      - name: ALGS team_name (fallback ``Team N``)
+      - color: HUD VOD palette (`_slot_palette.slot_color_hex`)
+      - HSV: from manually-calibrated preset; if missing, derived from palette hex.
+    """
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    slots = raw.get("slots") or {}
+    out: list[TeamCfg] = []
+    for slot_key in sorted(slots.keys(), key=lambda k: int(k.split("_")[1])):
+        slot_int = int(slot_key.split("_")[1])
+        entry = slots[slot_key] or {}
+        hex_str = _slot_color_hex(slot_int)
+        team_tag = (entry.get("team_tag") or "").strip()
+        team_name = entry.get("team_name") or f"Team {slot_int}"
+        display_name = f"{team_tag} · {team_name}" if team_tag else team_name
+
+        lo = hi = lo2 = hi2 = None
+        if hsv_preset and slot_int in hsv_preset:
+            p = hsv_preset[slot_int]
+            h_lo, h_hi = int(p["h"][0]), int(p["h"][1])
+            s_lo, s_hi = int(p["s"][0]), int(p["s"][1])
+            v_lo, v_hi = int(p["v"][0]), int(p["v"][1])
+            if h_lo <= h_hi:
+                lo = np.array([h_lo, s_lo, v_lo], dtype=np.uint8)
+                hi = np.array([h_hi, s_hi, v_hi], dtype=np.uint8)
+            else:
+                lo  = np.array([h_lo, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([179,  s_hi, v_hi], dtype=np.uint8)
+                lo2 = np.array([0,    s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([h_hi, s_hi, v_hi], dtype=np.uint8)
+        else:
+            H, S, V = _hex_to_hsv_center(hex_str)
+            s_lo = max(60, S - 80)
+            v_lo = max(60, V - 80)
+            h_tol = 10
+            h_low, h_high = H - h_tol, H + h_tol
+            if h_low < 0:
+                lo  = np.array([0, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([h_high, 255, 255], dtype=np.uint8)
+                lo2 = np.array([179 + h_low, s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([179, 255, 255], dtype=np.uint8)
+            elif h_high > 179:
+                lo  = np.array([h_low, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([179, 255, 255], dtype=np.uint8)
+                lo2 = np.array([0, s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([h_high - 179, 255, 255], dtype=np.uint8)
+            else:
+                lo = np.array([h_low,  s_lo, v_lo], dtype=np.uint8)
+                hi = np.array([h_high, 255, 255], dtype=np.uint8)
+
+        ov_min_area = ov_max_area = ov_morph = None
+        if hsv_preset and slot_int in hsv_preset:
+            p = hsv_preset[slot_int]
+            if p.get("min_area") is not None:
+                ov_min_area = float(p["min_area"])
+            if p.get("max_area") is not None:
+                ov_max_area = float(p["max_area"])
+            if p.get("morph_kernel") is not None:
+                ov_morph = int(p["morph_kernel"])
+
+        out.append(TeamCfg(
+            id=f"slot_{slot_int}",
+            name=display_name,
+            hsv_lower=lo, hsv_upper=hi,
+            hsv_lower2=lo2, hsv_upper2=hi2,
+            color_hex=hex_str,
+            slot=slot_int,
+            slot_id=f"slot_{slot_int}",
+            min_area=ov_min_area,
+            max_area=ov_max_area,
+            morph_kernel=ov_morph,
+        ))
+    return out
+
+
+def load_start_anchors(path: Path,
+                       teams: list[TeamCfg],
+                       cmap: "CanonicalMap") -> dict[str, dict]:
+    """Build anchors_map from start_coords.json (ALGS POI picks).
+
+    Координаты уже в canonical-norm (0..1), affine минимапы не нужен.
+    Все слоты получают ``conf='HIGH'`` — POI pick трактуется как
+    semantic ground truth точки старта.
+    """
+    if not path.exists():
+        print(f"[warn] start-coords file {path} not found")
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    slots_data = raw.get("slots") or {}
+    W, H = cmap.size
+    out: dict[str, dict] = {}
+    for t in teams:
+        if t.slot is None:
+            continue
+        entry = slots_data.get(f"slot_{t.slot}")
+        algs = (entry or {}).get("algs")
+        if not algs or algs.get("cx_norm") is None:
+            out[t.id] = {"slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
+                         "conf": "MISS", "world": None, "canonical_px": None,
+                         "r0_canonical_px": None}
+            continue
+        cx = float(algs["cx_norm"]) * W
+        cy = float(algs["cy_norm"]) * H
+        r0 = float(algs.get("r_norm", 0.03)) * W
+        wx, wy = map_point(cmap.px_to_world, (cx, cy))
+        out[t.id] = {
+            "slot": t.slot,
+            "slot_id": t.slot_id or f"slot_{t.slot}",
+            "conf": "HIGH",
+            "world": (wx, wy),
+            "canonical_px": (cx, cy),
+            "r0_canonical_px": r0,
+            "poi_id": (entry.get("poi") or {}).get("id") if entry else None,
+            "poi_name": (entry.get("poi") or {}).get("name") if entry else None,
         }
     return out
 
@@ -2056,6 +2186,133 @@ class WorldTracker:
 
 # ---------------------------- Main pipeline ------------------------------
 
+class LiveViewer:
+    """Realtime cv2.imshow overlay: canonical map + POI plan + live tracks.
+
+    На первой ошибке cv2 (нет GUI / headless) выключается автоматически.
+    Управление: Q/Esc — досрочный выход (graceful, tracks.json дозаписывается).
+    """
+    WINDOW = "track_teams (Q/Esc to quit)"
+
+    def __init__(self, cmap: "CanonicalMap", anchors_map: dict[str, dict],
+                 teams: list[TeamCfg], scale: float = 0.5, every: int = 1):
+        self.disabled = False
+        self.scale = max(0.1, float(scale))
+        self.every = max(1, int(every))
+        self.requested_stop = False
+        self._tick = 0
+        try:
+            bg = cv2.imread(
+                str(Path(__file__).resolve().parents[2]
+                    / "shared" / "canonical_maps" / f"{cmap.name}.png"),
+                cv2.IMREAD_COLOR,
+            )
+        except Exception:
+            bg = None
+        if bg is None:
+            # fallback: grayscale canonical → BGR
+            gray = cmap.image if cmap.image is not None else np.zeros(
+                (cmap.size[1], cmap.size[0]), dtype=np.uint8)
+            bg = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        H0, W0 = bg.shape[:2]
+        out_w = max(320, int(round(W0 * self.scale)))
+        out_h = max(320, int(round(H0 * self.scale)))
+        self._size = (out_w, out_h)
+        self._cW, self._cH = cmap.size
+        bg = cv2.resize(bg, self._size, interpolation=cv2.INTER_AREA)
+        self._bg = (bg * 0.55).astype(np.uint8)
+        # pre-bake POI plan layer (yellow circles + tag labels).
+        self._plan = self._bg.copy()
+        self._tag_by_slot: dict[int, str] = {}
+        for t in teams:
+            if t.slot is None:
+                continue
+            a = anchors_map.get(t.id) or {}
+            tag = ""
+            if t.name:
+                tag = t.name.split("·")[0].strip()
+            self._tag_by_slot[t.slot] = tag or f"S{t.slot}"
+            if a.get("canonical_px") is None:
+                continue
+            cx, cy = a["canonical_px"]
+            r0 = a.get("r0_canonical_px") or (0.03 * self._cW)
+            px = int(round(cx / self._cW * out_w))
+            py = int(round(cy / self._cH * out_h))
+            rr = max(6, int(round(r0 / self._cW * out_w)))
+            cv2.circle(self._plan, (px, py), rr, (0, 220, 240), 1, cv2.LINE_AA)
+            label = self._tag_by_slot[t.slot]
+            cv2.putText(self._plan, label, (px - 14, py - rr - 4),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 220, 240), 1, cv2.LINE_AA)
+        try:
+            cv2.namedWindow(self.WINDOW, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(self.WINDOW, out_w, out_h)
+        except cv2.error as e:  # pragma: no cover
+            print(f"[show] cv2 GUI unavailable ({e}) — отключаю --show", file=sys.stderr)
+            self.disabled = True
+
+    def _world_to_canvas(self, wx: float, wy: float,
+                         cmap: "CanonicalMap") -> tuple[int, int]:
+        # world ↔ canonical px is affine (см. fit_affine_px_to_world). Используем
+        # inverse через cv2: но проще, у нас уже canonical_px у трека есть.
+        out_w, out_h = self._size
+        return (int(round(wx / self._cW * out_w)),
+                int(round(wy / self._cH * out_h)))
+
+    def render(self, frame_idx: int, t_now: float,
+               tracks_world: list[dict]) -> None:
+        if self.disabled:
+            return
+        self._tick += 1
+        if self._tick % self.every != 0:
+            return
+        img = self._plan.copy()
+        alive = 0
+        for s in tracks_world:
+            if s.get("state") in ("lost", "wiped"):
+                continue
+            cpx = s.get("canonical_px")
+            if cpx is None:
+                continue
+            slot = s.get("slot")
+            if slot is None:
+                continue
+            alive += 1
+            cx, cy = cpx
+            out_w, out_h = self._size
+            px = int(round(cx / self._cW * out_w))
+            py = int(round(cy / self._cH * out_h))
+            color = _slot_color_bgr(int(slot))
+            cv2.circle(img, (px, py), 7, color, -1, cv2.LINE_AA)
+            cv2.circle(img, (px, py), 8, (0, 0, 0), 1, cv2.LINE_AA)
+            tag = self._tag_by_slot.get(int(slot), f"S{slot}")
+            cv2.putText(img, tag, (px + 9, py - 6),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                        (255, 255, 255), 1, cv2.LINE_AA)
+        bar_h = 24
+        cv2.rectangle(img, (0, 0), (img.shape[1], bar_h), (0, 0, 0), -1)
+        mm = int(t_now // 60); ss = int(t_now - mm * 60)
+        txt = (f"t={mm:02d}:{ss:02d}  frame={frame_idx}  alive={alive}  "
+               f"plan=yellow  Q/Esc=quit")
+        cv2.putText(img, txt, (8, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
+                    (220, 220, 220), 1, cv2.LINE_AA)
+        try:
+            cv2.imshow(self.WINDOW, img)
+            k = cv2.waitKey(1) & 0xFF
+            if k in (27, ord("q"), ord("Q")):
+                self.requested_stop = True
+        except cv2.error as e:  # pragma: no cover
+            print(f"[show] cv2 GUI error ({e}) — отключаю --show", file=sys.stderr)
+            self.disabled = True
+
+    def close(self) -> None:
+        if self.disabled:
+            return
+        try:
+            cv2.destroyWindow(self.WINDOW)
+        except cv2.error:
+            pass
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True, type=Path)
@@ -2068,6 +2325,16 @@ def main():
     ap.add_argument("--debug-frame", type=int, default=None)
     ap.add_argument("--anchors", type=Path, default=None,
                     help="motion_detect/reports/motion_tracks.json для инициализации треков")
+    ap.add_argument("--start-coords", type=Path, default=None,
+                    help="track_teams/eval/reports/start_coords.json — ALGS POI picks + "
+                         "team_tag/name/color per slot. Если задано, используем как "
+                         "primary источник команд и стартовых якорей (--anchors игнорируется).")
+    ap.add_argument("--show", action="store_true",
+                    help="Открыть live-окно cv2 с canonical-картой, POI-планом и треками.")
+    ap.add_argument("--show-scale", type=float, default=0.5,
+                    help="Масштаб live-окна относительно canonical (default 0.5).")
+    ap.add_argument("--show-every", type=int, default=1,
+                    help="Рисовать каждый N-й обработанный кадр (default 1).")
     ap.add_argument("--eliminations", type=Path, default=None,
                     help="hud_read/reports/eliminations.json — точные t_first_dead по слоту, "
                          "если задано, заменяет absence-based wipe детекцию")
@@ -2108,8 +2375,19 @@ def main():
     if anchors_path is None and cfg.get("anchors_file"):
         anchors_path = (args.config.parent / cfg["anchors_file"]).resolve()
 
+    # --start-coords (ALGS POI picks) имеет приоритет над --anchors (motion).
+    start_coords_path: Path | None = args.start_coords
+    if start_coords_path is not None and not start_coords_path.exists():
+        print(f"[warn] --start-coords {start_coords_path} not found — ignoring",
+              file=sys.stderr)
+        start_coords_path = None
+    if start_coords_path is not None:
+        print(f"[info] start-coords (ALGS POI picks) source: {start_coords_path}")
+        # анхоры из motion в этой ветке не используем
+        anchors_path = None
+
     teams: list[TeamCfg] = []
-    if anchors_path and Path(anchors_path).exists():
+    if start_coords_path is not None or (anchors_path and Path(anchors_path).exists()):
         # Try to load manually calibrated HSV preset for this canonical map.
         # Search order: configs/ next to YAML, then shared/configs, then
         # motion_detect/configs (legacy location). Filename pattern:
@@ -2147,8 +2425,12 @@ def main():
             print(f"[info] hsv_preset loaded: {preset_src} ({len(hsv_preset or {})} slots)")
         else:
             print(f"[info] hsv_preset not found for canonical_map={cmap_name} — using anchor-derived HSV")
-        teams = teams_from_anchors(Path(anchors_path), hsv_preset=hsv_preset)
-        print(f"[info] teams: {len(teams)} auto-generated from anchors ({anchors_path})")
+        if start_coords_path is not None:
+            teams = teams_from_start_coords(start_coords_path, hsv_preset=hsv_preset)
+            print(f"[info] teams: {len(teams)} from start_coords ({start_coords_path})")
+        else:
+            teams = teams_from_anchors(Path(anchors_path), hsv_preset=hsv_preset)
+            print(f"[info] teams: {len(teams)} auto-generated from anchors ({anchors_path})")
     if not teams:
         teams = parse_teams(cfg)
         if anchors_path:
@@ -2164,7 +2446,12 @@ def main():
     trk = WorldTracker(cfg.get("tracking", {}))
     trk.set_canonical_size((cmap.size[0], cmap.size[1]))
     anchors_map: dict[str, dict] = {}
-    if anchors_path:
+    if start_coords_path is not None:
+        anchors_map = load_start_anchors(start_coords_path, teams, cmap)
+        trk.set_anchors(anchors_map)
+        n_high = sum(1 for a in anchors_map.values() if a.get("conf") == "HIGH")
+        print(f"[info] start-anchors: {n_high}/{len(teams)} HIGH (ALGS POI picks)")
+    elif anchors_path:
         mini_affine = load_minimap_affine(cmap.name, canonical_dir)
         anchors_map = load_anchors(Path(anchors_path), teams, mini_affine, cmap)
         trk.set_anchors(anchors_map)
@@ -2310,6 +2597,16 @@ def main():
         preview_writer = cv2.VideoWriter(str(args.preview), fourcc, fps / frame_step,
                                          (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
                                           int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+    live_viewer: Optional["LiveViewer"] = None
+    if args.show:
+        live_viewer = LiveViewer(cmap, anchors_map, teams,
+                                 scale=args.show_scale,
+                                 every=max(1, args.show_every))
+        if live_viewer.disabled:
+            live_viewer = None
+        else:
+            print(f"[show] live overlay enabled (scale={args.show_scale}, every={args.show_every})")
 
     # Streaming JSON writer
     out_path = args.out
@@ -2630,6 +2927,14 @@ def main():
                     cv2.putText(vis, s["team_id"], (int(x) + 12, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
                 preview_writer.write(vis)
 
+            if live_viewer is not None:
+                live_viewer.render(frame_idx, (frame_idx - start_frame) / fps,
+                                   tracks_world)
+                if live_viewer.requested_stop:
+                    print("[show] stop requested via key — завершаю обработку",
+                          file=sys.stderr)
+                    break
+
             if args.debug_frame is not None and frame_idx == args.debug_frame:
                 dbg = args.out.parent / f"debug_frame_{frame_idx}.png"
                 cv2.imwrite(str(dbg), frame)
@@ -2643,6 +2948,8 @@ def main():
         cap.release()
         if preview_writer is not None:
             preview_writer.release()
+        if live_viewer is not None:
+            live_viewer.close()
         fout.write("]}")
         fout.close()
         if da_dbg_fp is not None:
