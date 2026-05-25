@@ -480,6 +480,39 @@ def main() -> int:
             d = ps.get(sid, {})
             lines.append(f"  {sid:<10} {str(d.get('nearest_slot')):<14} {str(d.get('nearest_d')):>8}")
 
+    # ── LONG-WINDOW (TOP-5 по покрытию) ──
+    lines.append("")
+    lines.append(f"LONG-WINDOW [0..{args.end}s] (TOP-5 по avg_coverage, тогда меньше id_switches):")
+    long_sorted = sorted(
+        [r for r in results if (r.get("eval_long") or {}).get("ok")],
+        key=lambda r: (-(r["eval_long"]["avg_coverage_pct"]),
+                       r["eval_long"]["total_id_switches"]),
+    )[:5]
+    lines.append(f"  {'rank':>4} {'cov%':>6} {'switches':>9}  tag")
+    for i, r in enumerate(long_sorted, 1):
+        el = r["eval_long"]
+        lines.append(f"  {i:>4} {el['avg_coverage_pct']:>6} {el['total_id_switches']:>9}  {r['tag']}")
+
+    # ── CONFUSION по winner long-окну (топ пар «слипания») ──
+    if winner and (winner.get("eval_long") or {}).get("ok"):
+        conf = winner["eval_long"].get("confusion") or {}
+        pairs = []
+        for a, others in conf.items():
+            for b, n in others.items():
+                key = tuple(sorted([a, b]))
+                pairs.append((key, n))
+        # Агрегируем по неупорядоченным парам.
+        agg: dict[tuple, int] = {}
+        for k, n in pairs:
+            agg[k] = agg.get(k, 0) + n
+        top_pairs = sorted(agg.items(), key=lambda x: -x[1])[:15]
+        if top_pairs:
+            lines.append("")
+            lines.append("CONFUSION-PAIRS (по winner, за всё окно — кадры со слипанием <60px):")
+            lines.append(f"  {'pair':<26} {'frames':>7}")
+            for (a, b), n in top_pairs:
+                lines.append(f"  {a + ' <-> ' + b:<26} {n:>7}")
+
     (out_dir / "sweep_report.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 
