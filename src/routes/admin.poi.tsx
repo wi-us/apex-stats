@@ -50,12 +50,37 @@ function PoiAdmin() {
     algs?: { cx_norm: number; cy_norm: number; r_norm?: number };
     motion?: { cx_norm: number; cy_norm: number; n_points?: number };
     delta_norm?: number;
+    team_tag?: string | null;
+    team_name?: string | null;
+    poi?: { id?: string | null; name?: string | null } | null;
   };
   type StartCoords = {
     meta?: { series_id?: string; map?: string; canonical_size?: [number, number] };
     slots: Record<string, StartSlot>;
   };
   const [startCoords, setStartCoords] = useState<StartCoords | null>(null);
+
+  // slot label per zone id (для подсветки POI-зон именами команд)
+  const slotsByZoneId = useMemo(() => {
+    const map = new Map<string, { slot: string; label: string }[]>();
+    if (!startCoords) return map;
+    for (const [slot, s] of Object.entries(startCoords.slots)) {
+      const poiId = s.poi?.id;
+      const poiName = s.poi?.name;
+      let zoneId: string | null = null;
+      if (poiId && zones.some((z) => z.id === poiId)) zoneId = poiId;
+      else if (poiName) {
+        const z = matchZone(zones, poiName);
+        if (z) zoneId = z.id;
+      }
+      if (!zoneId) continue;
+      const label = s.team_tag || s.team_name || slot.replace(/^slot_/, "");
+      const arr = map.get(zoneId) ?? [];
+      arr.push({ slot, label });
+      map.set(zoneId, arr);
+    }
+    return map;
+  }, [startCoords, zones]);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<Drag | null>(null);
@@ -415,15 +440,23 @@ function PoiAdmin() {
             >
               {zones.map((z) => {
                 const isSel = z.id === selectedId;
+                const slotsHere = slotsByZoneId.get(z.id);
+                const hasSlots = !!slotsHere?.length;
                 return (
                   <g key={z.id}>
                     <circle
                       cx={z.cx}
                       cy={z.cy}
                       r={z.r}
-                      fill={isSel ? "rgba(34,196,245,0.25)" : "rgba(250,204,21,0.18)"}
-                      stroke={isSel ? "#22c4f5" : "#facc15"}
-                      strokeWidth={0.002}
+                      fill={
+                        isSel
+                          ? "rgba(34,196,245,0.25)"
+                          : hasSlots
+                            ? "rgba(255,77,109,0.35)"
+                            : "rgba(250,204,21,0.18)"
+                      }
+                      stroke={isSel ? "#22c4f5" : hasSlots ? "#ff4d6d" : "#facc15"}
+                      strokeWidth={hasSlots ? 0.003 : 0.002}
                       onPointerDown={(e) => startMove(e, z)}
                       style={{ cursor: "move" }}
                     />
@@ -452,6 +485,22 @@ function PoiAdmin() {
                     >
                       {z.name}
                     </text>
+                    {hasSlots && (
+                      <text
+                        x={z.cx}
+                        y={z.cy + 0.005}
+                        textAnchor="middle"
+                        fontSize={0.018}
+                        fontWeight={700}
+                        fill="#fff"
+                        stroke="#000"
+                        strokeWidth={0.001}
+                        paintOrder="stroke"
+                        style={{ pointerEvents: "none" }}
+                      >
+                        {slotsHere!.map((s) => s.label).join(" · ")}
+                      </text>
+                    )}
                   </g>
                 );
               })}
