@@ -2267,32 +2267,43 @@ class LiveViewer:
             return
         img = self._plan.copy()
         alive = 0
+        seen = 0
         for s in tracks_world:
-            if s.get("state") in ("lost", "wiped"):
-                continue
             cpx = s.get("canonical_px")
             if cpx is None:
                 continue
             slot = s.get("slot")
             if slot is None:
                 continue
-            alive += 1
             cx, cy = cpx
             out_w, out_h = self._size
             px = int(round(cx / self._cW * out_w))
             py = int(round(cy / self._cH * out_h))
             color = _slot_color_bgr(int(slot))
-            cv2.circle(img, (px, py), 7, color, -1, cv2.LINE_AA)
-            cv2.circle(img, (px, py), 8, (0, 0, 0), 1, cv2.LINE_AA)
+            state = (s.get("state") or "").lower()
             tag = self._tag_by_slot.get(int(slot), f"S{slot}")
-            cv2.putText(img, tag, (px + 9, py - 6),
+            seen += 1
+            if state == "tracked":
+                alive += 1
+                cv2.circle(img, (px, py), 7, color, -1, cv2.LINE_AA)
+                cv2.circle(img, (px, py), 8, (0, 0, 0), 1, cv2.LINE_AA)
+                label = tag
+            elif state == "wiped":
+                cv2.drawMarker(img, (px, py), (90, 90, 90),
+                               cv2.MARKER_TILTED_CROSS, 10, 1, cv2.LINE_AA)
+                label = f"{tag}*"
+            else:
+                # lost / searching / uninit / inactive — рисуем кольцо в цвете слота
+                cv2.circle(img, (px, py), 6, color, 1, cv2.LINE_AA)
+                label = f"{tag}?"
+            cv2.putText(img, label, (px + 9, py - 6),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.4,
                         (255, 255, 255), 1, cv2.LINE_AA)
         bar_h = 24
         cv2.rectangle(img, (0, 0), (img.shape[1], bar_h), (0, 0, 0), -1)
         mm = int(t_now // 60); ss = int(t_now - mm * 60)
-        txt = (f"t={mm:02d}:{ss:02d}  frame={frame_idx}  alive={alive}  "
-               f"plan=yellow  Q/Esc=quit")
+        txt = (f"t={mm:02d}:{ss:02d}  frame={frame_idx}  "
+               f"tracked={alive}/{seen}  plan=yellow  Q/Esc=quit")
         cv2.putText(img, txt, (8, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
                     (220, 220, 220), 1, cv2.LINE_AA)
         try:
