@@ -613,66 +613,6 @@ function PoiAdmin() {
                 );
               })}
             </svg>
-            {startCoords && (
-              <svg
-                viewBox="0 0 1 1"
-                preserveAspectRatio="none"
-                className="pointer-events-none absolute inset-0 h-full w-full"
-              >
-                {Object.entries(startCoords.slots).map(([slot, s]) => {
-                  const label = slot.replace(/^slot_/, "");
-                  return (
-                    <g key={slot}>
-                      {s.algs && (
-                        <circle
-                          cx={s.algs.cx_norm}
-                          cy={s.algs.cy_norm}
-                          r={0.012}
-                          fill="none"
-                          stroke="#22c4f5"
-                          strokeWidth={0.0025}
-                        />
-                      )}
-                      {s.motion && (
-                        <>
-                          <circle
-                            cx={s.motion.cx_norm}
-                            cy={s.motion.cy_norm}
-                            r={0.008}
-                            fill="#ff4d6d"
-                            stroke="#fff"
-                            strokeWidth={0.0015}
-                          />
-                          <text
-                            x={s.motion.cx_norm + 0.012}
-                            y={s.motion.cy_norm + 0.005}
-                            fontSize={0.014}
-                            fill="#fff"
-                            stroke="#000"
-                            strokeWidth={0.0008}
-                            paintOrder="stroke"
-                          >
-                            {label}
-                          </text>
-                        </>
-                      )}
-                      {s.algs && s.motion && (
-                        <line
-                          x1={s.algs.cx_norm}
-                          y1={s.algs.cy_norm}
-                          x2={s.motion.cx_norm}
-                          y2={s.motion.cy_norm}
-                          stroke="#ffffff"
-                          strokeOpacity={0.5}
-                          strokeWidth={0.0012}
-                          strokeDasharray="0.006 0.004"
-                        />
-                      )}
-                    </g>
-                  );
-                })}
-              </svg>
-            )}
           </div>
         </section>
 
