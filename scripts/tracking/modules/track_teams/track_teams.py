@@ -2186,6 +2186,133 @@ class WorldTracker:
 
 # ---------------------------- Main pipeline ------------------------------
 
+class LiveViewer:
+    """Realtime cv2.imshow overlay: canonical map + POI plan + live tracks.
+
+    На первой ошибке cv2 (нет GUI / headless) выключается автоматически.
+    Управление: Q/Esc — досрочный выход (graceful, tracks.json дозаписывается).
+    """
+    WINDOW = "track_teams (Q/Esc to quit)"
+
+    def __init__(self, cmap: "CanonicalMap", anchors_map: dict[str, dict],
+                 teams: list[TeamCfg], scale: float = 0.5, every: int = 1):
+        self.disabled = False
+        self.scale = max(0.1, float(scale))
+        self.every = max(1, int(every))
+        self.requested_stop = False
+        self._tick = 0
+        try:
+            bg = cv2.imread(
+                str(Path(__file__).resolve().parents[2]
+                    / "shared" / "canonical_maps" / f"{cmap.name}.png"),
+                cv2.IMREAD_COLOR,
+            )
+        except Exception:
+            bg = None
+        if bg is None:
+            # fallback: grayscale canonical → BGR
+            gray = cmap.image if cmap.image is not None else np.zeros(
+                (cmap.size[1], cmap.size[0]), dtype=np.uint8)
+            bg = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        H0, W0 = bg.shape[:2]
+        out_w = max(320, int(round(W0 * self.scale)))
+        out_h = max(320, int(round(H0 * self.scale)))
+        self._size = (out_w, out_h)
+        self._cW, self._cH = cmap.size
+        bg = cv2.resize(bg, self._size, interpolation=cv2.INTER_AREA)
+        self._bg = (bg * 0.55).astype(np.uint8)
+        # pre-bake POI plan layer (yellow circles + tag labels).
+        self._plan = self._bg.copy()
+        self._tag_by_slot: dict[int, str] = {}
+        for t in teams:
+            if t.slot is None:
+                continue
+            a = anchors_map.get(t.id) or {}
+            tag = ""
+            if t.name:
+                tag = t.name.split("·")[0].strip()
+            self._tag_by_slot[t.slot] = tag or f"S{t.slot}"
+            if a.get("canonical_px") is None:
+                continue
+            cx, cy = a["canonical_px"]
+            r0 = a.get("r0_canonical_px") or (0.03 * self._cW)
+            px = int(round(cx / self._cW * out_w))
+            py = int(round(cy / self._cH * out_h))
+            rr = max(6, int(round(r0 / self._cW * out_w)))
+            cv2.circle(self._plan, (px, py), rr, (0, 220, 240), 1, cv2.LINE_AA)
+            label = self._tag_by_slot[t.slot]
+            cv2.putText(self._plan, label, (px - 14, py - rr - 4),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 220, 240), 1, cv2.LINE_AA)
+        try:
+            cv2.namedWindow(self.WINDOW, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(self.WINDOW, out_w, out_h)
+        except cv2.error as e:  # pragma: no cover
+            print(f"[show] cv2 GUI unavailable ({e}) — отключаю --show", file=sys.stderr)
+            self.disabled = True
+
+    def _world_to_canvas(self, wx: float, wy: float,
+                         cmap: "CanonicalMap") -> tuple[int, int]:
+        # world ↔ canonical px is affine (см. fit_affine_px_to_world). Используем
+        # inverse через cv2: но проще, у нас уже canonical_px у трека есть.
+        out_w, out_h = self._size
+        return (int(round(wx / self._cW * out_w)),
+                int(round(wy / self._cH * out_h)))
+
+    def render(self, frame_idx: int, t_now: float,
+               tracks_world: list[dict]) -> None:
+        if self.disabled:
+            return
+        self._tick += 1
+        if self._tick % self.every != 0:
+            return
+        img = self._plan.copy()
+        alive = 0
+        for s in tracks_world:
+            if s.get("state") in ("lost", "wiped"):
+                continue
+            cpx = s.get("canonical_px")
+            if cpx is None:
+                continue
+            slot = s.get("slot")
+            if slot is None:
+                continue
+            alive += 1
+            cx, cy = cpx
+            out_w, out_h = self._size
+            px = int(round(cx / self._cW * out_w))
+            py = int(round(cy / self._cH * out_h))
+            color = _slot_color_bgr(int(slot))
+            cv2.circle(img, (px, py), 7, color, -1, cv2.LINE_AA)
+            cv2.circle(img, (px, py), 8, (0, 0, 0), 1, cv2.LINE_AA)
+            tag = self._tag_by_slot.get(int(slot), f"S{slot}")
+            cv2.putText(img, tag, (px + 9, py - 6),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                        (255, 255, 255), 1, cv2.LINE_AA)
+        bar_h = 24
+        cv2.rectangle(img, (0, 0), (img.shape[1], bar_h), (0, 0, 0), -1)
+        mm = int(t_now // 60); ss = int(t_now - mm * 60)
+        txt = (f"t={mm:02d}:{ss:02d}  frame={frame_idx}  alive={alive}  "
+               f"plan=yellow  Q/Esc=quit")
+        cv2.putText(img, txt, (8, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
+                    (220, 220, 220), 1, cv2.LINE_AA)
+        try:
+            cv2.imshow(self.WINDOW, img)
+            k = cv2.waitKey(1) & 0xFF
+            if k in (27, ord("q"), ord("Q")):
+                self.requested_stop = True
+        except cv2.error as e:  # pragma: no cover
+            print(f"[show] cv2 GUI error ({e}) — отключаю --show", file=sys.stderr)
+            self.disabled = True
+
+    def close(self) -> None:
+        if self.disabled:
+            return
+        try:
+            cv2.destroyWindow(self.WINDOW)
+        except cv2.error:
+            pass
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True, type=Path)
