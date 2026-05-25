@@ -46,6 +46,17 @@ function PoiAdmin() {
     { stage: string; map_id: string; spot: string; team_name: string; team_slug: string }[]
   >([]);
 
+  type StartSlot = {
+    algs?: { cx_norm: number; cy_norm: number; r_norm?: number };
+    motion?: { cx_norm: number; cy_norm: number; n_points?: number };
+    delta_norm?: number;
+  };
+  type StartCoords = {
+    meta?: { series_id?: string; map?: string; canonical_size?: [number, number] };
+    slots: Record<string, StartSlot>;
+  };
+  const [startCoords, setStartCoords] = useState<StartCoords | null>(null);
+
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<Drag | null>(null);
 
@@ -157,6 +168,23 @@ function PoiAdmin() {
       if (!Array.isArray(parsed)) throw new Error("Expected an array");
       setZones(parsed);
       setSelectedId(null);
+    } catch (e) {
+      alert(`Import failed: ${(e as Error).message}`);
+    }
+  };
+
+  const importStartCoords = async (file: File) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as StartCoords;
+      if (!data || typeof data !== "object" || !data.slots) {
+        throw new Error("Expected { meta, slots: {...} }");
+      }
+      setStartCoords(data);
+      const m = data.meta?.map;
+      if (m && (MAP_IDS as readonly string[]).includes(m)) {
+        setMapId(m as MapId);
+      }
     } catch (e) {
       alert(`Import failed: ${(e as Error).message}`);
     }
@@ -333,6 +361,29 @@ function PoiAdmin() {
               }}
             />
           </label>
+          <label className="cursor-pointer rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted">
+            Load start_coords.json
+            <input
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void importStartCoords(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {startCoords && (
+            <button
+              type="button"
+              onClick={() => setStartCoords(null)}
+              className="rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted"
+              title="Clear start coords overlay"
+            >
+              Clear starts
+            </button>
+          )}
           <button
             type="button"
             onClick={exportJson}
@@ -405,6 +456,66 @@ function PoiAdmin() {
                 );
               })}
             </svg>
+            {startCoords && (
+              <svg
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute inset-0 h-full w-full"
+              >
+                {Object.entries(startCoords.slots).map(([slot, s]) => {
+                  const label = slot.replace(/^slot_/, "");
+                  return (
+                    <g key={slot}>
+                      {s.algs && (
+                        <circle
+                          cx={s.algs.cx_norm}
+                          cy={s.algs.cy_norm}
+                          r={0.012}
+                          fill="none"
+                          stroke="#22c4f5"
+                          strokeWidth={0.0025}
+                        />
+                      )}
+                      {s.motion && (
+                        <>
+                          <circle
+                            cx={s.motion.cx_norm}
+                            cy={s.motion.cy_norm}
+                            r={0.008}
+                            fill="#ff4d6d"
+                            stroke="#fff"
+                            strokeWidth={0.0015}
+                          />
+                          <text
+                            x={s.motion.cx_norm + 0.012}
+                            y={s.motion.cy_norm + 0.005}
+                            fontSize={0.014}
+                            fill="#fff"
+                            stroke="#000"
+                            strokeWidth={0.0008}
+                            paintOrder="stroke"
+                          >
+                            {label}
+                          </text>
+                        </>
+                      )}
+                      {s.algs && s.motion && (
+                        <line
+                          x1={s.algs.cx_norm}
+                          y1={s.algs.cy_norm}
+                          x2={s.motion.cx_norm}
+                          y2={s.motion.cy_norm}
+                          stroke="#ffffff"
+                          strokeOpacity={0.5}
+                          strokeWidth={0.0012}
+                          strokeDasharray="0.006 0.004"
+                        />
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+            )}
           </div>
         </section>
 
