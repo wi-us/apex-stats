@@ -2766,16 +2766,28 @@ def main():
                         cps = pick_checkpoints_for_frame(
                             frame_idx, from_det_index, from_det_frames, from_det_tol)
                     assigns: dict[str, tuple[int, float, dict]] = {}
+                    rejected_from_det: Counter = Counter()
                     for c in cps:
                         # canonical_px вычисляем по текущей H (рег. — единственное,
                         # что мы тут делаем сами).
                         cx_can, cy_can = map_point(H, c["frame_px"])
                         c2 = dict(c)
                         c2["canonical_px"] = (cx_can, cy_can)
+                        st = slot_trackers.get(c["team_id"])
+                        if st is None:
+                            rejected_from_det["unknown_slot"] += 1
+                            continue
+                        ok_gate, gate_reason = candidate_inside_slot_gate(
+                            st, c2, t_now, da_weights)
+                        if not ok_gate:
+                            rejected_from_det[gate_reason.split("(", 1)[0]] += 1
+                            continue
                         prev = assigns.get(c["team_id"])
                         score = float(c.get("color_score") or 0.0)
                         if prev is None or score > prev[1]:
                             assigns[c["team_id"]] = (int(c.get("_dt", 0)), score, c2)
+                    if rejected_from_det:
+                        cam["from_detections_rejected"] = dict(rejected_from_det)
                     for t in teams:
                         st = slot_trackers[t.id]
                         packed = assigns.get(t.id)
