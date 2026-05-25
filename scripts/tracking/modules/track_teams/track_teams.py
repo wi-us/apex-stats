@@ -510,6 +510,129 @@ def load_anchors(path: Path,
     return out
 
 
+def teams_from_start_coords(path: Path,
+                            hsv_preset: dict[int, dict] | None = None) -> list[TeamCfg]:
+    """Build TeamCfg list from start_coords.json (ALGS POI picks + slot palette).
+
+    Each slot becomes one team:
+      - id / slot_id: ``slot_N``
+      - name: ALGS team_name (fallback ``Team N``)
+      - color: HUD VOD palette (`_slot_palette.slot_color_hex`)
+      - HSV: from manually-calibrated preset; if missing, derived from palette hex.
+    """
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    slots = raw.get("slots") or {}
+    out: list[TeamCfg] = []
+    for slot_key in sorted(slots.keys(), key=lambda k: int(k.split("_")[1])):
+        slot_int = int(slot_key.split("_")[1])
+        entry = slots[slot_key] or {}
+        hex_str = _slot_color_hex(slot_int)
+        team_tag = (entry.get("team_tag") or "").strip()
+        team_name = entry.get("team_name") or f"Team {slot_int}"
+        display_name = f"{team_tag} · {team_name}" if team_tag else team_name
+
+        lo = hi = lo2 = hi2 = None
+        if hsv_preset and slot_int in hsv_preset:
+            p = hsv_preset[slot_int]
+            h_lo, h_hi = int(p["h"][0]), int(p["h"][1])
+            s_lo, s_hi = int(p["s"][0]), int(p["s"][1])
+            v_lo, v_hi = int(p["v"][0]), int(p["v"][1])
+            if h_lo <= h_hi:
+                lo = np.array([h_lo, s_lo, v_lo], dtype=np.uint8)
+                hi = np.array([h_hi, s_hi, v_hi], dtype=np.uint8)
+            else:
+                lo  = np.array([h_lo, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([179,  s_hi, v_hi], dtype=np.uint8)
+                lo2 = np.array([0,    s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([h_hi, s_hi, v_hi], dtype=np.uint8)
+        else:
+            H, S, V = _hex_to_hsv_center(hex_str)
+            s_lo = max(60, S - 80)
+            v_lo = max(60, V - 80)
+            h_tol = 10
+            h_low, h_high = H - h_tol, H + h_tol
+            if h_low < 0:
+                lo  = np.array([0, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([h_high, 255, 255], dtype=np.uint8)
+                lo2 = np.array([179 + h_low, s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([179, 255, 255], dtype=np.uint8)
+            elif h_high > 179:
+                lo  = np.array([h_low, s_lo, v_lo], dtype=np.uint8)
+                hi  = np.array([179, 255, 255], dtype=np.uint8)
+                lo2 = np.array([0, s_lo, v_lo], dtype=np.uint8)
+                hi2 = np.array([h_high - 179, 255, 255], dtype=np.uint8)
+            else:
+                lo = np.array([h_low,  s_lo, v_lo], dtype=np.uint8)
+                hi = np.array([h_high, 255, 255], dtype=np.uint8)
+
+        ov_min_area = ov_max_area = ov_morph = None
+        if hsv_preset and slot_int in hsv_preset:
+            p = hsv_preset[slot_int]
+            if p.get("min_area") is not None:
+                ov_min_area = float(p["min_area"])
+            if p.get("max_area") is not None:
+                ov_max_area = float(p["max_area"])
+            if p.get("morph_kernel") is not None:
+                ov_morph = int(p["morph_kernel"])
+
+        out.append(TeamCfg(
+            id=f"slot_{slot_int}",
+            name=display_name,
+            hsv_lower=lo, hsv_upper=hi,
+            hsv_lower2=lo2, hsv_upper2=hi2,
+            color_hex=hex_str,
+            slot=slot_int,
+            slot_id=f"slot_{slot_int}",
+            min_area=ov_min_area,
+            max_area=ov_max_area,
+            morph_kernel=ov_morph,
+        ))
+    return out
+
+
+def load_start_anchors(path: Path,
+                       teams: list[TeamCfg],
+                       cmap: "CanonicalMap") -> dict[str, dict]:
+    """Build anchors_map from start_coords.json (ALGS POI picks).
+
+    Координаты уже в canonical-norm (0..1), affine минимапы не нужен.
+    Все слоты получают ``conf='HIGH'`` — POI pick трактуется как
+    semantic ground truth точки старта.
+    """
+    if not path.exists():
+        print(f"[warn] start-coords file {path} not found")
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    slots_data = raw.get("slots") or {}
+    W, H = cmap.size
+    out: dict[str, dict] = {}
+    for t in teams:
+        if t.slot is None:
+            continue
+        entry = slots_data.get(f"slot_{t.slot}")
+        algs = (entry or {}).get("algs")
+        if not algs or algs.get("cx_norm") is None:
+            out[t.id] = {"slot": t.slot, "slot_id": t.slot_id or f"slot_{t.slot}",
+                         "conf": "MISS", "world": None, "canonical_px": None,
+                         "r0_canonical_px": None}
+            continue
+        cx = float(algs["cx_norm"]) * W
+        cy = float(algs["cy_norm"]) * H
+        r0 = float(algs.get("r_norm", 0.03)) * W
+        wx, wy = map_point(cmap.px_to_world, (cx, cy))
+        out[t.id] = {
+            "slot": t.slot,
+            "slot_id": t.slot_id or f"slot_{t.slot}",
+            "conf": "HIGH",
+            "world": (wx, wy),
+            "canonical_px": (cx, cy),
+            "r0_canonical_px": r0,
+            "poi_id": (entry.get("poi") or {}).get("id") if entry else None,
+            "poi_name": (entry.get("poi") or {}).get("name") if entry else None,
+        }
+    return out
+
+
 # ----------------------------- Detection ---------------------------------
 
 def detect_team_blobs(frame_bgr: np.ndarray, teams: list[TeamCfg], det_cfg: dict):
