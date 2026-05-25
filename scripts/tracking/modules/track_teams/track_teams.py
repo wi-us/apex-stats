@@ -2598,6 +2598,16 @@ def main():
                                          (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
                                           int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
+    live_viewer: Optional["LiveViewer"] = None
+    if args.show:
+        live_viewer = LiveViewer(cmap, anchors_map, teams,
+                                 scale=args.show_scale,
+                                 every=max(1, args.show_every))
+        if live_viewer.disabled:
+            live_viewer = None
+        else:
+            print(f"[show] live overlay enabled (scale={args.show_scale}, every={args.show_every})")
+
     # Streaming JSON writer
     out_path = args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
