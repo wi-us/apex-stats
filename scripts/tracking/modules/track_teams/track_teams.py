@@ -2198,6 +2198,16 @@ def main():
     ap.add_argument("--debug-frame", type=int, default=None)
     ap.add_argument("--anchors", type=Path, default=None,
                     help="motion_detect/reports/motion_tracks.json для инициализации треков")
+    ap.add_argument("--start-coords", type=Path, default=None,
+                    help="track_teams/eval/reports/start_coords.json — ALGS POI picks + "
+                         "team_tag/name/color per slot. Если задано, используем как "
+                         "primary источник команд и стартовых якорей (--anchors игнорируется).")
+    ap.add_argument("--show", action="store_true",
+                    help="Открыть live-окно cv2 с canonical-картой, POI-планом и треками.")
+    ap.add_argument("--show-scale", type=float, default=0.5,
+                    help="Масштаб live-окна относительно canonical (default 0.5).")
+    ap.add_argument("--show-every", type=int, default=1,
+                    help="Рисовать каждый N-й обработанный кадр (default 1).")
     ap.add_argument("--eliminations", type=Path, default=None,
                     help="hud_read/reports/eliminations.json — точные t_first_dead по слоту, "
                          "если задано, заменяет absence-based wipe детекцию")
