@@ -233,6 +233,78 @@ def evaluate(tracks_file: Path, gt_points: list[dict], match_px: float) -> dict:
     }
 
 
+def evaluate_long_window(tracks_file: Path, end_sec: float, jump_px: float = 200.0) -> dict:
+    """Метрики качества трекинга за всё окно [0..end_sec]:
+    - per-slot coverage (доля кадров, где слот присутствует),
+    - per-slot id_switches (резкие прыжки > jump_px между соседними кадрами),
+    - per-slot mean_jump_px (медиана step-to-step смещений),
+    - confusion[a][b] — сколько раз ближайший трек к слоту a был помечен как b
+      (сигнал «слипания» команд с похожим цветом)."""
+    if not tracks_file.exists():
+        return {"ok": False, "reason": "no_tracks_file"}
+    try:
+        doc = json.loads(tracks_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"ok": False, "reason": f"parse:{e}"}
+    frames = [f for f in doc.get("frames", []) if float(f.get("t", -1)) <= end_sec]
+    if not frames:
+        return {"ok": False, "reason": "no_frames"}
+    # Собираем последовательности позиций каждого слота.
+    seq: dict[str, list[tuple[float, float, float]]] = {}
+    confusion: dict[str, dict[str, int]] = {}
+    for f in frames:
+        present_xy: dict[str, tuple[float, float]] = {}
+        for tr in f.get("tracks", []):
+            sid = tr.get("slot_id") or tr.get("team_id")
+            xy = tr.get("canonical_px") or tr.get("world")
+            if not sid or not xy:
+                continue
+            present_xy[sid] = (xy[0], xy[1])
+            seq.setdefault(sid, []).append((float(f["t"]), xy[0], xy[1]))
+        # confusion: для каждого слота a — ближайший трек b (включая a). Если b != a — путаница.
+        slot_ids = list(present_xy.keys())
+        for a in slot_ids:
+            ax, ay = present_xy[a]
+            best_b, best_d = a, float("inf")
+            for b in slot_ids:
+                if b == a:
+                    continue
+                bx, by = present_xy[b]
+                d = math.hypot(ax - bx, ay - by)
+                if d < best_d:
+                    best_d, best_b = d, b
+            if best_d < 60.0:  # «слиплись» если ближайший чужой в радиусе 60px
+                confusion.setdefault(a, {})[best_b] = confusion.get(a, {}).get(best_b, 0) + 1
+    total_frames = len(frames)
+    per_slot = {}
+    total_switches = 0
+    cov_list = []
+    for sid, pts in seq.items():
+        cov = len(pts) / total_frames
+        cov_list.append(cov)
+        jumps = []
+        switches = 0
+        for (t1, x1, y1), (t2, x2, y2) in zip(pts, pts[1:]):
+            d = math.hypot(x2 - x1, y2 - y1)
+            jumps.append(d)
+            if d > jump_px:
+                switches += 1
+        total_switches += switches
+        per_slot[sid] = {
+            "coverage_pct": round(100.0 * cov, 1),
+            "id_switches": switches,
+            "med_jump_px": round(statistics.median(jumps), 1) if jumps else None,
+        }
+    return {
+        "ok": True,
+        "frames": total_frames,
+        "avg_coverage_pct": round(100.0 * statistics.mean(cov_list), 1) if cov_list else 0.0,
+        "total_id_switches": total_switches,
+        "per_slot": per_slot,
+        "confusion": confusion,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True)
