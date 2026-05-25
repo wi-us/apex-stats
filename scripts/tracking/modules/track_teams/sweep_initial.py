@@ -239,11 +239,12 @@ def main() -> int:
     ap.add_argument("--anchors", default=str(MOD.parent / "motion_detect" / "reports" / "motion_tracks.json"))
     ap.add_argument("--eliminations", default=str(MOD.parent / "hud_read" / "reports" / "eliminations.json"))
     ap.add_argument("--gt", default=str(MOD / "assets" / "gt_anchors.json"))
-    ap.add_argument("--end", type=float, default=30.0, help="секунд видео анализировать")
-    ap.add_argument("--gt-cutoff", type=float, default=30.5)
+    ap.add_argument("--end", type=float, default=300.0, help="секунд видео анализировать (по умолчанию 5 мин)")
+    ap.add_argument("--gt-cutoff", type=float, default=30.5,
+                    help="окно GT-якорей для оценки идентификации на старте")
     ap.add_argument("--match-px", type=float, default=100.0, help="d_px <= этого = «корректно»")
     ap.add_argument("--jobs", type=int, default=8, help="параллельные процессы (1..15)")
-    ap.add_argument("--max-variants", type=int, default=120)
+    ap.add_argument("--max-variants", type=int, default=40)
     ap.add_argument("--out-dir", default=str(MOD / "reports" / "sweep_initial"))
     ap.add_argument("--keep-intermediate", action="store_true",
                     help="не удалять _tracks/_configs/_logs после прогона")
