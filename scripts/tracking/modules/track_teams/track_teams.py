@@ -2927,6 +2927,14 @@ def main():
                     cv2.putText(vis, s["team_id"], (int(x) + 12, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
                 preview_writer.write(vis)
 
+            if live_viewer is not None:
+                live_viewer.render(frame_idx, (frame_idx - start_frame) / fps,
+                                   tracks_world)
+                if live_viewer.requested_stop:
+                    print("[show] stop requested via key — завершаю обработку",
+                          file=sys.stderr)
+                    break
+
             if args.debug_frame is not None and frame_idx == args.debug_frame:
                 dbg = args.out.parent / f"debug_frame_{frame_idx}.png"
                 cv2.imwrite(str(dbg), frame)
