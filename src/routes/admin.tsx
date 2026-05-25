@@ -34,6 +34,7 @@ const analysisItems: NavItem[] = [
   { to: "/admin/processes", label: "Processes",       hint: "Analysis & tracking" },
   { to: "/admin/minimap",   label: "Minimap Locator", hint: "Minimap detection" },
   { to: "/admin/tracking-lab", label: "Tracking Lab", hint: "VOD tracks.json viewer" },
+  { to: "/admin/dataset",   label: "Dataset Builder", hint: "YOLO labels from ZIP" },
 ];
 
 const systemItems: NavItem[] = [
