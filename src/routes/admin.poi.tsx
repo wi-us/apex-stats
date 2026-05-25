@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   MAP_IDS,
   MAP_LABELS,
@@ -59,6 +60,90 @@ function PoiAdmin() {
     slots: Record<string, StartSlot>;
   };
   const [startCoords, setStartCoords] = useState<StartCoords | null>(null);
+
+  type SeriesInfo = {
+    id: string;
+    name: string | null;
+    series_number: number | null;
+    starts_at: string | null;
+    tournament: string | null;
+    event: string | null;
+    region: string | null;
+    matches: { match_number: number | null; map_ulid: string | null; canonical: MapId | null }[];
+  };
+  const [seriesInfo, setSeriesInfo] = useState<SeriesInfo | null>(null);
+  const [seriesLoading, setSeriesLoading] = useState(false);
+
+  const seriesId = startCoords?.meta?.series_id ?? null;
+  useEffect(() => {
+    if (!seriesId) {
+      setSeriesInfo(null);
+      return;
+    }
+    let cancelled = false;
+    setSeriesLoading(true);
+    (async () => {
+      const [{ data: s }, { data: matches }] = await Promise.all([
+        supabase
+          .from("algs_series")
+          .select(
+            "id, name, series_number, starts_at, tournament_id, region_id, event_id",
+          )
+          .eq("id", seriesId)
+          .maybeSingle(),
+        supabase
+          .from("algs_matches")
+          .select("match_number, map_id_ulid")
+          .eq("series_id", seriesId)
+          .order("match_number", { ascending: true }),
+      ]);
+      if (cancelled || !s) {
+        if (!cancelled) {
+          setSeriesInfo(null);
+          setSeriesLoading(false);
+        }
+        return;
+      }
+      const [tourRes, regRes, evRes] = await Promise.all([
+        s.tournament_id
+          ? supabase.from("algs_tournaments").select("name").eq("id", s.tournament_id).maybeSingle()
+          : Promise.resolve({ data: null as { name: string | null } | null }),
+        s.region_id
+          ? supabase.from("algs_regions").select("name").eq("id", s.region_id).maybeSingle()
+          : Promise.resolve({ data: null as { name: string | null } | null }),
+        s.event_id
+          ? supabase.from("algs_events").select("name").eq("id", s.event_id).maybeSingle()
+          : Promise.resolve({ data: null as { name: string | null } | null }),
+      ]);
+      if (cancelled) return;
+      setSeriesInfo({
+        id: s.id,
+        name: s.name ?? null,
+        series_number: s.series_number ?? null,
+        starts_at: s.starts_at ?? null,
+        tournament: tourRes.data?.name ?? null,
+        event: evRes.data?.name ?? null,
+        region: regRes.data?.name ?? null,
+        matches: (matches ?? []).map((m) => ({
+          match_number: m.match_number ?? null,
+          map_ulid: m.map_id_ulid ?? null,
+          canonical: canonicalMapId(m.map_id_ulid),
+        })),
+      });
+      setSeriesLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [seriesId]);
+
+  const matchesOnMap = useMemo(
+    () =>
+      (seriesInfo?.matches ?? [])
+        .filter((m) => m.canonical === mapId && m.match_number != null)
+        .map((m) => m.match_number as number),
+    [seriesInfo, mapId],
+  );
 
   // slot label per zone id (для подсветки POI-зон именами команд)
   const slotsByZoneId = useMemo(() => {
@@ -358,6 +443,29 @@ function PoiAdmin() {
             ))}
           </select>
           <span className="text-xs text-muted-foreground">{zones.length} zones</span>
+          {seriesId && (
+            <span className="ml-2 flex items-center gap-2 rounded-sm border border-border bg-surface px-2 py-1 text-[11px] text-muted-foreground">
+              {seriesLoading && <span>loading series…</span>}
+              {seriesInfo && (
+                <>
+                  <span className="font-semibold text-foreground">
+                    {seriesInfo.tournament ?? seriesInfo.event ?? "—"}
+                  </span>
+                  {seriesInfo.region && <span>· {seriesInfo.region}</span>}
+                  {seriesInfo.series_number != null && (
+                    <span>· series #{seriesInfo.series_number}</span>
+                  )}
+                  {seriesInfo.name && <span>· {seriesInfo.name}</span>}
+                  <span>
+                    · {MAP_LABELS[mapId]} match
+                    {matchesOnMap.length === 1 ? "" : "es"}{" "}
+                    {matchesOnMap.length ? matchesOnMap.join(", ") : "—"}
+                  </span>
+                </>
+              )}
+              <span className="font-mono opacity-60">{seriesId}</span>
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <label className="cursor-pointer rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted">
@@ -505,66 +613,6 @@ function PoiAdmin() {
                 );
               })}
             </svg>
-            {startCoords && (
-              <svg
-                viewBox="0 0 1 1"
-                preserveAspectRatio="none"
-                className="pointer-events-none absolute inset-0 h-full w-full"
-              >
-                {Object.entries(startCoords.slots).map(([slot, s]) => {
-                  const label = slot.replace(/^slot_/, "");
-                  return (
-                    <g key={slot}>
-                      {s.algs && (
-                        <circle
-                          cx={s.algs.cx_norm}
-                          cy={s.algs.cy_norm}
-                          r={0.012}
-                          fill="none"
-                          stroke="#22c4f5"
-                          strokeWidth={0.0025}
-                        />
-                      )}
-                      {s.motion && (
-                        <>
-                          <circle
-                            cx={s.motion.cx_norm}
-                            cy={s.motion.cy_norm}
-                            r={0.008}
-                            fill="#ff4d6d"
-                            stroke="#fff"
-                            strokeWidth={0.0015}
-                          />
-                          <text
-                            x={s.motion.cx_norm + 0.012}
-                            y={s.motion.cy_norm + 0.005}
-                            fontSize={0.014}
-                            fill="#fff"
-                            stroke="#000"
-                            strokeWidth={0.0008}
-                            paintOrder="stroke"
-                          >
-                            {label}
-                          </text>
-                        </>
-                      )}
-                      {s.algs && s.motion && (
-                        <line
-                          x1={s.algs.cx_norm}
-                          y1={s.algs.cy_norm}
-                          x2={s.motion.cx_norm}
-                          y2={s.motion.cy_norm}
-                          stroke="#ffffff"
-                          strokeOpacity={0.5}
-                          strokeWidth={0.0012}
-                          strokeDasharray="0.006 0.004"
-                        />
-                      )}
-                    </g>
-                  );
-                })}
-              </svg>
-            )}
           </div>
         </section>
 
