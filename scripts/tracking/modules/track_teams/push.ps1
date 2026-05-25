@@ -31,7 +31,7 @@ if ($StartCoords -and (Test-Path $StartCoords)) {
   $args += @("--anchors", $Anchors)
   Write-Host "[track_teams] using motion anchors: $Anchors" -ForegroundColor Cyan
 } else {
-  Write-Host "[track_teams] no start-coords / motion anchors — fallback to YAML teams" -ForegroundColor Yellow
+  Write-Host "[track_teams] no start-coords / motion anchors - fallback to YAML teams" -ForegroundColor Yellow
 }
 if ($Show) {
   $args += @("--show", "--show-scale", $ShowScale, "--show-every", $ShowEvery)
@@ -45,12 +45,12 @@ if ($Eliminations -and (Test-Path $Eliminations)) {
 }
 if (-not $NoFromDetections -and $FromDetections -and (Test-Path $FromDetections)) {
   $args += @("--from-detections", $FromDetections)
-  Write-Host "[track_teams] using detect_plates checkpoints: $FromDetections (HSV-детекция отключена)" -ForegroundColor Cyan
+  Write-Host "[track_teams] using detect_plates checkpoints: $FromDetections (HSV detection disabled)" -ForegroundColor Cyan
 } else {
   if ($NoFromDetections) {
-    Write-Host "[track_teams] -NoFromDetections: классический режим (собственная HSV-детекция)" -ForegroundColor Yellow
+    Write-Host "[track_teams] -NoFromDetections: classic mode (own HSV detection)" -ForegroundColor Yellow
   } else {
-    Write-Host "[track_teams] no detections file (looked at: $FromDetections) - классический режим" -ForegroundColor Yellow
+    Write-Host "[track_teams] no detections file (looked at: $FromDetections) - classic mode" -ForegroundColor Yellow
   }
 }
 $logPath = Join-Path (Split-Path $Out -Parent) "run.log"
