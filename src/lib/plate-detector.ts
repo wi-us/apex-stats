@@ -310,6 +310,169 @@ export function boxToYolo(box: Box, fw: number, fh: number): string {
   return `${cls} ${cx.toFixed(6)} ${cy.toFixed(6)} ${w.toFixed(6)} ${h.toFixed(6)}`;
 }
 
+// ============================================================================
+// Peak-refine: уточнение и разрез box-а по проекции ярких пикселей (текста).
+// Идея: внутри плашки белый/яркий текст имеет V > vThr. Сумма по столбцам даёт
+// "пик-профиль" — несколько игроков одной команды стоят рядом => несколько пиков
+// с провалами между ними. Разрезаем box по провалам и обрезаем края до первого
+// столбца, где count > minCount.
+// ============================================================================
+export type PeakRefineOpts = {
+  vThreshold?: number;   // V для "яркого" пикселя (текст плашки)
+  minRunPx?: number;     // минимальная ширина одного пика (px)
+  valleyRatio?: number;  // провал считается разделителем, если < ratio * peakMax
+  padPx?: number;        // расширение box перед анализом, px
+  marginPx?: number;     // отступ слева/справа от пика
+};
+
+export function refineBoxesByPeaks(
+  rgba: Uint8ClampedArray,
+  fw: number,
+  fh: number,
+  boxes: Box[],
+  opts: PeakRefineOpts = {},
+): Box[] {
+  const vThr = opts.vThreshold ?? 190;
+  const minRun = opts.minRunPx ?? 6;
+  const ratio = opts.valleyRatio ?? 0.35;
+  const pad = opts.padPx ?? 2;
+  const margin = opts.marginPx ?? 1;
+
+  const out: Box[] = [];
+  for (const b of boxes) {
+    const x0 = Math.max(0, b.x - pad);
+    const y0 = Math.max(0, b.y - pad);
+    const x1 = Math.min(fw, b.x + b.w + pad);
+    const y1 = Math.min(fh, b.y + b.h + pad);
+    const W = x1 - x0, H = y1 - y0;
+    if (W < 6 || H < 4) { out.push(b); continue; }
+
+    // column-wise count of bright pixels
+    const col = new Int32Array(W);
+    for (let y = y0; y < y1; y++) {
+      const row = y * fw;
+      for (let x = x0; x < x1; x++) {
+        const i = (row + x) * 4;
+        const r = rgba[i], g = rgba[i + 1], bb = rgba[i + 2];
+        const v = r >= g ? (r >= bb ? r : bb) : (g >= bb ? g : bb);
+        if (v >= vThr) col[x - x0]++;
+      }
+    }
+    // smooth 3-window
+    const sm = new Float32Array(W);
+    for (let i = 0; i < W; i++) {
+      const a = i > 0 ? col[i - 1] : col[i];
+      const c = i < W - 1 ? col[i + 1] : col[i];
+      sm[i] = (a + col[i] + c) / 3;
+    }
+    let peakMax = 0;
+    for (let i = 0; i < W; i++) if (sm[i] > peakMax) peakMax = sm[i];
+    if (peakMax < 1.5) { out.push(b); continue; }
+    const thr = Math.max(0.6, peakMax * ratio);
+
+    // runs: contiguous columns with sm[i] > thr
+    const runs: { s: number; e: number }[] = [];
+    let s = -1;
+    for (let i = 0; i < W; i++) {
+      if (sm[i] > thr) {
+        if (s < 0) s = i;
+      } else if (s >= 0) {
+        runs.push({ s, e: i - 1 });
+        s = -1;
+      }
+    }
+    if (s >= 0) runs.push({ s, e: W - 1 });
+    const valid = runs.filter((r) => r.e - r.s + 1 >= minRun);
+
+    if (valid.length === 0) { out.push(b); continue; }
+    // merge runs closer than minRun (single text cluster со внутренними провалами)
+    const merged: { s: number; e: number }[] = [valid[0]];
+    for (let i = 1; i < valid.length; i++) {
+      const last = merged[merged.length - 1];
+      if (valid[i].s - last.e < minRun) last.e = valid[i].e;
+      else merged.push(valid[i]);
+    }
+    for (const r of merged) {
+      const sx = Math.max(0, x0 + r.s - margin);
+      const ex = Math.min(fw, x0 + r.e + 1 + margin);
+      const w = ex - sx;
+      if (w < 6) continue;
+      out.push({ ...b, x: sx, y: b.y, w, h: b.h, source: "manual" });
+    }
+  }
+  return out;
+}
+
+// ============================================================================
+// HSV mask overlay: строим RGBA-канву, где пиксели маски залиты цветом команды.
+// Используется для визуальной отладки tolerance-ов в UI.
+// mode: "active" — только activeSlot; "all" — все команды (цвета суммируются).
+// ============================================================================
+export type MaskOpts = {
+  hTolExtra?: number;
+  sTolExtra?: number;
+  vTolExtra?: number;
+  alpha?: number;      // 0..255
+  activeSlot?: number; // если задан и mode === "active" — рисуем только эту команду
+  mode?: "active" | "all";
+};
+
+function hexToRgb(hex: string): [number, number, number] {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return [255, 0, 255];
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+export function buildHSVMaskCanvas(
+  rgba: Uint8ClampedArray,
+  fw: number,
+  fh: number,
+  preset: HSVPreset,
+  roi: { x: number; y: number; w: number; h: number },
+  opts: MaskOpts = {},
+): HTMLCanvasElement {
+  const hExtra = opts.hTolExtra ?? 1;
+  const sExtra = opts.sTolExtra ?? 8;
+  const vExtra = opts.vTolExtra ?? 14;
+  const alpha = opts.alpha ?? 130;
+  const mode = opts.mode ?? "all";
+
+  const out = document.createElement("canvas");
+  out.width = fw;
+  out.height = fh;
+  const octx = out.getContext("2d")!;
+  const img = octx.createImageData(fw, fh);
+  const data = img.data;
+
+  const teams = mode === "active"
+    ? preset.teams.filter((t) => t.slot === opts.activeSlot)
+    : preset.teams;
+  const teamRgb = teams.map((t) => hexToRgb(t.hex));
+
+  for (let y = roi.y; y < roi.y + roi.h; y++) {
+    for (let x = roi.x; x < roi.x + roi.w; x++) {
+      const i = (y * fw + x) * 4;
+      const [H, S, V] = rgbToHsvCv(rgba[i], rgba[i + 1], rgba[i + 2]);
+      for (let t = 0; t < teams.length; t++) {
+        const tm = teams[t];
+        const [h0, h1] = tm.h, [s0, s1] = tm.s, [v0, v1] = tm.v;
+        if (
+          H >= h0 - hExtra && H <= h1 + hExtra &&
+          S >= s0 - sExtra && S <= s1 + sExtra &&
+          V >= v0 - vExtra && V <= v1 + vExtra
+        ) {
+          const [r, g, b] = teamRgb[t];
+          data[i] = r; data[i + 1] = g; data[i + 2] = b; data[i + 3] = alpha;
+          break;
+        }
+      }
+    }
+  }
+  octx.putImageData(img, 0, 0);
+  return out;
+}
+
 export function makeBatchId(slug: string): string {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
