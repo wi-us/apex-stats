@@ -55,6 +55,14 @@ export type DetectOptions = {
   minHeight?: number;
   maxHeight?: number;
   ignoreBottomPx?: number; // пропустить нижние N px ROI (HUD-крышка)
+  /** Ожидаемая «канонiчная» ширина одной плашки в пикселях. Используется для сплита слипшихся блобов. */
+  expectedPlateW?: number;
+  /** Ожидаемая высота одной плашки. */
+  expectedPlateH?: number;
+  /** Сколько boxов максимум выдавать на одну команду (после сплита). */
+  maxBoxesPerTeam?: number;
+  /** Эрозия маски (px) перед connected-components — помогает «оторвать» соседние плашки. */
+  erosionPx?: number;
 };
 
 // RGB → HSV в OpenCV-конвенции: H in [0,179], S/V in [0,255].
@@ -123,6 +131,79 @@ function connectedBoxes(
   return out;
 }
 
+// Прямоугольная эрозия (min-filter) бинарной маски. r — радиус в px.
+function erodeMask(mask: Uint8Array, W: number, H: number, r: number): Uint8Array {
+  if (r <= 0) return mask;
+  const tmp = new Uint8Array(W * H);
+  // горизонтальная
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let ok = 1;
+      for (let k = -r; k <= r; k++) {
+        const xx = x + k;
+        if (xx < 0 || xx >= W || !mask[y * W + xx]) { ok = 0; break; }
+      }
+      tmp[y * W + x] = ok;
+    }
+  }
+  const out = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let ok = 1;
+      for (let k = -r; k <= r; k++) {
+        const yy = y + k;
+        if (yy < 0 || yy >= H || !tmp[yy * W + x]) { ok = 0; break; }
+      }
+      out[y * W + x] = ok;
+    }
+  }
+  return out;
+}
+
+// Сплит большого компонента по ожидаемой ширине/высоте плашки.
+// Идея: если ширина блоба ≈ k × expectedW (k>=2) — режем вертикально на k кусков по проекции плотности.
+function splitBlob(
+  mask: Uint8Array,
+  W: number,
+  H: number,
+  b: { x: number; y: number; w: number; h: number; area: number },
+  expW: number,
+  expH: number,
+): { x: number; y: number; w: number; h: number; area: number }[] {
+  const kx = Math.max(1, Math.round(b.w / Math.max(1, expW)));
+  const ky = Math.max(1, Math.round(b.h / Math.max(1, expH)));
+  if (kx <= 1 && ky <= 1) return [b];
+
+  const pieces: { x: number; y: number; w: number; h: number; area: number }[] = [];
+  const stepX = b.w / kx;
+  const stepY = b.h / ky;
+  for (let iy = 0; iy < ky; iy++) {
+    for (let ix = 0; ix < kx; ix++) {
+      const x0 = Math.floor(b.x + ix * stepX);
+      const y0 = Math.floor(b.y + iy * stepY);
+      const x1 = Math.min(b.x + b.w, Math.floor(b.x + (ix + 1) * stepX));
+      const y1 = Math.min(b.y + b.h, Math.floor(b.y + (iy + 1) * stepY));
+      // ужать к фактическим пикселям маски внутри куска
+      let minX = x1, minY = y1, maxX = x0, maxY = y0, area = 0;
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          if (mask[y * W + x]) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            area++;
+          }
+        }
+      }
+      if (area >= 8) {
+        pieces.push({ x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1, area });
+      }
+    }
+  }
+  return pieces.length ? pieces : [b];
+}
+
 export function detectPlates(
   rgba: Uint8ClampedArray,
   fw: number,
@@ -134,11 +215,15 @@ export function detectPlates(
   const hExtra = opts.hTolExtra ?? 1;
   const sExtra = opts.sTolExtra ?? 8;
   const vExtra = opts.vTolExtra ?? 14;
-  const minW = opts.minWidth ?? 24;
-  const maxW = opts.maxWidth ?? 240;
-  const minH = opts.minHeight ?? 14;
-  const maxH = opts.maxHeight ?? 60;
+  const minW = opts.minWidth ?? 18;
+  const maxW = opts.maxWidth ?? 320;
+  const minH = opts.minHeight ?? 10;
+  const maxH = opts.maxHeight ?? 80;
   const ignoreBottom = opts.ignoreBottomPx ?? 90;
+  const expW = opts.expectedPlateW ?? 70;
+  const expH = opts.expectedPlateH ?? 18;
+  const maxPerTeam = opts.maxBoxesPerTeam ?? 6;
+  const erosion = opts.erosionPx ?? 0;
 
   const rx = roi.x, ry = roi.y, rw = roi.w, rh = roi.h;
   const usableH = Math.max(1, rh - ignoreBottom);
@@ -170,25 +255,47 @@ export function detectPlates(
         mask[j] = 1;
       }
     }
-    // Лучший компонент по площади на одну команду.
-    const comps = connectedBoxes(mask, rw, usableH).filter((c) => {
+    const workMask = erosion > 0 ? erodeMask(mask, rw, usableH, erosion) : mask;
+    const rawComps = connectedBoxes(workMask, rw, usableH);
+    // сначала отсеиваем шум по площади/высоте — слишком мелкие отбрасываем,
+    // слишком большие — отдаём в split.
+    const filtered: { x: number; y: number; w: number; h: number; area: number }[] = [];
+    for (const c of rawComps) {
+      if (c.area < 12) continue;
+      if (c.h > maxH * 2 || c.w > maxW * 2) continue; // явная заливка/фон
+      filtered.push(c);
+    }
+    // сплит слипшихся
+    const split: typeof filtered = [];
+    for (const c of filtered) {
+      const tooWide = c.w >= expW * 1.6;
+      const tooTall = c.h >= expH * 1.6;
+      if (tooWide || tooTall) {
+        split.push(...splitBlob(workMask, rw, usableH, c, expW, expH));
+      } else {
+        split.push(c);
+      }
+    }
+    // финальная валидация
+    const comps = split.filter((c) => {
       const ar = c.w / Math.max(1, c.h);
-      return c.w >= minW && c.w <= maxW && c.h >= minH && c.h <= maxH && ar >= 1.0 && ar <= 12.0 && c.area >= c.w * c.h * 0.35;
+      return c.w >= minW && c.w <= maxW && c.h >= minH && c.h <= maxH && ar >= 0.8 && ar <= 14.0;
     });
     if (!comps.length) continue;
     comps.sort((a, b) => b.area - a.area);
-    const best = comps[0];
-    boxes.push({
-      slot: team.slot,
-      teamId: team.id,
-      teamName: team.name,
-      hex: team.hex,
-      x: rx + best.x,
-      y: ry + best.y,
-      w: best.w,
-      h: best.h,
-      source: "auto",
-    });
+    for (const c of comps.slice(0, maxPerTeam)) {
+      boxes.push({
+        slot: team.slot,
+        teamId: team.id,
+        teamName: team.name,
+        hex: team.hex,
+        x: rx + c.x,
+        y: ry + c.y,
+        w: c.w,
+        h: c.h,
+        source: "auto",
+      });
+    }
   }
   return boxes;
 }
