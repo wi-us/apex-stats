@@ -2224,9 +2224,11 @@ class LiveViewer:
         # pre-bake POI plan layer (yellow circles + tag labels).
         self._plan = self._bg.copy()
         self._tag_by_slot: dict[int, str] = {}
+        self._slot_by_team: dict[str, int] = {}
         for t in teams:
             if t.slot is None:
                 continue
+            self._slot_by_team[t.id] = t.slot
             a = anchors_map.get(t.id) or {}
             tag = ""
             if t.name:
@@ -2269,11 +2271,19 @@ class LiveViewer:
         alive = 0
         seen = 0
         for s in tracks_world:
-            cpx = s.get("canonical_px")
-            if cpx is None:
-                continue
             slot = s.get("slot")
             if slot is None:
+                slot = self._slot_by_team.get(s.get("team_id") or "")
+                if slot is None:
+                    sid = s.get("slot_id") or ""
+                    if sid.startswith("slot_") and sid[5:].isdigit():
+                        slot = int(sid[5:])
+            if slot is None:
+                continue
+            cpx = s.get("canonical_px")
+            if cpx is None:
+                # No live position — draw a faint marker at the POI anchor so the
+                # user still sees the slot is alive but unobserved this frame.
                 continue
             cx, cy = cpx
             out_w, out_h = self._size
