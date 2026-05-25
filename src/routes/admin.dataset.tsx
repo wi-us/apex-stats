@@ -589,6 +589,43 @@ function DatasetBuilder() {
             </p>
           </section>
 
+          <section className="space-y-2 rounded-sm border border-border p-2">
+            <div className="label-eyebrow text-xs">Peak refine (V-projection)</div>
+            <label className="flex items-center gap-2 text-xs">
+              <input type="checkbox" checked={autoPeakRefine} onChange={(e) => setAutoPeakRefine(e.target.checked)} />
+              Auto после Detect
+            </label>
+            <SliderRow label={`V threshold ${peakVThr}`} value={peakVThr} min={120} max={250} onChange={setPeakVThr} />
+            <SliderRow label={`Min run ${peakMinRun}px`} value={peakMinRun} min={2} max={20} onChange={setPeakMinRun} />
+            <Button size="sm" variant="outline" disabled={!active || !!busy} onClick={refineNow}>
+              Refine current frame
+            </Button>
+            <p className="text-[10px] text-muted-foreground">
+              Режет/уточняет boxы по столбцам ярких пикселей (текст плашки). Помогает отделить соседних игроков и обрезать края.
+            </p>
+          </section>
+
+          <section className="space-y-2 rounded-sm border border-border p-2">
+            <div className="label-eyebrow text-xs">HSV mask overlay</div>
+            <div className="flex gap-1">
+              {(["off", "active", "all"] as const).map((m) => (
+                <Button
+                  key={m}
+                  size="sm"
+                  variant={maskMode === m ? "default" : "outline"}
+                  className="h-7 flex-1 text-[11px]"
+                  onClick={() => setMaskMode(m)}
+                >
+                  {m}
+                </Button>
+              ))}
+            </div>
+            <SliderRow label={`Alpha ${maskAlpha}`} value={maskAlpha} min={40} max={220} onChange={setMaskAlpha} />
+            <p className="text-[10px] text-muted-foreground">
+              "active" — маска только выбранной команды (R-панель), "all" — все команды цветом hex.
+            </p>
+          </section>
+
           <section className="flex flex-col gap-2">
             <Button size="sm" variant="outline" disabled={!active || !!busy} onClick={runDetectActive}>Detect current</Button>
             <Button size="sm" disabled={!frames.length || !!busy} onClick={runDetectAll}>Detect all</Button>
