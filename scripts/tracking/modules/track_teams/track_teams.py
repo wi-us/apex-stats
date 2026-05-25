@@ -1980,7 +1980,11 @@ class SlotTracker:
             dx = cand_cx - last_cx
             dy = cand_cy - last_cy
             dist = math.hypot(dx, dy)
-            direct_measurement = (det_source == "from_detections" and self.trust_from_detections)
+            direct_measurement = (
+                det_source == "from_detections"
+                and self.trust_from_detections
+                and self.activated
+            )
             # PR-2: pending-switch hysteresis. Если кандидат скакнул дальше
             # jump_switch_threshold_px от прошлого центра — НЕ принимаем сразу,
             # требуем switch_confirm_frames подряд таких же скачков рядом.
