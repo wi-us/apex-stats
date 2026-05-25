@@ -32,7 +32,9 @@ import yaml
 from tqdm import tqdm
 from collections import Counter
 
-from scripts.tracking.modules.track_teams._slot_palette import (
+# Local import — file lives next to this script.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _slot_palette import (  # noqa: E402
     slot_color_bgr as _slot_color_bgr,
     slot_color_hex as _slot_color_hex,
 )
