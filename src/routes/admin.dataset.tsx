@@ -756,13 +756,21 @@ function drawScene(
     const team = preset.teams.find((t) => t.slot === b.slot);
     const color = team?.hex ?? "#ff00ff";
     const sel = i === selectedIdx;
-    ctx.lineWidth = sel ? 3 : 1.5;
-    ctx.strokeStyle = color;
+    // Тёмная подложка под белой рамкой — чтобы белое было видно на любом фоне.
+    ctx.lineWidth = sel ? 4 : 2.5;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.strokeRect(b.x + 0.5, b.y + 0.5, b.w, b.h);
+    ctx.lineWidth = sel ? 2 : 1;
+    ctx.strokeStyle = sel ? "#ffe066" : "#ffffff";
+    ctx.strokeRect(b.x + 0.5, b.y + 0.5, b.w, b.h);
+    // Бейдж номера — цвет команды.
     const tag = `${b.slot}${b.source === "manual" ? "*" : ""}`;
     const tw = ctx.measureText(tag).width + 6;
     ctx.fillStyle = color;
     ctx.fillRect(b.x, Math.max(0, b.y - 14), tw, 14);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(b.x + 0.5, Math.max(0, b.y - 14) + 0.5, tw, 14);
     ctx.fillStyle = "#000";
     ctx.fillText(tag, b.x + 3, Math.max(10, b.y - 3));
     if (sel) {
