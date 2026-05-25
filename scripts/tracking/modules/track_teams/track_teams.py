@@ -2948,6 +2948,8 @@ def main():
         cap.release()
         if preview_writer is not None:
             preview_writer.release()
+        if live_viewer is not None:
+            live_viewer.close()
         fout.write("]}")
         fout.close()
         if da_dbg_fp is not None:
