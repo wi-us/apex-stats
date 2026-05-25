@@ -1,74 +1,86 @@
 ## Цель
 
-1. Стартовые позиции команд в `track_teams` берём из **ALGS POI picks** (точные координаты POI зон + team_tag / name / color из палитры слота), а не из шумного `motion_tracks.json`.
-2. Во время `run.ps1` показывать **live окно cv2** с canonical-картой, POI-планом и текущими треками, чтобы видеть проблемы по ходу анализа.
+Вернуться к параметрическому свипу вместо точечных правок. Прогнать ~40 вариантов трекинга на первых **5 минутах** видео параллельно (N джоб), оценить каждый по двум критериям:
 
-## Источник данных
+1. **Идентификация на старте** — старые GT-якоря в окне [0..30s] (есть).
+2. **Качество трекинга на 5 мин** — coverage / id-switches / средний gap для каждого слота за всё окно [0..300s] (новое).
 
-Используем уже существующий `start_coords.json` (его генерит `build_start_coords.py` из ALGS API + POI zones). Каждый слот содержит:
-- `team_tag`, `team_name`
-- `poi.id`, `poi.name`
-- `algs.cx_norm / cy_norm / r_norm` — точный центр POI зоны в canonical
-- `motion.*` (опционально, игнорируем по умолчанию)
+Победитель = тот, кто и точку определил, и за 5 минут не сорвался на похожий цвет.
 
-Цвет команды берём из палитры HUD VOD по номеру слота (`SLOT_HEX[slot-1]`) — она уже зашита в `render_live_overlay.py` и `src/lib/team-colors.ts`.
+---
 
-## Изменения
+## Что меняем (точечно, инфраструктура уже есть)
 
-### 1. `scripts/tracking/modules/track_teams/track_teams.py`
+### 1. `scripts/tracking/modules/track_teams/sweep_initial.py`
 
-- Новый CLI флаг `--start-coords <path>`. Имеет приоритет над `--anchors`.
-- Новая функция `teams_from_start_coords(path, hsv_preset)` — параллель `teams_from_anchors`:
-  - читает `start_coords.json`
-  - создаёт `TeamCfg` для каждого `slot_N` с `team_tag`, `team_name`, HSV из preset
-- Новая функция `load_start_anchors(path, teams, cmap)`:
-  - возвращает `anchors_map` той же формы, что `load_anchors`, но:
-    - `conf = "HIGH"` (ALGS — semantic ground truth)
-    - `init_canonical_px = (algs.cx_norm * W, algs.cy_norm * H)`
-    - `anchor_r_px = algs.r_norm * W`
-    - `world = cmap.px_to_world(canonical_px)`
-    - НЕ зависит от `minimap_affine` (координаты уже в canonical norm)
-- В `main()`: если `args.start_coords` — используем новые функции, иначе текущий путь.
-- Новый флаг `--show` (+ опц. `--show-scale 0.5`, `--show-every N`):
-  - на каждом обработанном фрейме рисуем canonical-карту, POI-план (жёлтые круги), треки (цветные кружки + подпись slot/tag), HUD с `t`, `alive`, числом ассоциаций
-  - `cv2.imshow("track_teams", img)` + `cv2.waitKey(1)`; Esc/Q → graceful exit, дописать tracks.json
-  - всё под `try/except` — если нет GUI, печатаем warning и продолжаем без окна
+- `--end` дефолт `30.0` → `300.0` (5 мин).
+- Добавить флаг `--gt-end` (опционально) — отдельная отсечка для GT-оценки старта; по умолчанию `30.5` (как было).
+- **AXES** убрать малозначащие оси (`morph_kernel`, `init_min_score`, `min_area_px`-3-точки) и заменить их на те, что мы крутили вручную, плюс новые «анти-цветовые»:
+  ```
+  motion.gate_cap_px           : [120, 200, 350]
+  motion.v_max_px_s            : [40, 60, 90]
+  jump_switch_threshold_px     : [40, 80, 150]
+  switch_confirm_frames        : [3, 8]
+  anchor_lock_sec              : [0, 10, 30]
+  near_anchor_radius_canonical_px : [80, 120, 200]
+  da_strategy                  : [detect_first, color_first, hybrid]
+  da_weights.delta_color_mismatch : [2.0, 5.0, 10.0]
+  frame_step                   : [30, 60]
+  ```
+  Декартово произведение урезается до `--max-variants` (по умолчанию **40**).
 
-### 2. `scripts/tracking/modules/track_teams/push.ps1`
+- **Новая метрика `evaluate_long_window()`** — поверх существующей. Для каждого слота за всё окно [0..end]:
+  - `coverage_pct` — доля кадров, где трек слота присутствует;
+  - `id_switches` — сколько раз ближайший «чужой» трек оказывался ближе своего больше чем на K кадров подряд (сигнал «слипания» с похожим цветом);
+  - `mean_jump_px` — медиана прыжков своего трека (сигнал «дёргается»).
+  - Считаем `confusion_count[slot_i][slot_j]` — сколько раз ближайший трек был с тэгом j вместо i. Это даёт прямой ответ «кто с кем путается».
 
-- Новый параметр `-StartCoords` (дефолт: `scripts\tracking\modules\track_teams\eval\reports\start_coords.json`).
-- Если файл существует → передаём `--start-coords` и НЕ передаём `--anchors`.
-- Новый switch `-Show` → пробрасывает `--show`.
+- **Итоговый sort_key** для победителя:
+  ```
+  (-start_correct, -avg_coverage, +total_id_switches, +d_med_start)
+  ```
+  То есть: сначала чтобы старт определялся, потом чтобы трек жил все 5 минут, потом чтобы не путался, потом минимальный сдвиг.
 
-### 3. `run.ps1`
+- В `sweep_report.txt` добавить блок:
+  ```
+  LONG-WINDOW [0..300s] (best 5):
+    rank cov%  switches  med_jump  tag
+  CONFUSION TOP (winner): пары slot_a ↔ slot_b с >N перепутываниями
+  ```
 
-Сейчас это однострочный прокси (`& push.ps1 @args -NoPush`). Оставляем как есть — `-Show` автоматически прокинется через `@args`.
+### 2. `scripts/tracking/modules/track_teams/sweep_initial.ps1`
 
-### 4. README
+- `End` дефолт `30.0` → `300.0`.
+- `MaxVariants` дефолт `150` → `40`.
+- `Jobs` дефолт `8` оставить, но добавить подсказку в Write-Host: «5 мин × 40 вариантов / N jobs ≈ ETA».
 
-Коротко добавить раздел "Старт от ALGS POI picks" + флаг `-Show`.
-
-## Использование (для тебя, после изменений)
+### 3. Запуск (PowerShell, как любит юзер)
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\tracking\modules\track_teams\run.ps1 `
-  -Video D:\videos\01J650EJ4F9HMP8PVKK2Z1NQNP.mp4 `
-  -StartCoords scripts\tracking\modules\track_teams\eval\reports\start_coords.json `
-  -Show
+powershell -ExecutionPolicy Bypass -File `
+  scripts\tracking\modules\track_teams\sweep_initial.ps1 `
+  -Video "D:\path\game_sp2.mp4" `
+  -End 300 -Jobs 6 -MaxVariants 40
 ```
 
-Откроется окно cv2 с canonical Storm Point: жёлтые POI планы по слотам с тегами команд (BB, CRT, DINO, …) и закрашенные точки треков, бегущие по карте по мере обработки видео.
+Артефакты как и раньше — три файла:
+- `reports/sweep_initial/sweep_report.txt`
+- `reports/sweep_initial/sweep_report.json`
+- `reports/sweep_initial/winner.config.yaml` + `winner_tracks(.slots).json`
 
-## Что НЕ делаем в этом тикете
-
-- Не трогаем `motion_detect` (отдельная задача).
-- Не меняем формат `tracks.json`.
-- Не меняем `/admin/tracking-lab`.
+---
 
 ## Технические детали
 
-- Размер окна cv2: `--show-scale` (по умолчанию 0.5 от canonical 2048 → 1024px), масштабируем `INTER_AREA`.
-- Цвет слота: тот же `SLOT_HEX` массив из `render_live_overlay.py` — вынесу в `track_teams/_slot_palette.py` чтобы переиспользовать.
-- `--show-every`: рисуем не каждый processed frame, а каждый N-й (default 1) — на slow машинах.
-- Чтобы окно не блокировало запись `tracks.json`: рендер делается между шагами основного цикла, `waitKey(1)` non-blocking.
-- Headless защита: оборачиваем `cv2.imshow` в `try/except cv2.error`; при первой ошибке выключаем `--show` и продолжаем.
+- `evaluate_long_window()` читает уже сгенерированный `tracks_*.json` (никаких дополнительных прогонов).
+- `confusion` строится по `slot_id`/`team_id` в кадре — без GT, только по соседству на карте.
+- Промежуточные tracks-файлы по-прежнему удаляются (но `--keep-intermediate` остаётся для дебага одного варианта).
+- Anchors / eliminations не трогаем, motion_tracks нужно один раз пересобрать с `-Window` покрывающим 300 сек — sweep сам напишет WARN если не покроет.
+
+---
+
+## Чего НЕ делаем
+
+- Не правим `track_teams.py` — все оси параметризации уже там есть (мы их и крутили).
+- Не возвращаем «жёсткий» `gate_cap_px=160` из последней правки — он станет одним из 3 значений на оси и проиграет/выиграет честно.
+- Не меняем UI и фронтенд.

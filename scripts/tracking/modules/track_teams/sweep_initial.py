@@ -95,20 +95,22 @@ BASE_CFG = {
 # Каждая ось = (key_path, [(label, value), ...]).
 # Декартово произведение -> множество вариантов. Урезается --max-variants.
 AXES = [
-    ("da_strategy",                            [("ds=detect", "detect_first"),
-                                                 ("ds=color",  "color_first"),
-                                                 ("ds=hybrid", "hybrid")]),
-    ("frame_step",                             [("fs=15", 15), ("fs=30", 30), ("fs=60", 60)]),
-    ("da_weights.beta_world",                  [("bw=0.3", 0.3), ("bw=1.0", 1.0), ("bw=2.0", 2.0)]),
-    ("da_weights.gate_radius_mult",            [("gr=0.8", 0.8), ("gr=1.6", 1.6), ("gr=2.5", 2.5)]),
-    ("da_weights.delta_color_mismatch",        [("dc=2", 2.0), ("dc=5", 5.0), ("dc=10", 10.0)]),
-    ("tracking.init_warmup_sec",               [("iw=0", 0.0), ("iw=10", 10.0)]),
-    ("tracking.init_min_score",                [("im=0.1", 0.1), ("im=0.3", 0.3)]),
-    ("slot_tracker.min_tracked_for_active",    [("ma=3", 3), ("ma=10", 10)]),
-    ("detection.min_area_px",                  [("mi=15", 15), ("mi=40", 40), ("mi=80", 80)]),
-    ("detection.morph_kernel",                 [("mk=1", 1), ("mk=3", 3)]),
-    ("slot_tracker.near_anchor_radius_canonical_px",
-                                                [("na=120", 120.0), ("na=250", 250.0), ("na=400", 400.0)]),
+    # Цветовое и DA-разрешение похожих команд.
+    ("da_strategy",                                  [("ds=detect", "detect_first"),
+                                                       ("ds=color",  "color_first"),
+                                                       ("ds=hybrid", "hybrid")]),
+    ("da_weights.delta_color_mismatch",              [("dc=2", 2.0), ("dc=5", 5.0), ("dc=10", 10.0)]),
+    # Motion-гейт (ширина зоны поиска) — главный регулятор «слипания» с похожим цветом.
+    ("slot_tracker.motion.gate_cap_px",              [("gc=120", 120.0), ("gc=200", 200.0), ("gc=350", 350.0)]),
+    ("slot_tracker.motion.v_max_px_s",               [("vm=40", 40.0), ("vm=60", 60.0), ("vm=90", 90.0)]),
+    # Защита от перепрыгивания на чужой трек.
+    ("slot_tracker.jump_switch_threshold_px",        [("js=40", 40.0), ("js=80", 80.0), ("js=150", 150.0)]),
+    ("slot_tracker.switch_confirm_frames",           [("sc=3", 3), ("sc=8", 8)]),
+    # Анкер-старт: насколько жёстко прибиваем слот к POI в первые секунды.
+    ("slot_tracker.anchor_lock_sec",                 [("al=0", 0.0), ("al=10", 10.0), ("al=30", 30.0)]),
+    ("slot_tracker.near_anchor_radius_canonical_px", [("na=80", 80.0), ("na=120", 120.0), ("na=200", 200.0)]),
+    # Темп обработки.
+    ("frame_step",                                   [("fs=30", 30), ("fs=60", 60)]),
 ]
 
 
