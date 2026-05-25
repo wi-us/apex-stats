@@ -39,6 +39,7 @@ import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminMapsRouteImport } from './routes/admin.maps'
 import { Route as AdminHsvRouteImport } from './routes/admin.hsv'
 import { Route as AdminDiagramsRouteImport } from './routes/admin.diagrams'
+import { Route as AdminDatasetRouteImport } from './routes/admin.dataset'
 import { Route as AdminCameraRouteImport } from './routes/admin.camera'
 import { Route as AdminTeamsTeamIdRouteImport } from './routes/admin.teams.$teamId'
 import { Route as AdminMatchesMatchIdRouteImport } from './routes/admin.matches.$matchId'
@@ -194,6 +195,11 @@ const AdminDiagramsRoute = AdminDiagramsRouteImport.update({
   path: '/diagrams',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDatasetRoute = AdminDatasetRouteImport.update({
+  id: '/dataset',
+  path: '/dataset',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCameraRoute = AdminCameraRouteImport.update({
   id: '/camera',
   path: '/camera',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/camera': typeof AdminCameraRoute
+  '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/camera': typeof AdminCameraRoute
+  '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/camera': typeof AdminCameraRoute
+  '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/camera'
+    | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/camera'
+    | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/camera'
+    | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
@@ -659,6 +671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDiagramsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/dataset': {
+      id: '/admin/dataset'
+      path: '/dataset'
+      fullPath: '/admin/dataset'
+      preLoaderRoute: typeof AdminDatasetRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/camera': {
       id: '/admin/camera'
       path: '/camera'
@@ -728,6 +747,7 @@ const AdminTeamsRouteWithChildren = AdminTeamsRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminCameraRoute: typeof AdminCameraRoute
+  AdminDatasetRoute: typeof AdminDatasetRoute
   AdminDiagramsRoute: typeof AdminDiagramsRoute
   AdminHsvRoute: typeof AdminHsvRoute
   AdminMapsRoute: typeof AdminMapsRouteWithChildren
@@ -747,6 +767,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCameraRoute: AdminCameraRoute,
+  AdminDatasetRoute: AdminDatasetRoute,
   AdminDiagramsRoute: AdminDiagramsRoute,
   AdminHsvRoute: AdminHsvRoute,
   AdminMapsRoute: AdminMapsRouteWithChildren,
@@ -823,13 +844,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
