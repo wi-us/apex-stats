@@ -7,10 +7,10 @@ param(
   [Parameter(Mandatory=$true)][string]$Video,
   [string]$Anchors = "scripts/tracking/modules/motion_detect/reports/motion_tracks.json",
   [string]$Eliminations = "scripts/tracking/modules/hud_read/reports/eliminations.json",
-  [double]$End = 30.0,
+  [double]$End = 300.0,
   [double]$MatchPx = 150.0,
-  [int]$Jobs = 8,
-  [int]$MaxVariants = 150,
+  [int]$Jobs = 6,
+  [int]$MaxVariants = 40,
   [switch]$KeepIntermediate
 )
 $ErrorActionPreference = "Stop"
@@ -19,6 +19,10 @@ chcp 65001 > $null
 $env:PYTHONUTF8 = "1"
 $repo = (git rev-parse --show-toplevel).Trim()
 Set-Location $repo
+
+# ETA-подсказка: один прогон 5 мин видео занимает ~30-90s в зависимости от frame_step.
+$etaMin = [math]::Round(($End / 60.0) * $MaxVariants / [math]::Max(1, $Jobs), 1)
+Write-Host "[sweep] $MaxVariants variants x ${End}s video / $Jobs jobs ~= $etaMin min wallclock" -ForegroundColor Yellow
 
 $argsList = @(
   "scripts/tracking/modules/track_teams/sweep_initial.py",

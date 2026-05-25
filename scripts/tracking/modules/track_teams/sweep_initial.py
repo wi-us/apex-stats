@@ -95,20 +95,22 @@ BASE_CFG = {
 # Каждая ось = (key_path, [(label, value), ...]).
 # Декартово произведение -> множество вариантов. Урезается --max-variants.
 AXES = [
-    ("da_strategy",                            [("ds=detect", "detect_first"),
-                                                 ("ds=color",  "color_first"),
-                                                 ("ds=hybrid", "hybrid")]),
-    ("frame_step",                             [("fs=15", 15), ("fs=30", 30), ("fs=60", 60)]),
-    ("da_weights.beta_world",                  [("bw=0.3", 0.3), ("bw=1.0", 1.0), ("bw=2.0", 2.0)]),
-    ("da_weights.gate_radius_mult",            [("gr=0.8", 0.8), ("gr=1.6", 1.6), ("gr=2.5", 2.5)]),
-    ("da_weights.delta_color_mismatch",        [("dc=2", 2.0), ("dc=5", 5.0), ("dc=10", 10.0)]),
-    ("tracking.init_warmup_sec",               [("iw=0", 0.0), ("iw=10", 10.0)]),
-    ("tracking.init_min_score",                [("im=0.1", 0.1), ("im=0.3", 0.3)]),
-    ("slot_tracker.min_tracked_for_active",    [("ma=3", 3), ("ma=10", 10)]),
-    ("detection.min_area_px",                  [("mi=15", 15), ("mi=40", 40), ("mi=80", 80)]),
-    ("detection.morph_kernel",                 [("mk=1", 1), ("mk=3", 3)]),
-    ("slot_tracker.near_anchor_radius_canonical_px",
-                                                [("na=120", 120.0), ("na=250", 250.0), ("na=400", 400.0)]),
+    # Цветовое и DA-разрешение похожих команд.
+    ("da_strategy",                                  [("ds=detect", "detect_first"),
+                                                       ("ds=color",  "color_first"),
+                                                       ("ds=hybrid", "hybrid")]),
+    ("da_weights.delta_color_mismatch",              [("dc=2", 2.0), ("dc=5", 5.0), ("dc=10", 10.0)]),
+    # Motion-гейт (ширина зоны поиска) — главный регулятор «слипания» с похожим цветом.
+    ("slot_tracker.motion.gate_cap_px",              [("gc=120", 120.0), ("gc=200", 200.0), ("gc=350", 350.0)]),
+    ("slot_tracker.motion.v_max_px_s",               [("vm=40", 40.0), ("vm=60", 60.0), ("vm=90", 90.0)]),
+    # Защита от перепрыгивания на чужой трек.
+    ("slot_tracker.jump_switch_threshold_px",        [("js=40", 40.0), ("js=80", 80.0), ("js=150", 150.0)]),
+    ("slot_tracker.switch_confirm_frames",           [("sc=3", 3), ("sc=8", 8)]),
+    # Анкер-старт: насколько жёстко прибиваем слот к POI в первые секунды.
+    ("slot_tracker.anchor_lock_sec",                 [("al=0", 0.0), ("al=10", 10.0), ("al=30", 30.0)]),
+    ("slot_tracker.near_anchor_radius_canonical_px", [("na=80", 80.0), ("na=120", 120.0), ("na=200", 200.0)]),
+    # Темп обработки.
+    ("frame_step",                                   [("fs=30", 30), ("fs=60", 60)]),
 ]
 
 
@@ -231,17 +233,90 @@ def evaluate(tracks_file: Path, gt_points: list[dict], match_px: float) -> dict:
     }
 
 
+def evaluate_long_window(tracks_file: Path, end_sec: float, jump_px: float = 200.0) -> dict:
+    """Метрики качества трекинга за всё окно [0..end_sec]:
+    - per-slot coverage (доля кадров, где слот присутствует),
+    - per-slot id_switches (резкие прыжки > jump_px между соседними кадрами),
+    - per-slot mean_jump_px (медиана step-to-step смещений),
+    - confusion[a][b] — сколько раз ближайший трек к слоту a был помечен как b
+      (сигнал «слипания» команд с похожим цветом)."""
+    if not tracks_file.exists():
+        return {"ok": False, "reason": "no_tracks_file"}
+    try:
+        doc = json.loads(tracks_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"ok": False, "reason": f"parse:{e}"}
+    frames = [f for f in doc.get("frames", []) if float(f.get("t", -1)) <= end_sec]
+    if not frames:
+        return {"ok": False, "reason": "no_frames"}
+    # Собираем последовательности позиций каждого слота.
+    seq: dict[str, list[tuple[float, float, float]]] = {}
+    confusion: dict[str, dict[str, int]] = {}
+    for f in frames:
+        present_xy: dict[str, tuple[float, float]] = {}
+        for tr in f.get("tracks", []):
+            sid = tr.get("slot_id") or tr.get("team_id")
+            xy = tr.get("canonical_px") or tr.get("world")
+            if not sid or not xy:
+                continue
+            present_xy[sid] = (xy[0], xy[1])
+            seq.setdefault(sid, []).append((float(f["t"]), xy[0], xy[1]))
+        # confusion: для каждого слота a — ближайший трек b (включая a). Если b != a — путаница.
+        slot_ids = list(present_xy.keys())
+        for a in slot_ids:
+            ax, ay = present_xy[a]
+            best_b, best_d = a, float("inf")
+            for b in slot_ids:
+                if b == a:
+                    continue
+                bx, by = present_xy[b]
+                d = math.hypot(ax - bx, ay - by)
+                if d < best_d:
+                    best_d, best_b = d, b
+            if best_d < 60.0:  # «слиплись» если ближайший чужой в радиусе 60px
+                confusion.setdefault(a, {})[best_b] = confusion.get(a, {}).get(best_b, 0) + 1
+    total_frames = len(frames)
+    per_slot = {}
+    total_switches = 0
+    cov_list = []
+    for sid, pts in seq.items():
+        cov = len(pts) / total_frames
+        cov_list.append(cov)
+        jumps = []
+        switches = 0
+        for (t1, x1, y1), (t2, x2, y2) in zip(pts, pts[1:]):
+            d = math.hypot(x2 - x1, y2 - y1)
+            jumps.append(d)
+            if d > jump_px:
+                switches += 1
+        total_switches += switches
+        per_slot[sid] = {
+            "coverage_pct": round(100.0 * cov, 1),
+            "id_switches": switches,
+            "med_jump_px": round(statistics.median(jumps), 1) if jumps else None,
+        }
+    return {
+        "ok": True,
+        "frames": total_frames,
+        "avg_coverage_pct": round(100.0 * statistics.mean(cov_list), 1) if cov_list else 0.0,
+        "total_id_switches": total_switches,
+        "per_slot": per_slot,
+        "confusion": confusion,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True)
     ap.add_argument("--anchors", default=str(MOD.parent / "motion_detect" / "reports" / "motion_tracks.json"))
     ap.add_argument("--eliminations", default=str(MOD.parent / "hud_read" / "reports" / "eliminations.json"))
     ap.add_argument("--gt", default=str(MOD / "assets" / "gt_anchors.json"))
-    ap.add_argument("--end", type=float, default=30.0, help="секунд видео анализировать")
-    ap.add_argument("--gt-cutoff", type=float, default=30.5)
+    ap.add_argument("--end", type=float, default=300.0, help="секунд видео анализировать (по умолчанию 5 мин)")
+    ap.add_argument("--gt-cutoff", type=float, default=30.5,
+                    help="окно GT-якорей для оценки идентификации на старте")
     ap.add_argument("--match-px", type=float, default=100.0, help="d_px <= этого = «корректно»")
     ap.add_argument("--jobs", type=int, default=8, help="параллельные процессы (1..15)")
-    ap.add_argument("--max-variants", type=int, default=120)
+    ap.add_argument("--max-variants", type=int, default=40)
     ap.add_argument("--out-dir", default=str(MOD / "reports" / "sweep_initial"))
     ap.add_argument("--keep-intermediate", action="store_true",
                     help="не удалять _tracks/_configs/_logs после прогона")
@@ -288,16 +363,28 @@ def main() -> int:
             done_n += 1
             ev = evaluate(Path(res["tracks_path"]), gt_pts, args.match_px)
             res["eval"] = ev
+            res["eval_long"] = evaluate_long_window(Path(res["tracks_path"]), args.end)
             results.append(res)
             status = f"{ev['correct']}/{ev['total']}" if ev.get("ok") else "FAIL"
-            print(f"[sweep] {done_n}/{len(variants)} {res['tag']:<55} ({res['duration_s']}s) -> {status}")
+            el = res["eval_long"]
+            long_str = (f"cov={el['avg_coverage_pct']}% sw={el['total_id_switches']}"
+                        if el.get("ok") else "long:FAIL")
+            print(f"[sweep] {done_n}/{len(variants)} {res['tag']:<70} "
+                  f"({res['duration_s']}s) start={status} {long_str}")
 
     total_dt = round(time.time() - t_start, 1)
 
-    # Сортировка: больше correct, меньше d_med.
+    # Сортировка: сначала корректный старт, потом покрытие за 5 мин,
+    # потом минимум id-switches, потом минимальный сдвиг на старте.
     def sort_key(r):
         e = r.get("eval") or {}
-        return (-(e.get("correct") or 0), e.get("d_med") if e.get("d_med") is not None else 1e9)
+        el = r.get("eval_long") or {}
+        return (
+            -(e.get("correct") or 0),
+            -(el.get("avg_coverage_pct") or 0.0),
+            (el.get("total_id_switches") if el.get("ok") else 1e9),
+            (e.get("d_med") if e.get("d_med") is not None else 1e9),
+        )
     results.sort(key=sort_key)
     winner = results[0] if results and results[0].get("eval", {}).get("ok") else None
 
@@ -392,6 +479,39 @@ def main() -> int:
         for sid in sorted(slot_ids, key=slot_sort_key):
             d = ps.get(sid, {})
             lines.append(f"  {sid:<10} {str(d.get('nearest_slot')):<14} {str(d.get('nearest_d')):>8}")
+
+    # ── LONG-WINDOW (TOP-5 по покрытию) ──
+    lines.append("")
+    lines.append(f"LONG-WINDOW [0..{args.end}s] (TOP-5 по avg_coverage, тогда меньше id_switches):")
+    long_sorted = sorted(
+        [r for r in results if (r.get("eval_long") or {}).get("ok")],
+        key=lambda r: (-(r["eval_long"]["avg_coverage_pct"]),
+                       r["eval_long"]["total_id_switches"]),
+    )[:5]
+    lines.append(f"  {'rank':>4} {'cov%':>6} {'switches':>9}  tag")
+    for i, r in enumerate(long_sorted, 1):
+        el = r["eval_long"]
+        lines.append(f"  {i:>4} {el['avg_coverage_pct']:>6} {el['total_id_switches']:>9}  {r['tag']}")
+
+    # ── CONFUSION по winner long-окну (топ пар «слипания») ──
+    if winner and (winner.get("eval_long") or {}).get("ok"):
+        conf = winner["eval_long"].get("confusion") or {}
+        pairs = []
+        for a, others in conf.items():
+            for b, n in others.items():
+                key = tuple(sorted([a, b]))
+                pairs.append((key, n))
+        # Агрегируем по неупорядоченным парам.
+        agg: dict[tuple, int] = {}
+        for k, n in pairs:
+            agg[k] = agg.get(k, 0) + n
+        top_pairs = sorted(agg.items(), key=lambda x: -x[1])[:15]
+        if top_pairs:
+            lines.append("")
+            lines.append("CONFUSION-PAIRS (по winner, за всё окно — кадры со слипанием <60px):")
+            lines.append(f"  {'pair':<26} {'frames':>7}")
+            for (a, b), n in top_pairs:
+                lines.append(f"  {a + ' <-> ' + b:<26} {n:>7}")
 
     (out_dir / "sweep_report.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
