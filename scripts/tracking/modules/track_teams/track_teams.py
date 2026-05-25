@@ -31,6 +31,11 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 from collections import Counter
+
+from scripts.tracking.modules.track_teams._slot_palette import (
+    slot_color_bgr as _slot_color_bgr,
+    slot_color_hex as _slot_color_hex,
+)
 try:
     from scipy.optimize import linear_sum_assignment as _hungarian
 except ImportError:  # pragma: no cover
