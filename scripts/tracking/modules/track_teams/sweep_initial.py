@@ -363,16 +363,28 @@ def main() -> int:
             done_n += 1
             ev = evaluate(Path(res["tracks_path"]), gt_pts, args.match_px)
             res["eval"] = ev
+            res["eval_long"] = evaluate_long_window(Path(res["tracks_path"]), args.end)
             results.append(res)
             status = f"{ev['correct']}/{ev['total']}" if ev.get("ok") else "FAIL"
-            print(f"[sweep] {done_n}/{len(variants)} {res['tag']:<55} ({res['duration_s']}s) -> {status}")
+            el = res["eval_long"]
+            long_str = (f"cov={el['avg_coverage_pct']}% sw={el['total_id_switches']}"
+                        if el.get("ok") else "long:FAIL")
+            print(f"[sweep] {done_n}/{len(variants)} {res['tag']:<70} "
+                  f"({res['duration_s']}s) start={status} {long_str}")
 
     total_dt = round(time.time() - t_start, 1)
 
-    # Сортировка: больше correct, меньше d_med.
+    # Сортировка: сначала корректный старт, потом покрытие за 5 мин,
+    # потом минимум id-switches, потом минимальный сдвиг на старте.
     def sort_key(r):
         e = r.get("eval") or {}
-        return (-(e.get("correct") or 0), e.get("d_med") if e.get("d_med") is not None else 1e9)
+        el = r.get("eval_long") or {}
+        return (
+            -(e.get("correct") or 0),
+            -(el.get("avg_coverage_pct") or 0.0),
+            (el.get("total_id_switches") if el.get("ok") else 1e9),
+            (e.get("d_med") if e.get("d_med") is not None else 1e9),
+        )
     results.sort(key=sort_key)
     winner = results[0] if results and results[0].get("eval", {}).get("ok") else None
 
