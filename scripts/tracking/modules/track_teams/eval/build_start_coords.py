@@ -82,6 +82,21 @@ def _load_zone_size(zones_json: Path, zone_tag: str) -> tuple[int, int]:
     raise SystemExit(f"[build_start_coords] zone tag={zone_tag} not found in {zones_json}")
 
 
+def _load_affine(affine_json: Path) -> tuple[list[list[float]], tuple[int, int]]:
+    """Загружает 2x3 матрицу minimap_px → canonical_px + canonical_size."""
+    data = json.loads(affine_json.read_text(encoding="utf-8"))
+    M = data["affine"]["matrix"]
+    src = data.get("source", {})
+    cw, ch = src.get("canonical_size", [2048, 2048])
+    return M, (int(cw), int(ch))
+
+
+def _apply_affine(M: list[list[float]], x: float, y: float) -> tuple[float, float]:
+    a, b, tx = M[0]
+    c, d, ty = M[1]
+    return a * x + b * y + tx, c * x + d * y + ty
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--series", required=True, help="ALGS series ULID")
@@ -93,6 +108,9 @@ def main() -> None:
                     help="motion_detect/configs/zones.vod.json — нужен размер minimap-зоны")
     ap.add_argument("--zone-tag", default=None,
                     help="по умолчанию берётся zone_tag из motion_tracks.json")
+    ap.add_argument("--affine", type=Path, default=None,
+                    help="canonical_maps/<map>.minimap_affine.json — переводит "
+                         "minimap-ROI px в canonical px (рекомендуется)")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--warmup-sec", type=float, default=30.0)
     args = ap.parse_args()
@@ -112,6 +130,11 @@ def main() -> None:
     zone_tag = args.zone_tag or tag_in_file or "minimap"
     zw, zh = _load_zone_size(args.zones, zone_tag)
 
+    affine = None
+    if args.affine is not None:
+        affine_M, (cw, ch) = _load_affine(args.affine)
+        affine = (affine_M, cw, ch)
+
     out: dict = {
         "meta": {
             "series_id": args.series,
@@ -119,6 +142,7 @@ def main() -> None:
             "canonical_size": [W, H],
             "minimap_zone_tag": zone_tag,
             "minimap_zone_size": [zw, zh],
+            "affine_applied": bool(affine),
             "warmup_sec": args.warmup_sec,
         },
         "slots": {},
@@ -133,15 +157,21 @@ def main() -> None:
             entry["algs"] = {"cx_norm": a["cx"], "cy_norm": a["cy"], "r_norm": a["r"]}
         if m:
             mx, my, n = m
+            if affine is not None:
+                M_aff, cw, ch = affine
+                cx_c, cy_c = _apply_affine(M_aff, mx, my)
+                nx, ny = cx_c / cw, cy_c / ch
+            else:
+                nx, ny = mx / zw, my / zh
             entry["motion"] = {
-                "cx_norm": round(mx / zw, 4),
-                "cy_norm": round(my / zh, 4),
+                "cx_norm": round(nx, 4),
+                "cy_norm": round(ny, 4),
                 "cx_px": round(mx, 1), "cy_px": round(my, 1),
                 "n_points": n,
             }
         if a and m:
-            dx = (mx / zw) - a["cx"]
-            dy = (my / zh) - a["cy"]
+            dx = nx - a["cx"]
+            dy = ny - a["cy"]
             entry["delta_norm"] = round(math.hypot(dx, dy), 4)
         out["slots"][slot] = entry
 
