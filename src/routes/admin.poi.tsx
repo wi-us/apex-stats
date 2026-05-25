@@ -443,6 +443,29 @@ function PoiAdmin() {
             ))}
           </select>
           <span className="text-xs text-muted-foreground">{zones.length} zones</span>
+          {seriesId && (
+            <span className="ml-2 flex items-center gap-2 rounded-sm border border-border bg-surface px-2 py-1 text-[11px] text-muted-foreground">
+              {seriesLoading && <span>loading series…</span>}
+              {seriesInfo && (
+                <>
+                  <span className="font-semibold text-foreground">
+                    {seriesInfo.tournament ?? seriesInfo.event ?? "—"}
+                  </span>
+                  {seriesInfo.region && <span>· {seriesInfo.region}</span>}
+                  {seriesInfo.series_number != null && (
+                    <span>· series #{seriesInfo.series_number}</span>
+                  )}
+                  {seriesInfo.name && <span>· {seriesInfo.name}</span>}
+                  <span>
+                    · {MAP_LABELS[mapId]} match
+                    {matchesOnMap.length === 1 ? "" : "es"}{" "}
+                    {matchesOnMap.length ? matchesOnMap.join(", ") : "—"}
+                  </span>
+                </>
+              )}
+              <span className="font-mono opacity-60">{seriesId}</span>
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <label className="cursor-pointer rounded-sm border border-border bg-surface px-2 py-1 text-xs hover:bg-muted">
