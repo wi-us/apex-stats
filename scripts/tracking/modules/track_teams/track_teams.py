@@ -958,6 +958,57 @@ def _eff_w(base: dict, overrides: dict, slot_int) -> dict:
     return merged
 
 
+def candidate_inside_slot_gate(st, cand: dict, t_now: float, weights: dict) -> tuple[bool, str]:
+    """Spatial sanity gate for pre-classified detections.
+
+    `--from-detections` already gives us a slot id, but that classifier can be
+    wrong for similar HUD colors. Never let such a checkpoint teleport a slot
+    away from its ALGS/motion seed: it must fit both the motion prediction and,
+    while active, the progressive start-anchor radius.
+    """
+    if st.state in ("wiped", "inactive") or getattr(st, "wiped", False):
+        return False, "slot_inactive"
+    if st.canonical_px is None and st.init_canonical_px is None:
+        return False, "no_anchor"
+
+    gate_mult = float(weights.get("gate_radius_mult", 1.0)) * float(
+        weights.get("_dyn_gate_shrink", 1.0))
+    fallback_gate_px = float(weights.get("fallback_gate_canonical_px", 200.0))
+    cand_cx, cand_cy = cand["canonical_px"]
+
+    if st.canonical_px is not None and st.last_seen_t is not None:
+        dt = min(getattr(st, "dt_cap_s", 20.0), max(0.0, t_now - st.last_seen_t))
+        v_eff = max(getattr(st, "v_max_px_s", 60.0),
+                    getattr(st, "v_observed_peak_px_s", 0.0)
+                    * getattr(st, "v_observed_boost", 1.8))
+        radius = min(getattr(st, "gate_cap_px", 450.0),
+                     v_eff * dt + getattr(st, "gate_slack_px", 20.0))
+        pred_cx = st.canonical_px[0] + (
+            st.vx * dt if not st.canonical_px_stale else 0.0)
+        pred_cy = st.canonical_px[1] + (
+            st.vy * dt if not st.canonical_px_stale else 0.0)
+    elif st.init_canonical_px is not None:
+        pred_cx, pred_cy = st.init_canonical_px
+        radius = min(getattr(st, "gate_cap_px", 450.0), fallback_gate_px)
+    else:
+        return False, "no_prediction"
+
+    radius *= gate_mult
+    d_pred = math.hypot(cand_cx - pred_cx, cand_cy - pred_cy)
+    if d_pred > radius:
+        return False, f"out_of_motion_gate({d_pred:.0f}>{radius:.0f}px)"
+
+    anchor_r = st.anchor_radius_at(t_now) if hasattr(st, "anchor_radius_at") else None
+    if anchor_r is not None and st.init_canonical_px is not None:
+        anchor_gate_mult = float(weights.get("from_detections_anchor_gate_mult", 1.0))
+        ax, ay = st.init_canonical_px
+        d_anchor = math.hypot(cand_cx - ax, cand_cy - ay)
+        max_anchor = max(1.0, anchor_r * anchor_gate_mult)
+        if d_anchor > max_anchor:
+            return False, f"out_of_start_anchor({d_anchor:.0f}>{max_anchor:.0f}px)"
+    return True, "ok"
+
+
 def _bbox_iou_xywh(a: tuple, b: tuple) -> float:
     """IoU of two bboxes in (x, y, w, h) form. PR-2 identity anchor."""
     if not a or not b:
@@ -1929,7 +1980,11 @@ class SlotTracker:
             dx = cand_cx - last_cx
             dy = cand_cy - last_cy
             dist = math.hypot(dx, dy)
-            direct_measurement = (det_source == "from_detections" and self.trust_from_detections)
+            direct_measurement = (
+                det_source == "from_detections"
+                and self.trust_from_detections
+                and self.activated
+            )
             # PR-2: pending-switch hysteresis. Если кандидат скакнул дальше
             # jump_switch_threshold_px от прошлого центра — НЕ принимаем сразу,
             # требуем switch_confirm_frames подряд таких же скачков рядом.
@@ -2715,16 +2770,28 @@ def main():
                         cps = pick_checkpoints_for_frame(
                             frame_idx, from_det_index, from_det_frames, from_det_tol)
                     assigns: dict[str, tuple[int, float, dict]] = {}
+                    rejected_from_det: Counter = Counter()
                     for c in cps:
                         # canonical_px вычисляем по текущей H (рег. — единственное,
                         # что мы тут делаем сами).
                         cx_can, cy_can = map_point(H, c["frame_px"])
                         c2 = dict(c)
                         c2["canonical_px"] = (cx_can, cy_can)
+                        st = slot_trackers.get(c["team_id"])
+                        if st is None:
+                            rejected_from_det["unknown_slot"] += 1
+                            continue
+                        ok_gate, gate_reason = candidate_inside_slot_gate(
+                            st, c2, t_now, da_weights)
+                        if not ok_gate:
+                            rejected_from_det[gate_reason.split("(", 1)[0]] += 1
+                            continue
                         prev = assigns.get(c["team_id"])
                         score = float(c.get("color_score") or 0.0)
                         if prev is None or score > prev[1]:
                             assigns[c["team_id"]] = (int(c.get("_dt", 0)), score, c2)
+                    if rejected_from_det:
+                        cam["from_detections_rejected"] = dict(rejected_from_det)
                     for t in teams:
                         st = slot_trackers[t.id]
                         packed = assigns.get(t.id)
