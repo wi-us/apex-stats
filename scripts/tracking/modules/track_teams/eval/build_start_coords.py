@@ -31,6 +31,50 @@ from scripts.algs_api import db as algs_db  # noqa: E402
 from scripts.algs_api.build_poi_hints import build as build_algs_hints  # noqa: E402
 
 
+def _algs_poi_names(conn, *, series_id: str, canonical_map: str) -> dict[str, dict]:
+    """slot_N -> {team_tag, team_name, poi_id, poi_name}."""
+    rows = conn.execute(
+        """
+        SELECT pp.spawn_location_id AS poi_id,
+               sl.name              AS poi_name,
+               pp.team_id,
+               t.short_name, t.name AS team_name,
+               st.position
+          FROM poi_picks pp
+          JOIN poi_drafts pd      ON pd.id = pp.draft_id
+          JOIN spawn_locations sl ON sl.id = pp.spawn_location_id
+          JOIN maps m             ON m.id_ulid = pp.map_id_ulid
+          LEFT JOIN teams t       ON t.id = pp.team_id
+          LEFT JOIN series_team_stats st
+                                  ON st.series_id = pd.series_id
+                                 AND st.team_id  = pp.team_id
+         WHERE pd.series_id = ?
+           AND m.canonical_id = ?
+        """,
+        (series_id, canonical_map),
+    ).fetchall()
+    by_team: dict[str, dict] = {}
+    for r in rows:
+        tid = r["team_id"] or ""
+        if tid in by_team:
+            continue
+        by_team[tid] = dict(r)
+    ordered = sorted(
+        by_team.values(),
+        key=lambda r: (r["position"] if r["position"] is not None else 999,
+                       (r["team_name"] or "")),
+    )
+    out: dict[str, dict] = {}
+    for i, r in enumerate(ordered):
+        out[f"slot_{i + 1}"] = {
+            "team_tag":  (r["short_name"] or "").strip() or None,
+            "team_name": r["team_name"],
+            "poi_id":    r["poi_id"],
+            "poi_name":  r["poi_name"],
+        }
+    return out
+
+
 def _load_canonical_size(canonical_json: Path) -> tuple[int, int]:
     data = json.loads(canonical_json.read_text(encoding="utf-8"))
     size = data.get("canonical_size") or data.get("size") or [2048, 2048]
@@ -122,6 +166,8 @@ def main() -> None:
         algs = build_algs_hints(conn, series_id=args.series,
                                 canonical_map=args.map_id,
                                 default_radius=0.03)
+        algs_names = _algs_poi_names(conn, series_id=args.series,
+                                     canonical_map=args.map_id)
     algs_by_slot = {k: v for k, v in algs.items() if k.startswith("slot_")}
 
     # 2) motion_detect → minimap-zone px → нормализованные xy (0..1 от minimap)
@@ -152,7 +198,15 @@ def main() -> None:
     for slot in all_slots:
         a = algs_by_slot.get(slot)
         m = motion_px.get(slot)
+        meta = algs_names.get(slot) or {}
         entry: dict = {}
+        if meta:
+            entry["team_tag"]  = meta.get("team_tag")
+            entry["team_name"] = meta.get("team_name")
+            entry["poi"] = {
+                "id":   meta.get("poi_id"),
+                "name": meta.get("poi_name"),
+            }
         if a:
             entry["algs"] = {"cx_norm": a["cx"], "cy_norm": a["cy"], "r_norm": a["r"]}
         if m:
