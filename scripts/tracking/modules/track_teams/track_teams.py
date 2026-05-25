@@ -2248,8 +2248,19 @@ def main():
     if anchors_path is None and cfg.get("anchors_file"):
         anchors_path = (args.config.parent / cfg["anchors_file"]).resolve()
 
+    # --start-coords (ALGS POI picks) имеет приоритет над --anchors (motion).
+    start_coords_path: Path | None = args.start_coords
+    if start_coords_path is not None and not start_coords_path.exists():
+        print(f"[warn] --start-coords {start_coords_path} not found — ignoring",
+              file=sys.stderr)
+        start_coords_path = None
+    if start_coords_path is not None:
+        print(f"[info] start-coords (ALGS POI picks) source: {start_coords_path}")
+        # анхоры из motion в этой ветке не используем
+        anchors_path = None
+
     teams: list[TeamCfg] = []
-    if anchors_path and Path(anchors_path).exists():
+    if start_coords_path is not None or (anchors_path and Path(anchors_path).exists()):
         # Try to load manually calibrated HSV preset for this canonical map.
         # Search order: configs/ next to YAML, then shared/configs, then
         # motion_detect/configs (legacy location). Filename pattern:
@@ -2287,8 +2298,12 @@ def main():
             print(f"[info] hsv_preset loaded: {preset_src} ({len(hsv_preset or {})} slots)")
         else:
             print(f"[info] hsv_preset not found for canonical_map={cmap_name} — using anchor-derived HSV")
-        teams = teams_from_anchors(Path(anchors_path), hsv_preset=hsv_preset)
-        print(f"[info] teams: {len(teams)} auto-generated from anchors ({anchors_path})")
+        if start_coords_path is not None:
+            teams = teams_from_start_coords(start_coords_path, hsv_preset=hsv_preset)
+            print(f"[info] teams: {len(teams)} from start_coords ({start_coords_path})")
+        else:
+            teams = teams_from_anchors(Path(anchors_path), hsv_preset=hsv_preset)
+            print(f"[info] teams: {len(teams)} auto-generated from anchors ({anchors_path})")
     if not teams:
         teams = parse_teams(cfg)
         if anchors_path:
@@ -2304,7 +2319,12 @@ def main():
     trk = WorldTracker(cfg.get("tracking", {}))
     trk.set_canonical_size((cmap.size[0], cmap.size[1]))
     anchors_map: dict[str, dict] = {}
-    if anchors_path:
+    if start_coords_path is not None:
+        anchors_map = load_start_anchors(start_coords_path, teams, cmap)
+        trk.set_anchors(anchors_map)
+        n_high = sum(1 for a in anchors_map.values() if a.get("conf") == "HIGH")
+        print(f"[info] start-anchors: {n_high}/{len(teams)} HIGH (ALGS POI picks)")
+    elif anchors_path:
         mini_affine = load_minimap_affine(cmap.name, canonical_dir)
         anchors_map = load_anchors(Path(anchors_path), teams, mini_affine, cmap)
         trk.set_anchors(anchors_map)
