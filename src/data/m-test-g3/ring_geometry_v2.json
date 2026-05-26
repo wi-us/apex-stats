@@ -1,0 +1,33 @@
+{
+  "video": "scripts\\tracking\\game_5.mp4",
+  "fps": 59.94005994005994,
+  "canonical": "olympus",
+  "canonical_size": [
+    2048,
+    2048
+  ],
+  "camera_roi": [
+    437,
+    45,
+    1050,
+    1030
+  ],
+  "max_ring": 3,
+  "phases": [
+    {
+      "ring": 1,
+      "samples": 0,
+      "geometry_confidence": "missing"
+    },
+    {
+      "ring": 2,
+      "samples": 0,
+      "geometry_confidence": "missing"
+    },
+    {
+      "ring": 3,
+      "samples": 0,
+      "geometry_confidence": "missing"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "vocab": [
+    "BB",
+    "DINO",
+    "SRC",
+    "S2",
+    "JDG",
+    "GMBL",
+    "ELTE",
+    "STAL",
+    "THUG",
+    "FREE",
+    "OBVN",
+    "NIP",
+    "FXI",
+    "CRT",
+    "DKK",
+    "MR",
+    "REV",
+    "ROC",
+    "SRO",
+    "TL"
+  ],
+  "vocab_path": "D:\\apex-tracer-insight-37d9f483\\scripts\\tracking\\modules\\hud_read\\configs\\teams.default.json",
+  "slots": {
+    "1": {
+      "locked": "TL",
+      "candidates": [
+        {
+          "value": "TL",
+          "votes": 3
+        }
+      ]
+    },
+    "6": {
+      "locked": "CRT",
+      "candidates": [
+        {
+          "value": "CRT",
+          "votes": 3
+        }
+      ]
+    },
+    "10": {
+      "locked": "TL",
+      "candidates": [
+        {
+          "value": "TL",
+          "votes": 3
+        }
+      ]
+    },
+    "17": {
+      "locked": "S2",
+      "candidates": [
+        {
+          "value": "S2",
+          "votes": 3
+        }
+      ]
+    }
+  }
+}
