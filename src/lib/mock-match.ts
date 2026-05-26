@@ -130,6 +130,8 @@ export const maps: ApexMap[] = [
 export const matches: Match[] = [
   // Test = единственный матч с реальными данными hud_read (см. src/data/m-test-g1/).
   { id: "m-test", name: "Test матч", tournamentId: "test-tournament", mapId: "storm-point", durationSec: 1174 },
+  // Test2 = трекинг-only тест на карте Olympus (см. src/data/m-test-g2/).
+  { id: "m-test2", name: "Test матч · Olympus", tournamentId: "test-tournament", mapId: "olympus", durationSec: 1192 },
   // Match = серия игр (карт) внутри турнира. mapId/durationSec — это первая игра (для обратной совместимости),
   // полный список игр живёт в MatchExtras.mapIds (см. admin-store / getGames()).
   { id: "m-001", name: "Match Day 1", tournamentId: "algs-2026-split-1", mapId: "worlds-edge", durationSec: 1320 },
@@ -143,6 +145,7 @@ export const matches: Match[] = [
  */
 export const matchSeedExtras: Record<string, Pick<MatchExtras, "mapIds" | "gameDurations">> = {
   "m-test": { mapIds: ["storm-point"],                              gameDurations: [1174] },
+  "m-test2": { mapIds: ["olympus"],                                  gameDurations: [1192] },
   "m-001": { mapIds: ["worlds-edge", "storm-point"],                 gameDurations: [1320, 1480] },
   "m-002": { mapIds: ["broken-moon", "e-district"],                  gameDurations: [1190, 1260] },
   "m-003": { mapIds: ["olympus", "kings-canyon"],                    gameDurations: [1400, 1320] },
@@ -303,6 +306,13 @@ import {
   testGameTeams,
   testGameTrajectories,
 } from "./test-game-data";
+import {
+  test2GameRingPhases,
+  test2GameEvents,
+  test2GameDurationSec,
+  test2GameTeams,
+  test2GameTrajectories,
+} from "./test-game2-data";
 
 export type GameDataOverride = {
   ringPhases?: RingPhase[];
@@ -319,5 +329,12 @@ export const gameDataOverrides: Record<string, GameDataOverride> = {
     durationSec: testGameDurationSec,
     teams: testGameTeams,
     trajectories: testGameTrajectories,
+  },
+  "m-test2-g1": {
+    ringPhases: test2GameRingPhases,
+    events: test2GameEvents,
+    durationSec: test2GameDurationSec,
+    teams: test2GameTeams,
+    trajectories: test2GameTrajectories,
   },
 };
