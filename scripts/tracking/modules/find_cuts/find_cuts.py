@@ -34,6 +34,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+# track_teams.py лежит в соседнем модуле — добавим его в sys.path,
+# чтобы можно было запускать find_cuts.py из любой папки.
+_TT_DIR = Path(__file__).resolve().parent.parent / "track_teams"
+if str(_TT_DIR) not in sys.path:
+    sys.path.insert(0, str(_TT_DIR))
+
 from track_teams import load_canonical_map, load_config, FrameRegistrar, map_point
 
 
