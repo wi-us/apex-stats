@@ -312,6 +312,7 @@ import {
   test2GameDurationSec,
   test2GameTeams,
   test2GameTrajectories,
+  test2GameMapImage,
 } from "./test-game2-data";
 
 export type GameDataOverride = {
@@ -338,5 +339,6 @@ export const gameDataOverrides: Record<string, GameDataOverride> = {
     durationSec: test2GameDurationSec,
     teams: test2GameTeams,
     trajectories: test2GameTrajectories,
+    mapImage: test2GameMapImage,
   },
 };
