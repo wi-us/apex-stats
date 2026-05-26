@@ -47,7 +47,7 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     copied: list[str] = []
-    for name in ("eliminations.json", "rings.json", "hud_timeline.json"):
+    for name in ("eliminations.json", "rings.json", "ring_geometry_v2.json", "hud_timeline.json"):
         src = args.reports / name
         if not src.exists():
             print(f"[sync_to_ui] пропускаю {name} — не найден в {args.reports}")
@@ -110,12 +110,14 @@ def main() -> int:
                     "minimap": geom.get("minimap"),
                     "phases": geom.get("phases") or [],
                 }
+                geom_dst = args.out / "ring_geometry_v2.json"
+                shutil.copy2(args.ring_geometry, geom_dst)
                 rings_dst.write_text(
                     json.dumps(rings, ensure_ascii=False, indent=2),
                     encoding="utf-8",
                 )
                 print(f"[sync_to_ui] merged ring geometry "
-                      f"({len(rings['geometry']['phases'])} phases) → {rings_dst}")
+                      f"({len(rings['geometry']['phases'])} phases) → {rings_dst} + {geom_dst}")
             except Exception as e:
                 print(f"[sync_to_ui] не смог вмёржить ring_geometry: {e}")
         else:
