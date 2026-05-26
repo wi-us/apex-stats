@@ -108,30 +108,28 @@ const slotToTag: Record<string, string> = (() => {
 
 const [CW, CH] = tracks.meta.canonical_size ?? [2048, 2048];
 
-/** Auto-fit affine: bbox реальных точек → [0..1]×[0..1] с сохранением аспекта. */
+/** Map ROI в кадре 1920×1080 (из scripts/tracking/configs/zones.vod.json,
+ *  zone "camera roi" + map_bounds_in_roi):
+ *    roi  = (437, 45, 1050, 1030)
+ *    map  = roi + (45, 0, 960, 1030) → (482, 45, 960, 1030)
+ *  tracks.frame_px — пиксели исходного кадра, нормализуем по этому прямоугольнику. */
 const FIT = (() => {
-  let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
-  for (const fr of tracks.frames) {
-    for (const tr of fr.tracks) {
-      const px = tr.canonical_px ?? tr.world ?? tr.frame_px;
-      if (!px) continue;
-      if (px[0] < xmin) xmin = px[0];
-      if (px[0] > xmax) xmax = px[0];
-      if (px[1] < ymin) ymin = px[1];
-      if (px[1] > ymax) ymax = px[1];
-    }
+  // Если в данных уже есть canonical_px (CW×CH), используем их.
+  const useCanonical = tracks.frames.some((fr) =>
+    fr.tracks.some((tr) => tr.canonical_px != null),
+  );
+  if (useCanonical) {
+    return { sx: 1 / CW, sy: 1 / CH, ox: 0, oy: 0, mode: "canonical" as const };
   }
-  if (!Number.isFinite(xmin)) {
-    return { sx: 1 / CW, sy: 1 / CH, ox: 0, oy: 0 };
-  }
-  const pad = 0.06;
-  const w = xmax - xmin, h = ymax - ymin;
-  const fx0 = xmin - w * pad, fx1 = xmax + w * pad;
-  const fy0 = ymin - h * pad, fy1 = ymax + h * pad;
-  const side = Math.max(fx1 - fx0, fy1 - fy0);
-  const cx = (fx0 + fx1) / 2, cy = (fy0 + fy1) / 2;
-  const sx = 1 / side, sy = 1 / side;
-  return { sx, sy, ox: 0.5 - cx * sx, oy: 0.5 - cy * sy };
+  // Иначе — фиксированный ROI карты в исходном кадре 1920×1080.
+  const MAP_X = 482, MAP_Y = 45, MAP_W = 960, MAP_H = 1030;
+  return {
+    sx: 1 / MAP_W,
+    sy: 1 / MAP_H,
+    ox: -MAP_X / MAP_W,
+    oy: -MAP_Y / MAP_H,
+    mode: "frame_roi" as const,
+  };
 })();
 
 /** Длительность = max t_last_alive из HUD eliminations (full-match покрытие). */
