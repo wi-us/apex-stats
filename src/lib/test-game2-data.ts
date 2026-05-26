@@ -16,6 +16,7 @@ import ringsRaw from "@/data/m-test-g2/rings.json";
 import ringsV2Raw from "@/data/m-test-g2/ring_geometry_v2.json";
 import teamTagsRaw from "@/data/m-test-g2/team_tags_raw.json";
 import hudTimelineRaw from "@/data/m-test-g2/hud_timeline.json";
+import affineRaw from "@/data/m-test-g2/minimap_affine.json";
 import type { GameEvent, RingPhase, Team } from "./mock-match";
 import { SLOT_COLORS } from "./team-colors";
 
@@ -87,6 +88,10 @@ const rings = ringsRaw as unknown as RingsFile;
 const ringsV2 = ringsV2Raw as unknown as RingsV2File;
 const teamTags = teamTagsRaw as unknown as TeamTagsFile;
 const hudTimeline = hudTimelineRaw as unknown as HudTimelineFile;
+const affine = affineRaw as unknown as {
+  frame_roi?: { x: number; y: number; w: number; h: number };
+  map_image_override?: string | null;
+};
 
 // ── Slot → broadcast tag / display name / color ──────────────────────
 // Приоритет:
@@ -119,11 +124,11 @@ const slotToTag: Record<string, string> = (() => {
 
 const [CW, CH] = tracks.meta.canonical_size ?? [2048, 2048];
 
-/** Map ROI в кадре 1920×1080 (из scripts/tracking/configs/zones.vod.json,
- *  zone "camera roi" + map_bounds_in_roi):
- *    roi  = (437, 45, 1050, 1030)
- *    map  = roi + (45, 0, 960, 1030) → (482, 45, 960, 1030)
- *  tracks.frame_px — пиксели исходного кадра, нормализуем по этому прямоугольнику. */
+/** Map ROI в кадре 1920×1080.
+ *  Базовый дефолт берётся из scripts/tracking/configs/zones.vod.json
+ *  (roi=(437,45,1050,1030) + map_bounds_in_roi=(45,0,960,1030) → (482,45,960,1030)),
+ *  но он был калиброван под Storm Point. Для Olympus каноническая карта квадратная,
+ *  поэтому используется per-game override из src/data/m-test-g2/minimap_affine.json. */
 const FIT = (() => {
   // Если в данных уже есть canonical_px (CW×CH), используем их.
   const useCanonical = tracks.frames.some((fr) =>
@@ -132,8 +137,9 @@ const FIT = (() => {
   if (useCanonical) {
     return { sx: 1 / CW, sy: 1 / CH, ox: 0, oy: 0, mode: "canonical" as const };
   }
-  // Иначе — фиксированный ROI карты в исходном кадре 1920×1080.
-  const MAP_X = 482, MAP_Y = 45, MAP_W = 960, MAP_H = 1030;
+  // Иначе — ROI карты в исходном кадре. Per-game override обязателен для Olympus.
+  const roi = affine.frame_roi ?? { x: 482, y: 45, w: 960, h: 1030 };
+  const MAP_X = roi.x, MAP_Y = roi.y, MAP_W = roi.w, MAP_H = roi.h;
   return {
     sx: 1 / MAP_W,
     sy: 1 / MAP_H,
