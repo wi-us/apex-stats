@@ -132,6 +132,8 @@ export const matches: Match[] = [
   { id: "m-test", name: "Test матч", tournamentId: "test-tournament", mapId: "storm-point", durationSec: 1174 },
   // Test2 = трекинг-only тест на карте Olympus (см. src/data/m-test-g2/).
   { id: "m-test2", name: "Test матч · Olympus", tournamentId: "test-tournament", mapId: "olympus", durationSec: 1192 },
+  // Test3 = те же данные, что и Test2, но без КАКОЙ-ЛИБО модификации координат (RAW frame_px / 1920×1080).
+  { id: "m-test3", name: "Test матч · RAW (без affine)", tournamentId: "test-tournament", mapId: "olympus", durationSec: 1192 },
   // Match = серия игр (карт) внутри турнира. mapId/durationSec — это первая игра (для обратной совместимости),
   // полный список игр живёт в MatchExtras.mapIds (см. admin-store / getGames()).
   { id: "m-001", name: "Match Day 1", tournamentId: "algs-2026-split-1", mapId: "worlds-edge", durationSec: 1320 },
@@ -146,6 +148,7 @@ export const matches: Match[] = [
 export const matchSeedExtras: Record<string, Pick<MatchExtras, "mapIds" | "gameDurations">> = {
   "m-test": { mapIds: ["storm-point"],                              gameDurations: [1174] },
   "m-test2": { mapIds: ["olympus"],                                  gameDurations: [1192] },
+  "m-test3": { mapIds: ["olympus"],                                  gameDurations: [1192] },
   "m-001": { mapIds: ["worlds-edge", "storm-point"],                 gameDurations: [1320, 1480] },
   "m-002": { mapIds: ["broken-moon", "e-district"],                  gameDurations: [1190, 1260] },
   "m-003": { mapIds: ["olympus", "kings-canyon"],                    gameDurations: [1400, 1320] },
@@ -314,6 +317,13 @@ import {
   test2GameTrajectories,
   test2GameMapImage,
 } from "./test-game2-data";
+import {
+  test3GameRingPhases,
+  test3GameEvents,
+  test3GameDurationSec,
+  test3GameTeams,
+  test3GameTrajectories,
+} from "./test-game3-data";
 
 export type GameDataOverride = {
   ringPhases?: RingPhase[];
@@ -340,5 +350,12 @@ export const gameDataOverrides: Record<string, GameDataOverride> = {
     teams: test2GameTeams,
     trajectories: test2GameTrajectories,
     mapImage: test2GameMapImage,
+  },
+  "m-test3-g1": {
+    ringPhases: test3GameRingPhases,
+    events: test3GameEvents,
+    durationSec: test3GameDurationSec,
+    teams: test3GameTeams,
+    trajectories: test3GameTrajectories,
   },
 };

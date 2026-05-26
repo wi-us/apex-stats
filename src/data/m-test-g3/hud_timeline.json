@@ -1,0 +1,650 @@
+{
+  "video": "scripts\\tracking\\game_5.mp4",
+  "fps": 59.94005994005994,
+  "frame_step": 600,
+  "zones_source": "scripts\\tracking\\configs\\zones.vod.json",
+  "chunk_id": null,
+  "start_frame": 70235,
+  "end_frame": 72036,
+  "timeline": [
+    {
+      "frame": 70235,
+      "t": 1171.754,
+      "hud": {
+        "map_name": "EERE",
+        "game_number": null,
+        "number_of_teams_alive": null,
+        "number_of_players_alive": null,
+        "ring_status": null
+      },
+      "teams": [
+        {
+          "slot": 1,
+          "name": "TL",
+          "hero_1": "3232323232323632",
+          "hero_2": "88888a8888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4454544454444444",
+          "eliminated": false
+        },
+        {
+          "slot": 2,
+          "name": null,
+          "hero_1": "1511111111111111",
+          "hero_2": "4c4c4c4c4c444c4c",
+          "hero_3": "2222262222222222",
+          "pts": null,
+          "logo": "6464646464646464",
+          "eliminated": false
+        },
+        {
+          "slot": 3,
+          "name": null,
+          "hero_1": "1111111111131311",
+          "hero_2": "4c4c4c4c4c4ccc4c",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "6464646464646464",
+          "eliminated": false
+        },
+        {
+          "slot": 4,
+          "name": null,
+          "hero_1": "1313131313131313",
+          "hero_2": "c8c8c8c848c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 5,
+          "name": null,
+          "hero_1": "2622222222222222",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": 4,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 6,
+          "name": "CRT",
+          "hero_1": "1313131333131313",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": 4,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 7,
+          "name": null,
+          "hero_1": "3232323232323232",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444544c4c",
+          "eliminated": false
+        },
+        {
+          "slot": 8,
+          "name": null,
+          "hero_1": "1313131313131313",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 9,
+          "name": null,
+          "hero_1": "1313131313131317",
+          "hero_2": "49c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 10,
+          "name": "TL",
+          "hero_1": "9989898989898999",
+          "hero_2": "6464646464646464",
+          "hero_3": "9191919191919191",
+          "pts": 44,
+          "logo": "6a22222222222222",
+          "eliminated": false
+        },
+        {
+          "slot": 11,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 12,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 13,
+          "name": null,
+          "hero_1": "40404040404040c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 14,
+          "name": null,
+          "hero_1": "a040404040404040",
+          "hero_2": "1000000000000000",
+          "hero_3": "1100000000000000",
+          "pts": null,
+          "logo": "0100000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 15,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 16,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 17,
+          "name": "S2",
+          "hero_1": "c0c0c0c08060c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000001",
+          "eliminated": false
+        },
+        {
+          "slot": 18,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 19,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 20,
+          "name": null,
+          "hero_1": "40404040404040c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        }
+      ]
+    },
+    {
+      "frame": 70835,
+      "t": 1181.764,
+      "hud": {
+        "map_name": "PTT",
+        "game_number": null,
+        "number_of_teams_alive": null,
+        "number_of_players_alive": null,
+        "ring_status": null
+      },
+      "teams": [
+        {
+          "slot": 1,
+          "name": "TL",
+          "hero_1": "3232323232323232",
+          "hero_2": "88888a8888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 2,
+          "name": null,
+          "hero_1": "1111111111111111",
+          "hero_2": "4c4c444c4c444c4c",
+          "hero_3": "3232623232622222",
+          "pts": 4,
+          "logo": "6464646464646464",
+          "eliminated": false
+        },
+        {
+          "slot": 3,
+          "name": null,
+          "hero_1": "1111111111111111",
+          "hero_2": "4c4c4c544c4c444c",
+          "hero_3": "2222222622322222",
+          "pts": null,
+          "logo": "646464646464e464",
+          "eliminated": false
+        },
+        {
+          "slot": 4,
+          "name": null,
+          "hero_1": "1313131333333313",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 5,
+          "name": null,
+          "hero_1": "2222222222222222",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": 4,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 6,
+          "name": "CRT",
+          "hero_1": "1313333333131313",
+          "hero_2": "c8c8c8c8c8d8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 7,
+          "name": null,
+          "hero_1": "3232323232323636",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 8,
+          "name": null,
+          "hero_1": "3313133333331313",
+          "hero_2": "c8c8c848c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 9,
+          "name": null,
+          "hero_1": "1313131313131313",
+          "hero_2": "49c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 10,
+          "name": "TL",
+          "hero_1": "8989898989898999",
+          "hero_2": "6464646464646464",
+          "hero_3": "9191919191919191",
+          "pts": 44,
+          "logo": "222a222222222622",
+          "eliminated": false
+        },
+        {
+          "slot": 11,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 12,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 13,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 14,
+          "name": null,
+          "hero_1": "a040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0100000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 15,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 16,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 17,
+          "name": "S2",
+          "hero_1": "c0c0c0c0c020c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000001",
+          "eliminated": false
+        },
+        {
+          "slot": 18,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 19,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 20,
+          "name": null,
+          "hero_1": "40404040404040c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        }
+      ]
+    },
+    {
+      "frame": 71435,
+      "t": 1191.774,
+      "hud": {
+        "map_name": "COCE",
+        "game_number": null,
+        "number_of_teams_alive": null,
+        "number_of_players_alive": null,
+        "ring_status": null
+      },
+      "teams": [
+        {
+          "slot": 1,
+          "name": "TL",
+          "hero_1": "3232323232323232",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4544444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 2,
+          "name": null,
+          "hero_1": "1111111311111111",
+          "hero_2": "4c4c444c4c444c4c",
+          "hero_3": "3232623232222222",
+          "pts": null,
+          "logo": "6464646464646464",
+          "eliminated": false
+        },
+        {
+          "slot": 3,
+          "name": null,
+          "hero_1": "1111111113135311",
+          "hero_2": "4c4c4c4c4ccc444c",
+          "hero_3": "2222222222322222",
+          "pts": null,
+          "logo": "646464646445e464",
+          "eliminated": false
+        },
+        {
+          "slot": 4,
+          "name": null,
+          "hero_1": "1313131313333317",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 5,
+          "name": null,
+          "hero_1": "2622222222222222",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 6,
+          "name": "CRT",
+          "hero_1": "1313131313331313",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 7,
+          "name": null,
+          "hero_1": "3232323232323232",
+          "hero_2": "8888888888888888",
+          "hero_3": "2222222622222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 8,
+          "name": null,
+          "hero_1": "1313333333331313",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 9,
+          "name": null,
+          "hero_1": "1313131333331333",
+          "hero_2": "c8c8c8c8c8c8c8c8",
+          "hero_3": "2222222222222222",
+          "pts": null,
+          "logo": "4444444444444444",
+          "eliminated": false
+        },
+        {
+          "slot": 10,
+          "name": "TL",
+          "hero_1": "8989898989898999",
+          "hero_2": "6464646464646464",
+          "hero_3": "9191919191919193",
+          "pts": 44,
+          "logo": "22222222222a2222",
+          "eliminated": false
+        },
+        {
+          "slot": 11,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 12,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 13,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 14,
+          "name": null,
+          "hero_1": "a040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0100000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 15,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 16,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 17,
+          "name": "S2",
+          "hero_1": "c0c0c0c0c020c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000001",
+          "eliminated": false
+        },
+        {
+          "slot": 18,
+          "name": null,
+          "hero_1": "c0c0c0c0c0c0c0c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 19,
+          "name": null,
+          "hero_1": "4040404040404040",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        },
+        {
+          "slot": 20,
+          "name": null,
+          "hero_1": "40404040404040c0",
+          "hero_2": "0000000000000000",
+          "hero_3": "0000000000000000",
+          "pts": null,
+          "logo": "0000000000000000",
+          "eliminated": false
+        }
+      ]
+    }
+  ]
+}
