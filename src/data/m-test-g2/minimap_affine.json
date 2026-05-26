@@ -1,0 +1,14 @@
+{
+  "_note": "Per-game alignment override for /games/m-test2-g1 (Olympus). Source tracks.json содержит ТОЛЬКО frame_px, поэтому используется ветка frame_roi в src/lib/test-game2-data.ts. Дефолтный ROI в коде взят из zones.vod.json (960x1030) — он был подогнан под Storm Point, у Olympus каноническая карта квадратная, и из-за этого команды смещались/сжимались по Y. Здесь задаём квадратный ROI, в котором живут frame_px этого VOD.",
+  "map": "olympus",
+  "source": "src/data/m-test-g2/tracks.json",
+  "frame_size": [1920, 1080],
+  "frame_roi": {
+    "_comment": "Прямоугольник миникарты на исходном кадре 1920x1080. Подобран так, чтобы наблюдаемые frame_px (x:[456..1402], y:[50..956]) попали в [0..1] без растяжения по осям. Если визуально команды всё ещё уезжают — правь только эти 4 числа и перезагрузи страницу.",
+    "x": 449,
+    "y": 23,
+    "w": 960,
+    "h": 960
+  },
+  "map_image_override": null
+}

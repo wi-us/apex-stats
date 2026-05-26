@@ -444,7 +444,7 @@ export function MatchViewer({ initialGameId }: { initialGameId?: string }) {
             hoverTeam={hoverTeam}
             showTrails={showTrails}
             showLabels={showLabels}
-            mapImage={apexMap.image}
+            mapImage={_override?.mapImage ?? apexMap.image}
             mapName={apexMap.name}
             aliveTeams={aliveTeams}
             totalKills={totalKills}

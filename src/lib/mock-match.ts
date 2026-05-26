@@ -312,6 +312,7 @@ import {
   test2GameDurationSec,
   test2GameTeams,
   test2GameTrajectories,
+  test2GameMapImage,
 } from "./test-game2-data";
 
 export type GameDataOverride = {
@@ -320,6 +321,8 @@ export type GameDataOverride = {
   durationSec?: number;
   teams?: Team[];
   trajectories?: Record<string, { t: number; x: number; y: number }[]>;
+  /** Опциональная подмена картинки карты для конкретной игры (URL уже импортированного ассета). */
+  mapImage?: string;
 };
 
 export const gameDataOverrides: Record<string, GameDataOverride> = {
@@ -336,5 +339,6 @@ export const gameDataOverrides: Record<string, GameDataOverride> = {
     durationSec: test2GameDurationSec,
     teams: test2GameTeams,
     trajectories: test2GameTrajectories,
+    mapImage: test2GameMapImage,
   },
 };
