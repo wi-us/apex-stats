@@ -1177,6 +1177,9 @@ def main() -> int:
     ap.add_argument("--frame-step", type=int, default=600)
     ap.add_argument("--start-sec", type=float, default=0.0)
     ap.add_argument("--end-sec", type=float, default=0.0)
+    ap.add_argument("--ignore-tail-sec", type=float, default=30.0,
+                    help="Сколько секунд отрезать от конца анализа, если --end-sec/--end-frame не заданы. "
+                         "Защищает scout колец/вылетов от финальной заглушки/пост-гейм экрана.")
     ap.add_argument("--start-frame", type=int, default=-1,
                     help="Точный стартовый кадр (приоритет над --start-sec)")
     ap.add_argument("--end-frame", type=int, default=-1,
@@ -1281,11 +1284,18 @@ def main() -> int:
         zones_scaled.append(zs)
 
     start_f = int(args.start_sec * fps)
+    explicit_end = args.end_sec > 0 or args.end_frame >= 0
     end_f = int(args.end_sec * fps) if args.end_sec > 0 else total
     if args.start_frame >= 0:
         start_f = args.start_frame
     if args.end_frame >= 0:
         end_f = args.end_frame
+    if not explicit_end and args.ignore_tail_sec > 0 and total > 0:
+        trimmed_end = max(start_f + 1, total - int(round(args.ignore_tail_sec * fps)))
+        if trimmed_end < end_f:
+            print(f"[hud_read] auto-trim tail: end f{end_f} → f{trimmed_end} "
+                  f"(-{args.ignore_tail_sec:.1f}s, защита от post-game заглушки)")
+            end_f = trimmed_end
     step = max(1, args.frame_step)
 
     # ── режимы scout / two-pass ────────────────────────────────────
