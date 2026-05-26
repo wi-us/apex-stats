@@ -93,6 +93,11 @@ const affine = affineRaw as unknown as {
   map_image_override?: string | null;
 };
 
+/** Опциональная подмена картинки карты для game m-test2-g1.
+ *  По умолчанию null → используется src/assets/maps/olympus.webp.
+ *  Если в minimap_affine.json указать строку (URL ассета или ./...), подменится. */
+export const test2GameMapImage: string | undefined = affine.map_image_override ?? undefined;
+
 // ── Slot → broadcast tag / display name / color ──────────────────────
 // Приоритет:
 //   1) tracks.meta.teams[].broadcast_tag (+ name, color) — главный источник
