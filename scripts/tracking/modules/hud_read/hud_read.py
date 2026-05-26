@@ -1024,8 +1024,12 @@ def scout_eliminations(cap: cv2.VideoCapture, zones_scaled: list[dict],
         dead_count = 0
         for slot, z in elim_zones.items():
             st = state[slot]
-            # если уже знаем и f_last_alive, и f_first_dead — пропускаем
-            if st["f_last_alive"] is not None:
+            # Слот «решён», когда найдены и f_first_dead, и f_last_alive
+            # СТРОГО раньше f_first_dead. Это защищает от пост-гейм оверлея,
+            # где "ELIMINATED" исчезает и все слоты выглядят как alive.
+            if (st["f_last_alive"] is not None
+                    and st["f_first_dead"] is not None
+                    and st["f_last_alive"] < st["f_first_dead"]):
                 continue
             x, y, w, h = z["x"], z["y"], z["w"], z["h"]
             crop = frame[y:y + h, x:x + w]
@@ -1035,22 +1039,30 @@ def scout_eliminations(cap: cv2.VideoCapture, zones_scaled: list[dict],
             if is_dead:
                 if st["f_first_dead"] is None or f < st["f_first_dead"]:
                     st["f_first_dead"] = f
+                # Если ранее зафиксировали f_last_alive ПОЗЖЕ нового dead
+                # (это был пост-гейм "alive") — сбросим, чтобы найти настоящий
+                # f_last_alive строго до смерти на следующих шагах назад.
+                if (st["f_last_alive"] is not None
+                        and st["f_last_alive"] >= st["f_first_dead"]):
+                    st["f_last_alive"] = None
                 dead_count += 1
             else:
-                # первая встреча "жив" при движении назад = верхняя граница окна
-                if st["f_last_alive"] is None:
+                # Принимаем "alive" только если оно строго раньше уже
+                # известного f_first_dead (или f_first_dead ещё неизвестен).
+                fd = st["f_first_dead"]
+                if st["f_last_alive"] is None and (fd is None or f < fd):
                     st["f_last_alive"] = f
                 alive_count += 1
         tqdm.write(f"scout f{f:>7} t={f/fps:6.1f}s  alive={alive_count} dead={dead_count} "
                    f"resolved={sum(1 for s in state.values() if s['f_last_alive'] is not None)}/"
                    f"{len(state)}")
         pbar.update(1)
-        # все команды локализованы — выходим
-        if all(s["f_last_alive"] is not None or s["f_first_dead"] is None
-               for s in state.values()):
-            # есть команды, у которых f_first_dead тоже None (не вылетали) — это норм
-            pass
-        if all(s["f_last_alive"] is not None for s in state.values()):
+        # Выход: для каждого слота либо нашли пару (f_first_dead, f_last_alive<f_first_dead),
+        # либо мы дошли до start_f и слот действительно никогда не умирал.
+        def _resolved(s: dict) -> bool:
+            fd, la = s["f_first_dead"], s["f_last_alive"]
+            return fd is not None and la is not None and la < fd
+        if all(_resolved(s) for s in state.values()):
             break
         f -= reverse_step
     pbar.close()
