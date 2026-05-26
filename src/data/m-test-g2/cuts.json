@@ -1,0 +1,72 @@
+{
+  "video": "game_5.mp4",
+  "fps": 59.94005994005994,
+  "coarse": 300,
+  "fine": 10,
+  "threshold": 90.0,
+  "events": [
+    {
+      "frame": 39746,
+      "t": 663.096,
+      "from_pan": [
+        999.6,
+        1198.8
+      ],
+      "to_pan": [
+        0.0,
+        0.0
+      ],
+      "delta": null,
+      "pixel_diff": 23.75,
+      "classify": "cut"
+    }
+  ],
+  "hud_events": [],
+  "gray_zone": [
+    {
+      "frame": 14541,
+      "t": 242.592,
+      "from_pan": [
+        0.0,
+        0.0
+      ],
+      "to_pan": [
+        0.0,
+        0.0
+      ],
+      "delta": null,
+      "pixel_diff": 9.56,
+      "classify": "gray"
+    },
+    {
+      "frame": 31645,
+      "t": 527.944,
+      "from_pan": [
+        0.0,
+        0.0
+      ],
+      "to_pan": [
+        0.0,
+        0.0
+      ],
+      "delta": null,
+      "pixel_diff": 9.11,
+      "classify": "gray"
+    },
+    {
+      "frame": 32853,
+      "t": 548.098,
+      "from_pan": [
+        0.0,
+        0.0
+      ],
+      "to_pan": [
+        0.0,
+        0.0
+      ],
+      "delta": null,
+      "pixel_diff": 7.2,
+      "classify": "gray"
+    }
+  ]
+}
