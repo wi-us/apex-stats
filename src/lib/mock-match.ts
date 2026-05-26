@@ -314,6 +314,13 @@ import {
   test2GameTrajectories,
   test2GameMapImage,
 } from "./test-game2-data";
+import {
+  test3GameRingPhases,
+  test3GameEvents,
+  test3GameDurationSec,
+  test3GameTeams,
+  test3GameTrajectories,
+} from "./test-game3-data";
 
 export type GameDataOverride = {
   ringPhases?: RingPhase[];
