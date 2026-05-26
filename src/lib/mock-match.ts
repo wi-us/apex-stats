@@ -320,6 +320,8 @@ export type GameDataOverride = {
   durationSec?: number;
   teams?: Team[];
   trajectories?: Record<string, { t: number; x: number; y: number }[]>;
+  /** Опциональная подмена картинки карты для конкретной игры (URL уже импортированного ассета). */
+  mapImage?: string;
 };
 
 export const gameDataOverrides: Record<string, GameDataOverride> = {
