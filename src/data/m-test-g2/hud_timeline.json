@@ -2,7 +2,7 @@
   "video": "scripts\\tracking\\game_5.mp4",
   "fps": 59.94005994005994,
   "frame_step": 600,
-  "zones_source": "scripts\\tracking\\configs\\zones.vod.json",
+  "zones_source": "D:\\apex-tracer-insight-37d9f483\\scripts\\tracking\\configs\\zones.vod.json",
   "chunk_id": null,
   "start_frame": 70235,
   "end_frame": 72036,
