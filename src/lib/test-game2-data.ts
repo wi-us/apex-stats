@@ -88,10 +88,18 @@ const ringsV2 = ringsV2Raw as unknown as RingsV2File;
 const teamTags = teamTagsRaw as unknown as TeamTagsFile;
 const hudTimeline = hudTimelineRaw as unknown as HudTimelineFile;
 
-// ── Slot → broadcast tag (team_tags_raw + hud_timeline fallback) ─────
+// ── Slot → broadcast tag / display name / color ──────────────────────
+// Приоритет:
+//   1) tracks.meta.teams[].broadcast_tag (+ name, color) — главный источник
+//   2) team_tags_raw.json (locked) — fallback
+//   3) hud_timeline.json teams[].name — fallback
+const metaBySlot = new Map<string, MetaTeam>();
+for (const t of tracks.meta.teams ?? []) {
+  const slot = t.id.replace(/^slot_/, "");
+  metaBySlot.set(slot, t);
+}
 const slotToTag: Record<string, string> = (() => {
   const out: Record<string, string> = {};
-  // hud_timeline fallback (берём первое непустое name на слот)
   for (const fr of hudTimeline.timeline ?? []) {
     for (const t of fr.teams ?? []) {
       if (t.slot == null || !t.name) continue;
@@ -99,9 +107,12 @@ const slotToTag: Record<string, string> = (() => {
       if (!out[k]) out[k] = t.name;
     }
   }
-  // team_tags_raw — приоритетнее (locked vocab match)
   for (const [slot, v] of Object.entries(teamTags.slots ?? {})) {
     if (v?.locked) out[slot] = v.locked;
+  }
+  for (const [slot, m] of metaBySlot.entries()) {
+    const tag = m.broadcast_tag || m.team_tag;
+    if (tag) out[slot] = tag;
   }
   return out;
 })();
@@ -155,14 +166,16 @@ export const test2GameTeams: Team[] = (() => {
   ranked.forEach((slot, i) => placementBySlot.set(slot, i + 1));
 
   return slots.map((slot) => {
+    const meta = metaBySlot.get(slot);
     const tag = slotToTag[slot] ?? `T${slot}`;
+    const displayName = meta?.name || tag;
+    const color = meta?.color || SLOT_COLORS[Math.max(0, Number(slot) - 1) % SLOT_COLORS.length];
     const dead = elim.teams[slot].t_first_dead != null;
-    const slotIdx = Math.max(0, Number(slot) - 1);
     return {
       id: `t-test2-${slot}`,
       tag,
-      name: tag,
-      color: SLOT_COLORS[slotIdx % SLOT_COLORS.length],
+      name: displayName,
+      color,
       players: [],
       placement: placementBySlot.get(slot) ?? Number(slot),
       kills: 0,
