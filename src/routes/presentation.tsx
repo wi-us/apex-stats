@@ -57,8 +57,8 @@ function PresentationPage() {
       <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
         <Link to="/" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground">← Home</Link>
         <div className="text-[11px] font-bold uppercase tracking-wider">Apex Stats · Presentation</div>
-        <div className="text-mono ml-2 text-[10px] text-muted-foreground">{i + 1} / {slides.length}</div>
-        <div className="ml-auto flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="text-mono ml-2 text-xs text-muted-foreground">{i + 1} / {slides.length}</div>
+        <div className="ml-auto flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
           <button
             onClick={() => setEditing((v) => !v)}
             className={"flex items-center gap-1.5 rounded-sm border px-2 py-1 transition " + (editing ? "border-primary bg-primary/15 text-primary" : "border-border bg-surface-2 hover:bg-muted")}
@@ -105,7 +105,7 @@ function PresentationPage() {
             {/* Caption */}
             <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md border border-border bg-surface/80 px-4 py-2 text-center backdrop-blur">
               <div className="text-[11px] font-bold uppercase tracking-wider">{cur.title}</div>
-              <div className="text-[10px] text-muted-foreground">{cur.subtitle}</div>
+              <div className="text-xs text-muted-foreground">{cur.subtitle}</div>
             </div>
           </div>
 
@@ -132,11 +132,11 @@ function PresentationPage() {
                 <div className="pointer-events-none absolute inset-0">
                   <sl.Component editing={false} />
                 </div>
-                <span className="absolute left-2 top-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">{idx + 1}</span>
+                <span className="absolute left-2 top-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-xs font-bold text-white">{idx + 1}</span>
               </div>
               <div className="border-t border-border p-3">
                 <div className="text-[11px] font-bold uppercase tracking-wider">{sl.title}</div>
-                <div className="mt-0.5 text-[10px] text-muted-foreground">{sl.subtitle}</div>
+                <div className="mt-0.5 text-xs text-muted-foreground">{sl.subtitle}</div>
               </div>
             </button>
           ))}

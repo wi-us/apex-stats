@@ -1,9 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { useAuth } from "@/lib/auth";
-import { fetchAlgsBundle } from "@/lib/algs-fetchers";
-import { replaceFromAlgs } from "@/lib/admin-store";
 
 export const Route = createFileRoute("/admin")({
   component: () => (
@@ -26,7 +24,6 @@ const calibrationItems: NavItem[] = [
   { to: "/admin/hsv",      label: "HSV",          hint: "Team color calibration" },
   { to: "/admin/zones",    label: "HUD Zones",    hint: "HUD areas (1920×1080)" },
   { to: "/admin/polygons", label: "Map Polygons", hint: "Forbidden / safe areas" },
-  { to: "/admin/camera",   label: "Camera",       hint: "Observer camera tracking" },
   { to: "/admin/poi",      label: "POI Zones",    hint: "Drop points on canonical maps" },
 ];
 
@@ -37,30 +34,15 @@ const analysisItems: NavItem[] = [
   { to: "/admin/dataset",   label: "Dataset Builder", hint: "YOLO labels from ZIP" },
 ];
 
-const systemItems: NavItem[] = [
-  { to: "/admin/schema",   label: "Database Schema", hint: "DB schema editor" },
-  { to: "/admin/diagrams", label: "Diagrams",        hint: "Flowcharts for reports" },
-];
-
 function AdminLayout() {
   const { role } = useAuth();
-  const algsLoadedRef = useRef(false);
-  useEffect(() => {
-    if (algsLoadedRef.current) return;
-    algsLoadedRef.current = true;
-    fetchAlgsBundle()
-      .then(replaceFromAlgs)
-      .catch((e) => console.warn("[admin] ALGS bundle load failed", e));
-  }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const dataActive = dataItems.some((i) => pathname.startsWith(i.to));
   const calibActive = calibrationItems.some((i) => pathname.startsWith(i.to));
   const analysisActive = analysisItems.some((i) => pathname.startsWith(i.to));
-  const systemActive = systemItems.some((i) => pathname.startsWith(i.to));
   const [openData, setOpenData] = useState<boolean>(true);
   const [openCalib, setOpenCalib] = useState<boolean>(true);
   const [openAnalysis, setOpenAnalysis] = useState<boolean>(true);
-  const [openSystem, setOpenSystem] = useState<boolean>(true);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -126,13 +108,6 @@ function AdminLayout() {
             items={analysisItems}
           />
 
-          <NavGroup
-            label="System"
-            count={systemItems.length}
-            open={openSystem || systemActive}
-            onToggle={() => setOpenSystem((v) => !v)}
-            items={systemItems}
-          />
         </nav>
 
       </aside>

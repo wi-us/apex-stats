@@ -613,7 +613,7 @@ function HsvAdmin() {
                 <span className={`shrink-0 rounded-sm ring-1 ring-border ${active ? "h-6 w-6" : "h-3 w-3"}`} style={{ backgroundColor: teamSwatch(t.id) }} />
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className={`font-semibold ${active ? "text-sm" : "text-xs"}`}>{t.displayName}</span>
-                  {active && <span className="text-mono text-[10px] uppercase text-muted-foreground">{teamSwatch(t.id)}</span>}
+                  {active && <span className="text-mono text-xs uppercase text-muted-foreground">{teamSwatch(t.id)}</span>}
                 </div>
                 <span className="text-mono ml-auto text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
               </button>
@@ -659,7 +659,7 @@ function HsvAdmin() {
                   <div className="h-12 w-12 shrink-0 rounded-sm ring-1 ring-border"
                        style={{ backgroundColor: lastPick ? `rgb(${lastPick.r},${lastPick.g},${lastPick.b})` : "transparent" }} />
                   <div className="min-w-0 flex-1">
-                    <div className="label-eyebrow mb-1 text-[10px]">Picked pixel</div>
+                    <div className="label-eyebrow mb-1 text-xs">Picked pixel</div>
                     {lastPick ? (
                       <div className="text-mono text-xs leading-snug tabular-nums">
                         <div>H: {lastPick.h} / S: {lastPick.s} / V: {lastPick.v}</div>
@@ -671,7 +671,7 @@ function HsvAdmin() {
                   </div>
                 </div>
                 <div className="flex flex-col rounded-sm border border-border bg-surface-2 p-2.5">
-                  <div className="label-eyebrow mb-1.5 text-[10px]">Last 5</div>
+                  <div className="label-eyebrow mb-1.5 text-xs">Last 5</div>
                   <div className="flex gap-1.5">
                     {Array.from({ length: 5 }).map((_, i) => {
                       const p = history[i];
@@ -863,15 +863,15 @@ mask  = cv2.inRange(hsv, lower, upper)`}
 
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                   <div>
-                    <div className="label-eyebrow mb-1 text-[10px]">Mask A · {compareStats.a.toLocaleString()} px</div>
+                    <div className="label-eyebrow mb-1 text-xs">Mask A · {compareStats.a.toLocaleString()} px</div>
                     <canvas ref={compareARef} className="block w-full rounded-sm border border-border bg-background" />
                   </div>
                   <div>
-                    <div className="label-eyebrow mb-1 text-[10px]">Mask B · {compareStats.b.toLocaleString()} px</div>
+                    <div className="label-eyebrow mb-1 text-xs">Mask B · {compareStats.b.toLocaleString()} px</div>
                     <canvas ref={compareBRef} className="block w-full rounded-sm border border-border bg-background" />
                   </div>
                   <div>
-                    <div className="label-eyebrow mb-1 text-[10px]">
+                    <div className="label-eyebrow mb-1 text-xs">
                       Overlap (red) · {compareStats.overlap.toLocaleString()} px
                       {compareStats.a + compareStats.b > 0 && (
                         <span className="ml-1 text-muted-foreground">
@@ -946,9 +946,9 @@ function Stat({ label, value, sub, tone }: { label: string; value: string; sub?:
   const toneCls = tone === "good" ? "text-success" : tone === "warn" ? "text-warning" : tone === "bad" ? "text-destructive" : "text-foreground";
   return (
     <div className="rounded-sm border border-border bg-surface-2 p-2">
-      <div className="label-eyebrow text-[10px]">{label}</div>
+      <div className="label-eyebrow text-xs">{label}</div>
       <div className={`text-mono text-sm font-bold tabular-nums ${toneCls}`}>{value}</div>
-      {sub && <div className="text-mono text-[10px] text-muted-foreground">{sub}</div>}
+      {sub && <div className="text-mono text-xs text-muted-foreground">{sub}</div>}
     </div>
   );
 }

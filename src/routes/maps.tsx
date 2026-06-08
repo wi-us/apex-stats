@@ -1,7 +1,8 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
-import { maps as seed, type ApexMap, getGames } from "@/lib/mock-match";
+import { useMemo, useState } from "react";
+import { getGames } from "@/lib/mock-match";
 import { useAdminStore } from "@/lib/admin-store";
+import { publicMapRows } from "@/lib/public-data";
 import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/maps")({
@@ -21,8 +22,8 @@ function MapsPage() {
 }
 
 function MapsGrid() {
-  const { matches } = useAdminStore();
-  const [rows] = useState<ApexMap[]>(seed);
+  const { matches, customMaps } = useAdminStore();
+  const rows = useMemo(() => publicMapRows(customMaps), [customMaps]);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const q = query.trim().toLowerCase();

@@ -1,6 +1,6 @@
 param(
   [string]$Video      = "scripts/tracking/game_sp.mp4",
-  [string]$Detections = "scripts/tracking/modules/detect_plates/reports/detections.json",
+  [string]$Detections = "",
   [string]$Zones      = "scripts/tracking/configs/zones.vod.json",
   [string]$MatchId    = "m-test-g1",
   [string]$Out        = "scripts/tracking/modules/recognize_tags/dataset/raw",
@@ -10,6 +10,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($Detections -eq "") {
+  $matchIdFromVideo = [IO.Path]::GetFileNameWithoutExtension($Video)
+  $Detections = "scripts/tracking/matches/$matchIdFromVideo/detect_plates/detections.json"
+}
 python scripts/tracking/modules/recognize_tags/extract_crops.py `
   --detections $Detections `
   --video      $Video `

@@ -5,6 +5,8 @@
  * Every table is publicly readable (RLS: "Public read algs_*").
  */
 import { supabase } from "@/integrations/supabase/client";
+import { getTeamDetailSnapshot } from "@/lib/algs-team-detail-snapshot";
+import { isSupabaseEnabled } from "@/lib/runtime-config";
 
 export type TeamMatchStat = {
   matchId: string;
@@ -123,6 +125,10 @@ export type TeamDetail = {
 
 /** Fetch everything we render on /admin/teams/$teamId in one parallel batch. */
 export async function fetchTeamDetail(teamId: string): Promise<TeamDetail> {
+  if (!isSupabaseEnabled) {
+    return getTeamDetailSnapshot(teamId);
+  }
+
   const [
     mtsRes,
     mpsRes,

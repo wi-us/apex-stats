@@ -1,0 +1,10 @@
+_archive/
+outputs/
+reports/
+loops/
+*.zip
+*.mp4
+*.avi
+*.mov
+__pycache__/
+*.pyc

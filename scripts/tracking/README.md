@@ -1,72 +1,83 @@
-# Tracking Lab — локальные скрипты
+# Tracking Lab - local scripts
 
-Пайплайн обработки VOD матча Apex. Тяжёлые вычисления — на машине
-аналитика. В Lovable Cloud ничего не считается, только хранится
-`tracks.json` / `hud_timeline.json` для визуализации.
+Pipeline for processing Apex Legends VODs. Heavy CV/ML work runs locally; the web app only consumes generated JSON artifacts from `src/data/<game>/`.
 
-## Установка
+## Install
 
-```bash
-cd scripts/tracking
+```powershell
+cd scripts\tracking
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
-## Структура
+## Active Structure
 
 ```text
 scripts/tracking/
-  README.md                  # этот файл
   requirements.txt
+  configs/
+    plate_detector/ # match/team configs for the integrated YOLO/OCR detector
+  matches/          # per-video JSON reports, one folder per video stem
   shared/
-    canonical_maps/          # эталонные карты + калибровка
-    schema/                  # JSON-схемы артефактов
+    canonical_maps/
+    schema/
   modules/
-    find_cuts/               # детектор «прыжков» камеры
-    detect_teams/            # bootstrap-поиск 20 команд в зонах
-    motion_detect/           # стартовые позиции (HIGH/MED/LOW консенсус)
-    track_teams/             # онлайн-трекинг в мировых координатах
-    debug_register/          # sanity-check регистрации кадра ↔ карта
-    hud_read/                # чтение HUD (game/map/teams alive/ring + команды) [скелет]
+    find_cuts/       # camera cut detection
+    detect_plates/   # current plate detection and slot tracking
+    plate_detector/  # integrated YOLO/OCR plate detector from the former sibling project
+    recognize_tags/  # current tag crop extraction / CNN training area
+    hud_read/        # HUD timeline, rings, eliminations
+    ring_locator/    # ring geometry on canonical maps
+    _archived/       # replaced experiments and legacy modules
 ```
 
-В каждой папке модуля единая структура:
+Archived modules:
+
+- `detect_teams/`
+- `debug_register/`
+- `motion_detect/`
+- `ocr_tags/`
+- `paddle_ocr_test/`
+- `track_teams/`
+
+## Current Run Order
+
+1. `find_cuts` - detect camera cuts in the VOD.
+2. `detect_plates` or `plate_detector` - detect team plates and build slot trajectories.
+3. `recognize_tags` - extract/tag crops and train/infer team tags.
+4. `hud_read` - read match HUD, ring phases, alive teams, eliminations.
+5. `ring_locator` - convert ring data to canonical map geometry.
+6. `scripts/postprocess/*` - apply tags and clean `tracks.json`.
+7. `hud_read/sync_to_ui.py` - copy reports to `src/data/<game>/`.
+
+The web app depends on the final JSON files in `src/data/<game>/`, not on the archived Python modules.
+
+## Integrated Plate Detector
+
+The former top-level `plate_detector` project now lives at:
 
 ```text
-modules/<name>/
-  README.md       # описание + параметры + тюнинг + формат вывода
-  <name>.py       # сам скрипт
-  run.ps1         # локальный запуск (без git)
-  push.ps1        # запуск + git commit + git push (для моего аккаунта,
-                  # чтобы Lovable-агент сразу увидел свежие reports/)
-  configs/        # пресеты, специфичные для модуля
-  assets/         # сэмплы, эталоны
-  reports/        # вывод последнего запуска (коммитится в git)
+scripts/tracking/modules/plate_detector/
 ```
 
-## Рекомендуемый порядок запуска
+Use the tracking wrapper from `scripts/tracking`:
 
-1. **`debug_register`** — убедиться, что регистрация кадр↔карта работает
-   на этом VOD'е. Если нет — фиксим `config.yaml` / каноническую карту
-   до того, как тратить время на остальные шаги.
-2. **`find_cuts`** — нарезать VOD на участки между катами камеры.
-   Дальше работаем только внутри непрерывных сегментов.
-3. **`motion_detect`** — на коротком окне внутри сегмента найти
-   стартовые координаты всех 20 команд (HIGH/MED/LOW консенсус
-   трёх методов). Анкеры для онлайн-трекера.
-4. **`detect_teams`** — то же, но bootstrap по зонам лидерборда
-   (sanity-check для HSV-пресетов).
-5. **`track_teams`** — онлайн-трекинг в мировых координатах. Главный
-   выход: `tracks.json` для `/admin/tracking-lab`.
-6. **`hud_read`** — параллельно: что показывает HUD в каждый момент
-   времени. Сшивается с `tracks.json` по таймстампу.
+```powershell
+.\run_plate_detector.ps1 -Video modules\plate_detector\videos\<vod>.mp4 -SyncToUi
+```
 
-Подробности по каждому модулю — в его собственном `README.md`.
+This wrapper runs color profile export, optional POI priors, YOLO/OCR detection,
+track building, and then `modules/plate_detector/sync_to_ui.py`. Generated files
+stay under `matches/<video-name>/plate_detector/`; only selected JSON/report
+artifacts are copied into `src/data/<game>/`.
 
-## Отдача результата
+By default the match folder name is derived from the video filename. For example,
+`videos/game_5.mp4` writes JSON reports to:
 
-- `tracks.json` (`modules/track_teams/reports/`) — drag-and-drop на
-  `/admin/tracking-lab`.
-- `report.txt` любого модуля — после `push.ps1` агент в Lovable
-  увидит свежий коммит и сможет прочитать вывод сам.
+```text
+scripts/tracking/matches/game_5/plate_detector/
+```
+
+The same match-folder convention is used by active wrappers for `find_cuts`,
+`detect_plates`, `hud_read`, and `ring_locator` when `-Out` is not passed.

@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminStore, updateTeam, updateMatch } from "@/lib/admin-store";
 import { maps as allMaps, type MatchFull } from "@/lib/mock-match";
 import type { Team } from "@/lib/mock-match";
+import { BrandMark } from "@/components/BrandMark";
 import { TeamLogo } from "@/components/admin/TeamLogo";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { optimizedPlayerImage } from "@/lib/player-images";
 import {
   fetchTeamDetail,
   type TeamDetail,
@@ -197,12 +199,12 @@ function TeamDetail() {
     return "F";
   };
   const tierColor = (t: string) =>
-    t === "S" ? "bg-destructive/20 text-destructive border-destructive/40"
-    : t === "A" ? "bg-primary/20 text-primary border-primary/40"
-    : t === "B" ? "bg-emerald-500/25 text-emerald-300 border-emerald-500/50"
-    : t === "C" ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-    : t === "D" ? "bg-muted text-foreground/80 border-border"
-    : "bg-surface-2 text-muted-foreground border-border";
+    t === "S" ? "tier-chip tier-s"
+    : t === "A" ? "tier-chip tier-a"
+    : t === "B" ? "tier-chip tier-b"
+    : t === "C" ? "tier-chip tier-c"
+    : t === "D" ? "tier-chip tier-d"
+    : "tier-chip tier-f";
 
   const tourStatus = (t: { startDate: string; endDate: string }) => {
     const s = new Date(t.startDate + "T00:00:00Z").getTime();
@@ -265,13 +267,15 @@ function TeamDetail() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-6">
-        <button onClick={() => navigate({ to: "/admin/teams" })} className="text-mono rounded-sm border border-border bg-surface-2 px-2 py-1 text-xs uppercase tracking-wider hover:bg-muted">← Teams</button>
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-surface px-6 pr-[22rem] max-md:px-4 max-md:pr-[13.5rem]">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <BrandMark subtitle="Admin" />
+        <div className="h-6 w-px shrink-0 bg-border" />
         <TeamLogo team={team} size={28} />
-        <h1 className="text-sm font-bold uppercase tracking-wider">{team.tag} · {team.name}</h1>
+        <h1 className="min-w-0 truncate text-sm font-bold uppercase tracking-wider">{team.tag} · {team.name}</h1>
         {detail?.currentSeason && (
           <span
-            className="ml-2 inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary"
+            className="hidden shrink-0 items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary xl:inline-flex"
             title="Current season standings"
           >
             <span className="label-eyebrow text-xs opacity-70">Season</span>
@@ -290,12 +294,16 @@ function TeamDetail() {
           target="_blank"
           rel="noreferrer"
           title={team.liquipediaUrl ? "Open Liquipedia page" : "Search team on Liquipedia"}
-          className="ml-2 inline-flex items-center gap-1 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary hover:bg-primary/20"
+          className="hidden shrink-0 items-center gap-1 rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 text-xs uppercase tracking-wider text-primary hover:bg-primary/20 sm:inline-flex"
         >
           Liquipedia
         </a>
+        </div>
       </header>
       <div className="flex-1 overflow-auto p-6">
+        <div className="mb-4">
+          <button onClick={() => navigate({ to: "/admin/teams" })} className="text-mono rounded-sm border border-border bg-surface-2 px-2 py-1 text-xs uppercase tracking-wider hover:bg-muted">← Teams</button>
+        </div>
         {/* ---- Sticky filters + view switcher ---- */}
         <div className="sticky -top-6 z-30 -mx-6 mb-4 border-b border-border bg-background px-6 pt-6 pb-3">
         <div className="hud-panel p-3">
@@ -506,8 +514,8 @@ function TeamDetail() {
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate font-semibold">{r.match.name}</span>
                           <span className="flex items-center gap-2 whitespace-nowrap text-xs">
-                            <span className="text-mono rounded-sm border border-primary/40 bg-primary/10 px-1.5 py-[1px] font-semibold text-primary">#{avgPlace.toFixed(0)}</span>
-                            <span className="text-mono rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-[1px] font-semibold text-warning">{kills} K</span>
+                            <span className="metric-badge text-mono rounded-sm border px-1.5 py-[1px] font-semibold text-primary">#{avgPlace.toFixed(0)}</span>
+                            <span className="metric-badge text-mono rounded-sm border px-1.5 py-[1px] font-semibold text-warning">{kills} K</span>
                             <span className="text-muted-foreground">{map?.name}</span>
                           </span>
                         </div>
@@ -587,11 +595,11 @@ function TeamDetail() {
                               <div className="truncate text-base font-semibold">{map?.name ?? s.id}</div>
                               <div className="text-mono text-xs text-muted-foreground">{s.count} games · avg <span className="text-foreground font-semibold">#{s.avg.toFixed(1)}</span></div>
                               <div className="mt-1.5 flex items-stretch gap-1.5 text-xs">
-                                <div className="flex flex-1 flex-col items-center rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-1 text-warning" title="Победы">
+                                <div className="metric-badge flex flex-1 flex-col items-center rounded-sm border px-1.5 py-1 text-warning" title="Победы">
                                   <span className="label-eyebrow text-xs leading-none">TOP 1</span>
                                   <span className="text-mono text-sm font-bold leading-tight">{s.top1}</span>
                                 </div>
-                                <div className="flex flex-1 flex-col items-center rounded-sm border border-primary/40 bg-primary/10 px-1.5 py-1 text-primary" title="Топ-5 финиши">
+                                <div className="metric-badge flex flex-1 flex-col items-center rounded-sm border px-1.5 py-1 text-primary" title="Топ-5 финиши">
                                   <span className="label-eyebrow text-xs leading-none">TOP 5</span>
                                   <span className="text-mono text-sm font-bold leading-tight">{s.top5}</span>
                                 </div>
@@ -835,11 +843,12 @@ function RosterPanel({
           {roster.map((p) => {
             const agg = players.find((x) => x.id === p.id);
             const playedLast = lastSet.has(p.id);
+            const image = optimizedPlayerImage(p.image);
             return (
               <div key={p.id} className="w-[225px] overflow-hidden rounded-sm border border-border bg-surface">
                 <div className="relative h-[300px] w-full bg-surface-2">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+                  {image ? (
+                    <img src={image} alt={p.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">no photo</div>
                   )}
@@ -878,16 +887,16 @@ function Stat({ label, value, title }: { label: string; value: number; title?: s
 /* Weapon tier list — kill-share grouped, all weapons                         */
 /* -------------------------------------------------------------------------- */
 const AMMO_COLOR: Record<string, string> = {
-  light: "bg-amber-500/20 text-amber-300 border-amber-500/40",
-  heavy: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-  energy: "bg-red-500/20 text-red-300 border-red-500/40",
-  shotgun: "bg-rose-500/20 text-rose-300 border-rose-500/40",
-  sniper: "bg-sky-500/20 text-sky-300 border-sky-500/40",
-  arrow: "bg-violet-500/20 text-violet-300 border-violet-500/40",
-  grenade: "bg-orange-500/20 text-orange-300 border-orange-500/40",
-  "mythic-light": "bg-amber-500/30 text-amber-200 border-amber-400/60",
-  "mythic-sniper": "bg-sky-500/30 text-sky-200 border-sky-400/60",
-  "mythic-arrow": "bg-violet-500/30 text-violet-200 border-violet-400/60",
+  light: "ammo-card ammo-light",
+  heavy: "ammo-card ammo-heavy",
+  energy: "ammo-card ammo-energy",
+  shotgun: "ammo-card ammo-shotgun",
+  sniper: "ammo-card ammo-sniper",
+  arrow: "ammo-card ammo-arrow",
+  grenade: "ammo-card ammo-grenade",
+  "mythic-light": "ammo-card ammo-mythic-light",
+  "mythic-sniper": "ammo-card ammo-mythic-sniper",
+  "mythic-arrow": "ammo-card ammo-mythic-arrow",
 };
 
 /** ALGS weapon name → apexlegends.wiki.gg image filename (svg). */
@@ -951,12 +960,12 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
     return "F";
   };
   const tierColor = (t: string) =>
-    t === "S" ? "bg-destructive/20 text-destructive border-destructive/40"
-    : t === "A" ? "bg-primary/20 text-primary border-primary/40"
-    : t === "B" ? "bg-emerald-500/25 text-emerald-300 border-emerald-500/50"
-    : t === "C" ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-    : t === "D" ? "bg-muted text-foreground/80 border-border"
-    : "bg-surface-2 text-muted-foreground border-border";
+    t === "S" ? "tier-chip tier-s"
+    : t === "A" ? "tier-chip tier-a"
+    : t === "B" ? "tier-chip tier-b"
+    : t === "C" ? "tier-chip tier-c"
+    : t === "D" ? "tier-chip tier-d"
+    : "tier-chip tier-f";
 
   return (
     <div className="hud-panel mt-4 p-3">
@@ -977,7 +986,7 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
                 <div className={`flex w-14 shrink-0 items-center justify-center rounded-sm border text-2xl font-bold ${tierColor(row)}`}>{row}</div>
                 <div className="flex flex-1 flex-wrap gap-2 rounded-sm border border-border bg-surface p-2">
                   {items.map((w) => {
-                    const ammoCls = (w.ammoType && AMMO_COLOR[w.ammoType]) || "bg-muted text-muted-foreground border-border";
+                    const ammoCls = (w.ammoType && AMMO_COLOR[w.ammoType]) || "ammo-card ammo-unknown";
                     const icon = weaponIconUrl(w.weapon);
                     return (
                       <div
@@ -991,7 +1000,7 @@ function WeaponTierPanel({ weapons, isLoading }: { weapons: TeamWeaponStat[]; is
                               src={icon}
                               alt={w.weapon}
                               loading="lazy"
-                              className="h-full max-h-14 w-auto max-w-full object-contain [filter:brightness(0)_invert(1)]"
+                              className="weapon-icon h-full max-h-14 w-auto max-w-full object-contain"
                             />
                           ) : (
                             <span className="text-xs uppercase tracking-wider opacity-70">no icon</span>

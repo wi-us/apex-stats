@@ -90,31 +90,31 @@
 
 /* Light theme — переопределяем только токены. */
 :root.light {
-  --background: oklch(0.985 0.003 240);
+  --background: oklch(0.965 0.006 240);
   --foreground: oklch(0.18 0.018 252);
-  --surface:    oklch(0.965 0.005 240);
-  --surface-2:  oklch(0.94 0.006 240);
+  --surface:    oklch(0.935 0.009 240);
+  --surface-2:  oklch(0.87 0.014 245);
 
-  --card:                oklch(1 0 0);
+  --card:                oklch(0.985 0.003 240);
   --card-foreground:     oklch(0.18 0.018 252);
-  --popover:             oklch(1 0 0);
+  --popover:             oklch(0.99 0.002 240);
   --popover-foreground:  oklch(0.18 0.018 252);
 
   --primary-foreground:  oklch(0.99 0 0);
 
-  --secondary:           oklch(0.92 0.008 240);
+  --secondary:           oklch(0.875 0.012 245);
   --secondary-foreground: oklch(0.2 0.02 252);
 
-  --muted:               oklch(0.93 0.006 240);
-  --muted-foreground:    oklch(0.45 0.02 250);
+  --muted:               oklch(0.895 0.010 240);
+  --muted-foreground:    oklch(0.34 0.025 250);
 
-  --accent:              oklch(0.92 0.008 240);
-  --accent-foreground:   oklch(0.2 0.02 252);
+  --accent:              oklch(0.86 0.014 245);
+  --accent-foreground:   oklch(0.14 0.02 252);
 
-  --border:        oklch(0 0 0 / 10%);
-  --border-strong: oklch(0 0 0 / 18%);
-  --input:         oklch(0 0 0 / 12%);
-  --grid:          oklch(0 0 0 / 5%);
+  --border:        oklch(0 0 0 / 20%);
+  --border-strong: oklch(0 0 0 / 34%);
+  --input:         oklch(0 0 0 / 22%);
+  --grid:          oklch(0 0 0 / 8%);
 }
 
 /* OLED — чистый чёрный фон. */
@@ -179,6 +179,87 @@
     text-transform: uppercase;
     color: var(--color-muted-foreground);
     font-weight: 600;
+  }
+
+  .tier-chip {
+    color: var(--tier-fg);
+    background-color: var(--tier-bg);
+    border-color: var(--tier-border);
+  }
+  .tier-s { --tier-bg: oklch(0.62 0.22 25 / 20%); --tier-fg: oklch(0.70 0.22 25); --tier-border: oklch(0.62 0.22 25 / 50%); }
+  .tier-a { --tier-bg: oklch(0.685 0.205 38 / 20%); --tier-fg: oklch(0.76 0.20 38); --tier-border: oklch(0.685 0.205 38 / 50%); }
+  .tier-b { --tier-bg: oklch(0.72 0.17 150 / 24%); --tier-fg: oklch(0.74 0.17 150); --tier-border: oklch(0.72 0.17 150 / 52%); }
+  .tier-c { --tier-bg: oklch(0.82 0.16 85 / 18%); --tier-fg: oklch(0.82 0.16 85); --tier-border: oklch(0.82 0.16 85 / 42%); }
+  .tier-d { --tier-bg: var(--color-muted); --tier-fg: var(--color-foreground); --tier-border: var(--color-border-strong); }
+  .tier-f { --tier-bg: var(--color-surface-2); --tier-fg: var(--color-muted-foreground); --tier-border: var(--color-border); }
+
+  .ammo-card {
+    color: var(--ammo-fg);
+    background-color: var(--ammo-bg);
+    border-color: var(--ammo-border);
+  }
+  .ammo-light,
+  .ammo-mythic-light { --ammo-bg: oklch(0.82 0.16 85 / 20%); --ammo-fg: oklch(0.82 0.16 85); --ammo-border: oklch(0.82 0.16 85 / 48%); }
+  .ammo-heavy { --ammo-bg: oklch(0.72 0.17 150 / 22%); --ammo-fg: oklch(0.74 0.17 150); --ammo-border: oklch(0.72 0.17 150 / 50%); }
+  .ammo-energy { --ammo-bg: oklch(0.62 0.22 25 / 20%); --ammo-fg: oklch(0.72 0.22 25); --ammo-border: oklch(0.62 0.22 25 / 48%); }
+  .ammo-shotgun { --ammo-bg: oklch(0.65 0.20 10 / 20%); --ammo-fg: oklch(0.76 0.18 10); --ammo-border: oklch(0.65 0.20 10 / 48%); }
+  .ammo-sniper,
+  .ammo-mythic-sniper { --ammo-bg: oklch(0.72 0.14 225 / 22%); --ammo-fg: oklch(0.76 0.14 225); --ammo-border: oklch(0.72 0.14 225 / 50%); }
+  .ammo-arrow,
+  .ammo-mythic-arrow { --ammo-bg: oklch(0.64 0.20 305 / 20%); --ammo-fg: oklch(0.76 0.17 305); --ammo-border: oklch(0.64 0.20 305 / 48%); }
+  .ammo-grenade { --ammo-bg: oklch(0.72 0.17 45 / 20%); --ammo-fg: oklch(0.78 0.17 45); --ammo-border: oklch(0.72 0.17 45 / 48%); }
+  .ammo-unknown { --ammo-bg: var(--color-muted); --ammo-fg: var(--color-foreground); --ammo-border: var(--color-border-strong); }
+  .weapon-icon {
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+  .metric-badge {
+    background-color: color-mix(in oklch, currentColor 10%, transparent);
+    border-color: color-mix(in oklch, currentColor 48%, transparent);
+  }
+  .metric-badge .label-eyebrow {
+    color: currentColor;
+  }
+  .status-active {
+    color: oklch(0.74 0.17 150);
+    background-color: oklch(0.72 0.17 150 / 14%);
+    border-color: oklch(0.72 0.17 150 / 46%);
+  }
+  .status-archived {
+    color: var(--color-muted-foreground);
+    background-color: var(--color-muted);
+    border-color: var(--color-border-strong);
+  }
+  :root.light .tier-s { --tier-bg: oklch(0.62 0.22 25 / 16%); --tier-fg: oklch(0.52 0.22 25); --tier-border: oklch(0.58 0.22 25 / 56%); }
+  :root.light .tier-a { --tier-bg: oklch(0.685 0.205 38 / 16%); --tier-fg: oklch(0.55 0.20 38); --tier-border: oklch(0.64 0.205 38 / 56%); }
+  :root.light .tier-b { --tier-bg: oklch(0.72 0.17 150 / 18%); --tier-fg: oklch(0.43 0.15 150); --tier-border: oklch(0.56 0.16 150 / 58%); }
+  :root.light .tier-c { --tier-bg: oklch(0.82 0.16 85 / 18%); --tier-fg: oklch(0.55 0.16 75); --tier-border: oklch(0.72 0.16 85 / 58%); }
+  :root.light .tier-d { --tier-bg: oklch(0.90 0.010 245); --tier-fg: oklch(0.26 0.025 250); --tier-border: oklch(0 0 0 / 26%); }
+  :root.light .tier-f { --tier-bg: oklch(0.86 0.012 245); --tier-fg: oklch(0.31 0.025 250); --tier-border: oklch(0 0 0 / 24%); }
+  :root.light .ammo-light,
+  :root.light .ammo-mythic-light { --ammo-bg: oklch(0.82 0.16 85 / 18%); --ammo-fg: oklch(0.55 0.16 75); --ammo-border: oklch(0.70 0.16 85 / 58%); }
+  :root.light .ammo-heavy { --ammo-bg: oklch(0.72 0.17 150 / 18%); --ammo-fg: oklch(0.43 0.15 150); --ammo-border: oklch(0.56 0.16 150 / 58%); }
+  :root.light .ammo-energy { --ammo-bg: oklch(0.62 0.22 25 / 16%); --ammo-fg: oklch(0.52 0.22 25); --ammo-border: oklch(0.58 0.22 25 / 58%); }
+  :root.light .ammo-shotgun { --ammo-bg: oklch(0.65 0.20 10 / 15%); --ammo-fg: oklch(0.52 0.18 10); --ammo-border: oklch(0.60 0.18 10 / 56%); }
+  :root.light .ammo-sniper,
+  :root.light .ammo-mythic-sniper { --ammo-bg: oklch(0.72 0.14 225 / 17%); --ammo-fg: oklch(0.46 0.14 225); --ammo-border: oklch(0.58 0.14 225 / 58%); }
+  :root.light .ammo-arrow,
+  :root.light .ammo-mythic-arrow { --ammo-bg: oklch(0.64 0.20 305 / 15%); --ammo-fg: oklch(0.46 0.17 305); --ammo-border: oklch(0.58 0.17 305 / 54%); }
+  :root.light .ammo-grenade { --ammo-bg: oklch(0.72 0.17 45 / 16%); --ammo-fg: oklch(0.54 0.17 45); --ammo-border: oklch(0.64 0.17 45 / 56%); }
+  :root.light .ammo-unknown { --ammo-bg: oklch(0.90 0.010 245); --ammo-fg: oklch(0.24 0.025 250); --ammo-border: oklch(0 0 0 / 26%); }
+  :root.light .weapon-icon {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(16%) saturate(737%) hue-rotate(180deg) brightness(92%) contrast(90%);
+    opacity: 0.78;
+  }
+  :root.light .status-active {
+    color: oklch(0.42 0.15 150);
+    background-color: oklch(0.72 0.17 150 / 14%);
+    border-color: oklch(0.56 0.16 150 / 56%);
+  }
+  :root.light .status-archived {
+    color: oklch(0.30 0.025 250);
+    background-color: oklch(0.88 0.010 245);
+    border-color: oklch(0 0 0 / 24%);
   }
 }
 

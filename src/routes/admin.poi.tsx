@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseEnabled } from "@/lib/runtime-config";
 import {
   MAP_IDS,
   MAP_LABELS,
@@ -78,6 +79,11 @@ function PoiAdmin() {
   useEffect(() => {
     if (!seriesId) {
       setSeriesInfo(null);
+      return;
+    }
+    if (!isSupabaseEnabled) {
+      setSeriesInfo(null);
+      setSeriesLoading(false);
       return;
     }
     let cancelled = false;

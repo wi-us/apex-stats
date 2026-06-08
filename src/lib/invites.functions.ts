@@ -24,6 +24,7 @@ const CreateInput = z.object({
   email: z.string().email().max(255).optional().nullable(),
   role: z.enum(["user", "operator", "administrator"]),
   expires_in_days: z.number().int().min(1).max(30).default(7),
+  never_expires: z.boolean().optional().default(false),
   max_uses: z.number().int().min(1).max(1000).default(1),
 });
 
@@ -34,7 +35,7 @@ export const createInvite = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     const token = genToken();
     const expires_at = new Date(
-      Date.now() + data.expires_in_days * 24 * 60 * 60 * 1000,
+      Date.now() + (data.never_expires ? 36500 : data.expires_in_days) * 24 * 60 * 60 * 1000,
     ).toISOString();
     const { data: row, error } = await supabaseAdmin
       .from("invites")

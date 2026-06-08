@@ -4,7 +4,7 @@ type ActionBtnProps = { icon: ReactNode; label: string; onClick: () => void };
 export function ActionBtn({ icon, label, onClick }: ActionBtnProps) {
   return (
     <button onClick={onClick}
-      className="flex flex-col items-center gap-0.5 rounded-sm border border-border bg-surface-2 px-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider hover:bg-muted">
+      className="flex flex-col items-center gap-0.5 rounded-sm border border-border bg-surface-2 px-1 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-muted">
       {icon}
       {label}
     </button>

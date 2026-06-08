@@ -667,7 +667,7 @@ function QualityBar({ quality, preset, isDirty, prevQuality }: {
     const cls = good ? "text-emerald-400" : "text-destructive";
     const sign = d > 0 ? "+" : "";
     const val = decimals ? d.toFixed(decimals) : Math.round(d).toString();
-    return <span className={`ml-1 text-mono text-[10px] ${cls}`}>{sign}{val}{isPct ? "%" : ""}</span>;
+    return <span className={`ml-1 text-mono text-xs ${cls}`}>{sign}{val}{isPct ? "%" : ""}</span>;
   };
   const prev = prevQuality;
   return (
@@ -722,7 +722,7 @@ function OverviewTab(props: {
       <SplitControls opts={props.splitOpts} onChange={props.setSplitOpts}
         onReset={props.onResetViewport} onFit={props.onFitMap} />
       <div className="shrink-0 border-b border-border bg-surface-2/60 px-3 py-1.5 text-[11px] leading-snug text-muted-foreground">
-        <span className="label-eyebrow mr-2 text-[10px] text-foreground">Split view</span>
+        <span className="label-eyebrow mr-2 text-xs text-foreground">Split view</span>
         {SPLIT_VIEW_PURPOSE}
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 p-3">
@@ -780,10 +780,10 @@ function Timeline({ time, duration, playing, onTogglePlay, onSeek, events, event
     <div className="shrink-0 border-t border-border bg-surface px-3 py-2">
       {eventFilters && setEventFilters && (
         <div className="mb-1.5 flex flex-wrap items-center gap-1">
-          <span className="label-eyebrow mr-1 text-[10px]">Layers</span>
+          <span className="label-eyebrow mr-1 text-xs">Layers</span>
           {(Object.keys(eventFilters) as Array<TrackEvent["kind"]>).map((k) => (
             <button key={k} onClick={() => toggleFilter(k)}
-              className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+              className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                 eventFilters[k] ? "border-border bg-surface-2 text-foreground" : "border-border/50 bg-surface-2/40 text-muted-foreground/60 line-through"
               }`}>
               <span className="inline-block h-2 w-2 rounded-sm" style={{ background: eventColor[k] }} />
@@ -916,8 +916,8 @@ function VideoPreview(props: {
             <>
               <div className="pointer-events-none absolute inset-x-0 top-0 h-[12%] border-b border-amber-400/40 bg-amber-400/5" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[14%] border-t border-amber-400/40 bg-amber-400/5" />
-              <div className="pointer-events-none absolute left-1 top-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">HUD top</div>
-              <div className="pointer-events-none absolute bottom-1 left-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">HUD bottom</div>
+              <div className="pointer-events-none absolute left-1 top-1 text-xs font-semibold uppercase tracking-wider text-amber-400/80">HUD top</div>
+              <div className="pointer-events-none absolute bottom-1 left-1 text-xs font-semibold uppercase tracking-wider text-amber-400/80">HUD bottom</div>
             </>
           )}
           {ov.showMinimap && (
@@ -1546,7 +1546,7 @@ function SettingsPanel(props: Parameters<typeof RightPanel>[0]) {
         </div>
         {PRESET_DESCRIPTIONS[props.active.name] && (
           <div className="mb-2 rounded-sm border border-border bg-surface-2 px-2 py-1.5 text-[11px] leading-snug text-muted-foreground">
-            <span className="label-eyebrow mr-1 text-[10px] text-foreground">{props.active.name}</span>
+            <span className="label-eyebrow mr-1 text-xs text-foreground">{props.active.name}</span>
             {PRESET_DESCRIPTIONS[props.active.name]}
           </div>
         )}
@@ -1621,7 +1621,7 @@ function DebugPanel(props: Parameters<typeof RightPanel>[0]) {
         <div className="flex flex-wrap gap-1">
           {(Object.keys(props.eventFilters) as Array<TrackEvent["kind"]>).map((k) => (
             <button key={k} onClick={() => props.setEventFilters({ ...props.eventFilters, [k]: !props.eventFilters[k] })}
-              className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+              className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                 props.eventFilters[k] ? "border-border bg-surface-2 text-foreground" : "border-border/50 bg-surface-2/40 text-muted-foreground/60 line-through"
               }`}>
               <span className="inline-block h-2 w-2 rounded-sm" style={{ background: eventColor[k] }} />{k}
@@ -1805,8 +1805,8 @@ function SliderField({ label, value, min, max, step, onChange, hint, warn }: { l
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-primary" />
-      {hint && <div className="mt-0.5 text-[10px] leading-tight text-muted-foreground/70">{hint}</div>}
-      {warn && <div className="mt-1 rounded-sm border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300">⚠ {warn}</div>}
+      {hint && <div className="mt-0.5 text-xs leading-tight text-muted-foreground/70">{hint}</div>}
+      {warn && <div className="mt-1 rounded-sm border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-xs text-amber-300">⚠ {warn}</div>}
     </div>
   );
 }
@@ -1818,8 +1818,8 @@ function NumField({ label, value, min, max, step, onChange, hint, warn }: { labe
       <input type="number" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="text-mono w-full rounded-sm border border-border bg-background px-2 py-1 text-xs" />
-      {hint && <div className="mt-0.5 text-[10px] leading-tight text-muted-foreground/70">{hint}</div>}
-      {warn && <div className="mt-1 rounded-sm border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300">⚠ {warn}</div>}
+      {hint && <div className="mt-0.5 text-xs leading-tight text-muted-foreground/70">{hint}</div>}
+      {warn && <div className="mt-1 rounded-sm border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-xs text-amber-300">⚠ {warn}</div>}
     </div>
   );
 }

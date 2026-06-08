@@ -4,7 +4,7 @@ param(
   [Parameter(Mandatory=$true)][string]$Video,
   [string]$Hsv     = "scripts/tracking/configs/hsv_presets.storm-point.json",
   [string]$Zones   = "scripts/tracking/configs/zones.vod.json",
-  [string]$Out     = "scripts/tracking/modules/detect_plates/reports",
+  [string]$Out     = "",
   [double]$SampleFps = 1.0,
   [int]$MaxFrames  = 0,
   [switch]$NoRecovery,
@@ -23,6 +23,11 @@ chcp 65001 > $null
 $env:PYTHONUTF8 = "1"
 $repo = (git rev-parse --show-toplevel).Trim()
 Set-Location $repo
+
+if ($Out -eq "") {
+  $matchId = [IO.Path]::GetFileNameWithoutExtension($Video)
+  $Out = "scripts/tracking/matches/$matchId/detect_plates"
+}
 
 $pyArgs = @(
   "scripts/tracking/modules/detect_plates/detect_plates.py",

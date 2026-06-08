@@ -7,7 +7,7 @@
 # Логика:
 #   - сканирует $VideosDir на *.mp4
 #   - для каждого видео: match_id = имя файла без расширения
-#   - detect_plates -> reports_batch/{match_id}/detections.json
+#   - detect_plates -> scripts/tracking/matches/{match_id}/detect_plates/detections.json
 #   - extract_crops -> dataset/raw/{match_id}/slot_XX/*.png
 #   - если detections.json уже есть и -Force не передан, стадия detect_plates пропускается
 
@@ -15,7 +15,7 @@ param(
   [string]$VideosDir   = "scripts/tracking/videos_in",
   [string]$Hsv         = "scripts/tracking/configs/hsv_presets.storm-point.json",
   [string]$Zones       = "scripts/tracking/configs/zones.vod.json",
-  [string]$DetectOut   = "scripts/tracking/modules/recognize_tags/_detect_cache",
+  [string]$DetectOut   = "scripts/tracking/matches",
   [string]$CropsOut    = "scripts/tracking/modules/recognize_tags/dataset/raw",
   [int]   $TopN        = 40,
   [double]$PadFrac     = 0.4,
@@ -50,7 +50,7 @@ if ($Sequential) { $MaxJobs = 1 }
 if ($MaxJobs -lt 1) { $MaxJobs = 1 }
 if ($MaxJobs -gt 15) { $MaxJobs = 15 }
 
-$logDir = Join-Path $DetectOut "_logs"
+$logDir = Join-Path $DetectOut "_logs/recognize_tags"
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 Write-Host "[info] найдено видео: $($videos.Count), MaxJobs=$MaxJobs" -ForegroundColor Cyan
@@ -97,7 +97,7 @@ foreach ($v in $videos) {
   }
   $matchId  = [IO.Path]::GetFileNameWithoutExtension($v.Name)
   $videoRel = Resolve-Path -Relative $v.FullName
-  $detDir   = Join-Path $DetectOut $matchId
+  $detDir   = Join-Path (Join-Path $DetectOut $matchId) "detect_plates"
   $detJson  = Join-Path $detDir "detections.json"
   $logFile  = Join-Path $logDir "${matchId}.log"
   if (Test-Path $logFile) { Remove-Item $logFile -Force }

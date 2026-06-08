@@ -7,6 +7,7 @@
  * and feed the result into {@link replaceFromAlgs} in admin-store.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseEnabled } from "@/lib/runtime-config";
 import type {
   Team,
   Tournament,
@@ -78,6 +79,10 @@ export type AlgsBundle = {
 
 /** Pull everything we need in parallel. Each table is publicly readable. */
 export async function fetchAlgsBundle(): Promise<AlgsBundle> {
+  if (!isSupabaseEnabled) {
+    throw new Error("Supabase is disabled. Set VITE_SUPABASE_ENABLED=true to read algs_* tables.");
+  }
+
   const [
     eventsRes,
     regionsRes,
@@ -179,23 +184,13 @@ export async function fetchAlgsBundle(): Promise<AlgsBundle> {
     };
   });
 
-  // Maps ← active algs_maps
+  // Maps ← active algs_maps. Store the UI id when a canonical map is known,
+  // so the public/admin map pool does not contain both ALGS ids and UI aliases.
   const maps: CustomMap[] = (mapsRes.data ?? []).map((m) => ({
-    id: m.id_ulid,
+    id: toUiMapId(m.canonical_id ?? null) ?? m.id_ulid,
     name: (m.name as string) ?? "",
     image: (m.canonical_id && MAP_IMAGE_BY_CANONICAL[m.canonical_id]) || "",
   }));
-  // Also register a UI-id alias (e.g. "worlds-edge") so seedMaps lookups
-  // from the admin UI resolve to ALGS map images.
-  for (const m of mapsRes.data ?? []) {
-    const uiId = toUiMapId(m.canonical_id ?? null);
-    if (!uiId) continue;
-    maps.push({
-      id: uiId,
-      name: (m.name as string) ?? "",
-      image: (m.canonical_id && MAP_IMAGE_BY_CANONICAL[m.canonical_id]) || "",
-    });
-  }
 
   // Matches ← ALGS series + games derived from algs_matches
   const matchesBySeries = new Map<string, typeof matchRowsRes.data>();

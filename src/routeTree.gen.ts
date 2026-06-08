@@ -17,6 +17,7 @@ import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as MapsRouteImport } from './routes/maps'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GamesRouteImport } from './routes/games'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,7 +41,6 @@ import { Route as AdminMapsRouteImport } from './routes/admin.maps'
 import { Route as AdminHsvRouteImport } from './routes/admin.hsv'
 import { Route as AdminDiagramsRouteImport } from './routes/admin.diagrams'
 import { Route as AdminDatasetRouteImport } from './routes/admin.dataset'
-import { Route as AdminCameraRouteImport } from './routes/admin.camera'
 import { Route as AdminTeamsTeamIdRouteImport } from './routes/admin.teams.$teamId'
 import { Route as AdminMatchesMatchIdRouteImport } from './routes/admin.matches.$matchId'
 import { Route as AdminMapsMapIdRouteImport } from './routes/admin.maps.$mapId'
@@ -83,6 +83,11 @@ const LoginRoute = LoginRouteImport.update({
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -200,11 +205,6 @@ const AdminDatasetRoute = AdminDatasetRouteImport.update({
   path: '/dataset',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminCameraRoute = AdminCameraRouteImport.update({
-  id: '/camera',
-  path: '/camera',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminTeamsTeamIdRoute = AdminTeamsTeamIdRouteImport.update({
   id: '/$teamId',
   path: '/$teamId',
@@ -225,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRouteWithChildren
+  '/docs': typeof DocsRoute
   '/games': typeof GamesRouteWithChildren
   '/login': typeof LoginRoute
   '/maps': typeof MapsRouteWithChildren
@@ -233,7 +234,6 @@ export interface FileRoutesByFullPath {
   '/presentation-2': typeof Presentation2Route
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
-  '/admin/camera': typeof AdminCameraRoute
   '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
@@ -261,6 +261,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
+  '/docs': typeof DocsRoute
   '/games': typeof GamesRouteWithChildren
   '/login': typeof LoginRoute
   '/maps': typeof MapsRouteWithChildren
@@ -269,7 +270,6 @@ export interface FileRoutesByTo {
   '/presentation-2': typeof Presentation2Route
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
-  '/admin/camera': typeof AdminCameraRoute
   '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
@@ -299,6 +299,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/admin': typeof AdminRouteWithChildren
+  '/docs': typeof DocsRoute
   '/games': typeof GamesRouteWithChildren
   '/login': typeof LoginRoute
   '/maps': typeof MapsRouteWithChildren
@@ -307,7 +308,6 @@ export interface FileRoutesById {
   '/presentation-2': typeof Presentation2Route
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
-  '/admin/camera': typeof AdminCameraRoute
   '/admin/dataset': typeof AdminDatasetRoute
   '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
@@ -338,6 +338,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/admin'
+    | '/docs'
     | '/games'
     | '/login'
     | '/maps'
@@ -346,7 +347,6 @@ export interface FileRouteTypes {
     | '/presentation-2'
     | '/teams'
     | '/tournaments'
-    | '/admin/camera'
     | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
@@ -374,6 +374,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accept-invite'
+    | '/docs'
     | '/games'
     | '/login'
     | '/maps'
@@ -382,7 +383,6 @@ export interface FileRouteTypes {
     | '/presentation-2'
     | '/teams'
     | '/tournaments'
-    | '/admin/camera'
     | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
@@ -411,6 +411,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/admin'
+    | '/docs'
     | '/games'
     | '/login'
     | '/maps'
@@ -419,7 +420,6 @@ export interface FileRouteTypes {
     | '/presentation-2'
     | '/teams'
     | '/tournaments'
-    | '/admin/camera'
     | '/admin/dataset'
     | '/admin/diagrams'
     | '/admin/hsv'
@@ -449,6 +449,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AcceptInviteRoute: typeof AcceptInviteRoute
   AdminRoute: typeof AdminRouteWithChildren
+  DocsRoute: typeof DocsRoute
   GamesRoute: typeof GamesRouteWithChildren
   LoginRoute: typeof LoginRoute
   MapsRoute: typeof MapsRouteWithChildren
@@ -515,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/games'
       fullPath: '/games'
       preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -678,13 +686,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDatasetRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/camera': {
-      id: '/admin/camera'
-      path: '/camera'
-      fullPath: '/admin/camera'
-      preLoaderRoute: typeof AdminCameraRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/teams/$teamId': {
       id: '/admin/teams/$teamId'
       path: '/$teamId'
@@ -746,7 +747,6 @@ const AdminTeamsRouteWithChildren = AdminTeamsRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
-  AdminCameraRoute: typeof AdminCameraRoute
   AdminDatasetRoute: typeof AdminDatasetRoute
   AdminDiagramsRoute: typeof AdminDiagramsRoute
   AdminHsvRoute: typeof AdminHsvRoute
@@ -766,7 +766,6 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminCameraRoute: AdminCameraRoute,
   AdminDatasetRoute: AdminDatasetRoute,
   AdminDiagramsRoute: AdminDiagramsRoute,
   AdminHsvRoute: AdminHsvRoute,
@@ -832,6 +831,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AcceptInviteRoute: AcceptInviteRoute,
   AdminRoute: AdminRouteWithChildren,
+  DocsRoute: DocsRoute,
   GamesRoute: GamesRouteWithChildren,
   LoginRoute: LoginRoute,
   MapsRoute: MapsRouteWithChildren,

@@ -24,7 +24,7 @@ param(
   [int]$CropFirstN = 3,
   [int]$StaticConfirm = 3,
   [int]$StaticMaxFrames = 8,
-  [string]$Out = "scripts/tracking/modules/hud_read/reports",
+  [string]$Out = "",
   [switch]$DumpPts,
   [string]$DigitTemplates = "",
   [switch]$SyncUI,
@@ -36,6 +36,10 @@ chcp 65001 > $null
 $env:PYTHONUTF8 = "1"
 $repo = (git rev-parse --show-toplevel).Trim()
 Set-Location $repo
+if ($Out -eq "") {
+  $matchId = [IO.Path]::GetFileNameWithoutExtension($Video)
+  $Out = "scripts/tracking/matches/$matchId/hud_read"
+}
 if (Test-Path $Out) {
   Get-ChildItem $Out -Recurse -Force | Where-Object { $_.Name -ne ".gitkeep" } |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue

@@ -21,6 +21,31 @@ const CreateInput = z.object({
   role: z.enum(["user", "operator", "administrator"]),
 });
 
+export const listUserAccounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, email, display_name, created_at"),
+      supabaseAdmin.from("user_roles").select("user_id, role"),
+    ]);
+    if (pErr || rErr) throw new Error(pErr?.message ?? rErr?.message ?? "Failed to load users");
+
+    const roleMap = new Map<string, "user" | "operator" | "administrator">();
+    const rank = { user: 1, operator: 2, administrator: 3 } as const;
+    for (const r of roles ?? []) {
+      const next = r.role as "user" | "operator" | "administrator";
+      const cur = roleMap.get(r.user_id);
+      if (!cur || rank[next] > rank[cur]) roleMap.set(r.user_id, next);
+    }
+    return {
+      users: (profiles ?? []).map((p) => ({
+        ...p,
+        role: roleMap.get(p.id) ?? null,
+      })),
+    };
+  });
+
 export const createUserAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-apply_slot_tags.py — применить результат ocr_tags к данным игры в UI.
+apply_slot_tags.py — применить slot_tags.json к данным игры в UI.
 
 - читает reports/slot_tags.json (assignments: slot_id -> tag)
 - обновляет src/data/<game>/slot-to-tag.json (slot number -> tag), сохраняя
@@ -9,7 +9,7 @@ apply_slot_tags.py — применить результат ocr_tags к дан�
 
 Usage:
   python scripts/postprocess/apply_slot_tags.py \
-      --slot-tags scripts/tracking/modules/ocr_tags/reports/slot_tags.json \
+      --slot-tags scripts/tracking/modules/_archived/ocr_tags/reports/slot_tags.json \
       --game      src/data/m-test-g1
 """
 from __future__ import annotations

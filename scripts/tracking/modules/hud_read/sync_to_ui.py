@@ -37,10 +37,11 @@ def main() -> int:
     ap.add_argument("--ring-geometry", type=Path, default=None,
                     help="Опц. ring_geometry.json из ring_locator — "
                          "будет вмёржен в rings.json как поле 'geometry'.")
-    ap.add_argument("--tracks-reports", type=Path, default=Path("auto"),
-                    help="Путь к scripts/tracking/modules/track_teams/reports — "
+    ap.add_argument("--tracks-reports", type=Path, default=Path("skip"),
+                    help="Путь к reports с tracks.json/tracks.slots.json — "
                          "копирует tracks.json и tracks.slots.json в --out. "
-                         "По умолчанию 'auto' → стандартное расположение в репо. "
+                         "По умолчанию 'skip', потому что текущий detect_plates пишет "
+                         "detections/trajectories, а не финальный tracks.json. "
                          "Передай 'skip' (или пустую строку), чтобы отключить.")
     args = ap.parse_args()
 
@@ -84,11 +85,11 @@ def main() -> int:
         except Exception as e:
             print(f"[sync_to_ui] не смог встроить eliminations: {e}")
 
-    # tracks.json / tracks.slots.json из track_teams (опц.)
+    # tracks.json / tracks.slots.json from an optional external reports dir.
     tracks_dir = args.tracks_reports
     if tracks_dir is not None and str(tracks_dir).lower() not in ("skip", ""):
         if str(tracks_dir).lower() == "auto":
-            tracks_dir = REPO_ROOT / "scripts" / "tracking" / "modules" / "track_teams" / "reports"
+            tracks_dir = REPO_ROOT / "scripts" / "tracking" / "modules" / "_archived" / "track_teams" / "reports"
         for name in ("tracks.json", "tracks.slots.json"):
             src = tracks_dir / name
             if not src.exists():

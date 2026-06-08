@@ -1,0 +1,2769 @@
+{
+  "series_id": "01KH2HK109T8T08WHXMJ1B4412",
+  "match_number": 5,
+  "match_id": "01KH2J3KTGVXH73H20MM2Q6N24",
+  "draft_id": "01KMKNADQZJSQH6T100VFYDDBN",
+  "map_id_ulid": "01J6508ZVM8PZKJ9VSKA9SF33P",
+  "map_name": "Olympus",
+  "map_canonical_id": "olympus",
+  "coordinate_system": {
+    "x_norm_y_norm": "0..1 ALGS spawn location coordinates",
+    "roi_px": "1080x1080 map ROI coordinates",
+    "frame_px": "full-frame coordinates: x = 420 + x_norm*1080, y = y_norm*1080",
+    "canonical_px": "2000x2000 render coordinates"
+  },
+  "teams": {
+    "DINO": {
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "poi_name": "Estates",
+      "spawn_location_id": "01KC7A1MQGQZMXE7V036V5FTMZ",
+      "pick_number": 1,
+      "actual_pick_number": 1,
+      "x_norm": 0.32,
+      "y_norm": 0.53,
+      "frame_px": [
+        765.6,
+        572.4
+      ],
+      "roi_px": [
+        345.6,
+        572.4
+      ],
+      "canonical_px": [
+        640.0,
+        1060.0
+      ]
+    },
+    "FREE": {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    "NIP": {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    "NMSS": {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Team Nemesis",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    "ROC": {
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "poi_name": "Oasis",
+      "spawn_location_id": "01KC7A0YP8Q9VJRDAKSWYQJDSG",
+      "pick_number": 8,
+      "actual_pick_number": 8,
+      "x_norm": 0.22,
+      "y_norm": 0.39,
+      "frame_px": [
+        657.6,
+        421.2
+      ],
+      "roi_px": [
+        237.6,
+        421.2
+      ],
+      "canonical_px": [
+        440.0,
+        780.0
+      ]
+    },
+    "GODL": {
+      "broadcast_tag": "GODL",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "team_name": "Team Burger",
+      "team_tag": "GODL",
+      "poi_name": "Power Grid",
+      "spawn_location_id": "01KC7A157SKVQ6EDH83XEGKS60",
+      "pick_number": 9,
+      "actual_pick_number": 9,
+      "x_norm": 0.52,
+      "y_norm": 0.29,
+      "frame_px": [
+        981.6,
+        313.2
+      ],
+      "roi_px": [
+        561.6,
+        313.2
+      ],
+      "canonical_px": [
+        1040.0,
+        580.0
+      ]
+    },
+    "REV": {
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "poi_name": "Hammond Labs",
+      "spawn_location_id": "01KC7A1R65YVQ5BD5H9QCMQH71",
+      "pick_number": 10,
+      "actual_pick_number": 10,
+      "x_norm": 0.5,
+      "y_norm": 0.52,
+      "frame_px": [
+        960.0,
+        561.6
+      ],
+      "roi_px": [
+        540.0,
+        561.6
+      ],
+      "canonical_px": [
+        1000.0,
+        1040.0
+      ]
+    },
+    "SRC": {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    "GK": {
+      "broadcast_tag": "GK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "team_name": "Geekay Esports",
+      "team_tag": "GK",
+      "poi_name": "Bonsai Plaza",
+      "spawn_location_id": "01KC7A2J8AN4TT7M8JXNSS55Z2",
+      "pick_number": 14,
+      "actual_pick_number": 14,
+      "x_norm": 0.52,
+      "y_norm": 0.9,
+      "frame_px": [
+        981.6,
+        972.0
+      ],
+      "roi_px": [
+        561.6,
+        972.0
+      ],
+      "canonical_px": [
+        1040.0,
+        1800.0
+      ]
+    },
+    "CRT": {
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "poi_name": "Clinic",
+      "spawn_location_id": "01KC7A1HVM9JN6E5S27PXXA5NE",
+      "pick_number": 15,
+      "actual_pick_number": 15,
+      "x_norm": 0.88,
+      "y_norm": 0.47,
+      "frame_px": [
+        1370.4,
+        507.6
+      ],
+      "roi_px": [
+        950.4,
+        507.6
+      ],
+      "canonical_px": [
+        1760.0,
+        940.0
+      ]
+    },
+    "SR": {
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "poi_name": "Elysium",
+      "spawn_location_id": "01KC7A2RHVKZ5XXCK58CQ4QE7F",
+      "pick_number": 16,
+      "actual_pick_number": 16,
+      "x_norm": 0.88,
+      "y_norm": 0.34,
+      "frame_px": [
+        1370.4,
+        367.2
+      ],
+      "roi_px": [
+        950.4,
+        367.2
+      ],
+      "canonical_px": [
+        1760.0,
+        680.0
+      ]
+    },
+    "SEN": {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    "VSN": {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "Team Vision",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    "JDG": {
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "poi_name": "Gravity Engine",
+      "spawn_location_id": "01KC7A1BG6P8TSZ2TQRTMKDPS7",
+      "pick_number": 19,
+      "actual_pick_number": 19,
+      "x_norm": 0.61,
+      "y_norm": 0.43,
+      "frame_px": [
+        1078.8,
+        464.4
+      ],
+      "roi_px": [
+        658.8,
+        464.4
+      ],
+      "canonical_px": [
+        1220.0,
+        860.0
+      ]
+    },
+    "THUG": {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    "ELTE": {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite NA",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    "GMBL": {
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "poi_name": "Stabilizer",
+      "spawn_location_id": "01KC7A0R1XSZZAAJ1TRCDN3140",
+      "pick_number": 29,
+      "actual_pick_number": 29,
+      "x_norm": 0.36,
+      "y_norm": 0.21,
+      "frame_px": [
+        808.8,
+        226.8
+      ],
+      "roi_px": [
+        388.8,
+        226.8
+      ],
+      "canonical_px": [
+        720.0,
+        420.0
+      ]
+    },
+    "FXI": {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    "BB": {
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "poi_name": "Carrier",
+      "spawn_location_id": "01KC79RPMPXKVFMXEA7ATPMZAR",
+      "pick_number": 36,
+      "actual_pick_number": 36,
+      "x_norm": 0.26,
+      "y_norm": 0.28,
+      "frame_px": [
+        700.8,
+        302.4
+      ],
+      "roi_px": [
+        280.8,
+        302.4
+      ],
+      "canonical_px": [
+        520.0,
+        560.0
+      ]
+    },
+    "TL": {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    }
+  },
+  "rows": [
+    {
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "poi_name": "Estates",
+      "spawn_location_id": "01KC7A1MQGQZMXE7V036V5FTMZ",
+      "pick_number": 1,
+      "actual_pick_number": 1,
+      "x_norm": 0.32,
+      "y_norm": 0.53,
+      "frame_px": [
+        765.6,
+        572.4
+      ],
+      "roi_px": [
+        345.6,
+        572.4
+      ],
+      "canonical_px": [
+        640.0,
+        1060.0
+      ]
+    },
+    {
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "poi_name": "Estates",
+      "spawn_location_id": "01KC7A1MQGQZMXE7V036V5FTMZ",
+      "pick_number": 1,
+      "actual_pick_number": 1,
+      "x_norm": 0.32,
+      "y_norm": 0.53,
+      "frame_px": [
+        765.6,
+        572.4
+      ],
+      "roi_px": [
+        345.6,
+        572.4
+      ],
+      "canonical_px": [
+        640.0,
+        1060.0
+      ]
+    },
+    {
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "poi_name": "Estates",
+      "spawn_location_id": "01KC7A1MQGQZMXE7V036V5FTMZ",
+      "pick_number": 1,
+      "actual_pick_number": 1,
+      "x_norm": 0.32,
+      "y_norm": 0.53,
+      "frame_px": [
+        765.6,
+        572.4
+      ],
+      "roi_px": [
+        345.6,
+        572.4
+      ],
+      "canonical_px": [
+        640.0,
+        1060.0
+      ]
+    },
+    {
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "poi_name": "Estates",
+      "spawn_location_id": "01KC7A1MQGQZMXE7V036V5FTMZ",
+      "pick_number": 1,
+      "actual_pick_number": 1,
+      "x_norm": 0.32,
+      "y_norm": 0.53,
+      "frame_px": [
+        765.6,
+        572.4
+      ],
+      "roi_px": [
+        345.6,
+        572.4
+      ],
+      "canonical_px": [
+        640.0,
+        1060.0
+      ]
+    },
+    {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    {
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "poi_name": "Somers University",
+      "spawn_location_id": "01KC7A2ESX8Y50DXZDDT7HFCDH",
+      "pick_number": 2,
+      "actual_pick_number": 2,
+      "x_norm": 0.8,
+      "y_norm": 0.74,
+      "frame_px": [
+        1284.0,
+        799.2
+      ],
+      "roi_px": [
+        864.0,
+        799.2
+      ],
+      "canonical_px": [
+        1600.0,
+        1480.0
+      ]
+    },
+    {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    {
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "poi_name": "Rift",
+      "spawn_location_id": "01KC7A0VDQDH2ERC7NJEFEGD2E",
+      "pick_number": 4,
+      "actual_pick_number": 4,
+      "x_norm": 0.63,
+      "y_norm": 0.26,
+      "frame_px": [
+        1100.4,
+        280.8
+      ],
+      "roi_px": [
+        680.4,
+        280.8
+      ],
+      "canonical_px": [
+        1260.0,
+        520.0
+      ]
+    },
+    {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Stallions",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Stallions",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Stallions",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Stallions",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    {
+      "broadcast_tag": "NMSS",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "team_name": "Team Nemesis",
+      "team_tag": "NMSS",
+      "poi_name": "Hydroponics",
+      "spawn_location_id": "01KC7A25A4352NAAPQHCD0JQVG",
+      "pick_number": 7,
+      "actual_pick_number": 7,
+      "x_norm": 0.2,
+      "y_norm": 0.7,
+      "frame_px": [
+        636.0,
+        756.0
+      ],
+      "roi_px": [
+        216.0,
+        756.0
+      ],
+      "canonical_px": [
+        400.0,
+        1400.0
+      ]
+    },
+    {
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "poi_name": "Oasis",
+      "spawn_location_id": "01KC7A0YP8Q9VJRDAKSWYQJDSG",
+      "pick_number": 8,
+      "actual_pick_number": 8,
+      "x_norm": 0.22,
+      "y_norm": 0.39,
+      "frame_px": [
+        657.6,
+        421.2
+      ],
+      "roi_px": [
+        237.6,
+        421.2
+      ],
+      "canonical_px": [
+        440.0,
+        780.0
+      ]
+    },
+    {
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "poi_name": "Oasis",
+      "spawn_location_id": "01KC7A0YP8Q9VJRDAKSWYQJDSG",
+      "pick_number": 8,
+      "actual_pick_number": 8,
+      "x_norm": 0.22,
+      "y_norm": 0.39,
+      "frame_px": [
+        657.6,
+        421.2
+      ],
+      "roi_px": [
+        237.6,
+        421.2
+      ],
+      "canonical_px": [
+        440.0,
+        780.0
+      ]
+    },
+    {
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "poi_name": "Oasis",
+      "spawn_location_id": "01KC7A0YP8Q9VJRDAKSWYQJDSG",
+      "pick_number": 8,
+      "actual_pick_number": 8,
+      "x_norm": 0.22,
+      "y_norm": 0.39,
+      "frame_px": [
+        657.6,
+        421.2
+      ],
+      "roi_px": [
+        237.6,
+        421.2
+      ],
+      "canonical_px": [
+        440.0,
+        780.0
+      ]
+    },
+    {
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "poi_name": "Oasis",
+      "spawn_location_id": "01KC7A0YP8Q9VJRDAKSWYQJDSG",
+      "pick_number": 8,
+      "actual_pick_number": 8,
+      "x_norm": 0.22,
+      "y_norm": 0.39,
+      "frame_px": [
+        657.6,
+        421.2
+      ],
+      "roi_px": [
+        237.6,
+        421.2
+      ],
+      "canonical_px": [
+        440.0,
+        780.0
+      ]
+    },
+    {
+      "broadcast_tag": "GODL",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "team_name": "medium rare",
+      "team_tag": "GODL",
+      "poi_name": "Power Grid",
+      "spawn_location_id": "01KC7A157SKVQ6EDH83XEGKS60",
+      "pick_number": 9,
+      "actual_pick_number": 9,
+      "x_norm": 0.52,
+      "y_norm": 0.29,
+      "frame_px": [
+        981.6,
+        313.2
+      ],
+      "roi_px": [
+        561.6,
+        313.2
+      ],
+      "canonical_px": [
+        1040.0,
+        580.0
+      ]
+    },
+    {
+      "broadcast_tag": "GODL",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "team_name": "Team Burger",
+      "team_tag": "GODL",
+      "poi_name": "Power Grid",
+      "spawn_location_id": "01KC7A157SKVQ6EDH83XEGKS60",
+      "pick_number": 9,
+      "actual_pick_number": 9,
+      "x_norm": 0.52,
+      "y_norm": 0.29,
+      "frame_px": [
+        981.6,
+        313.2
+      ],
+      "roi_px": [
+        561.6,
+        313.2
+      ],
+      "canonical_px": [
+        1040.0,
+        580.0
+      ]
+    },
+    {
+      "broadcast_tag": "GODL",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "team_name": "Team Burger",
+      "team_tag": "GODL",
+      "poi_name": "Power Grid",
+      "spawn_location_id": "01KC7A157SKVQ6EDH83XEGKS60",
+      "pick_number": 9,
+      "actual_pick_number": 9,
+      "x_norm": 0.52,
+      "y_norm": 0.29,
+      "frame_px": [
+        981.6,
+        313.2
+      ],
+      "roi_px": [
+        561.6,
+        313.2
+      ],
+      "canonical_px": [
+        1040.0,
+        580.0
+      ]
+    },
+    {
+      "broadcast_tag": "GODL",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "team_name": "Team Burger",
+      "team_tag": "GODL",
+      "poi_name": "Power Grid",
+      "spawn_location_id": "01KC7A157SKVQ6EDH83XEGKS60",
+      "pick_number": 9,
+      "actual_pick_number": 9,
+      "x_norm": 0.52,
+      "y_norm": 0.29,
+      "frame_px": [
+        981.6,
+        313.2
+      ],
+      "roi_px": [
+        561.6,
+        313.2
+      ],
+      "canonical_px": [
+        1040.0,
+        580.0
+      ]
+    },
+    {
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "poi_name": "Hammond Labs",
+      "spawn_location_id": "01KC7A1R65YVQ5BD5H9QCMQH71",
+      "pick_number": 10,
+      "actual_pick_number": 10,
+      "x_norm": 0.5,
+      "y_norm": 0.52,
+      "frame_px": [
+        960.0,
+        561.6
+      ],
+      "roi_px": [
+        540.0,
+        561.6
+      ],
+      "canonical_px": [
+        1000.0,
+        1040.0
+      ]
+    },
+    {
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "poi_name": "Hammond Labs",
+      "spawn_location_id": "01KC7A1R65YVQ5BD5H9QCMQH71",
+      "pick_number": 10,
+      "actual_pick_number": 10,
+      "x_norm": 0.5,
+      "y_norm": 0.52,
+      "frame_px": [
+        960.0,
+        561.6
+      ],
+      "roi_px": [
+        540.0,
+        561.6
+      ],
+      "canonical_px": [
+        1000.0,
+        1040.0
+      ]
+    },
+    {
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "poi_name": "Hammond Labs",
+      "spawn_location_id": "01KC7A1R65YVQ5BD5H9QCMQH71",
+      "pick_number": 10,
+      "actual_pick_number": 10,
+      "x_norm": 0.5,
+      "y_norm": 0.52,
+      "frame_px": [
+        960.0,
+        561.6
+      ],
+      "roi_px": [
+        540.0,
+        561.6
+      ],
+      "canonical_px": [
+        1000.0,
+        1040.0
+      ]
+    },
+    {
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "poi_name": "Hammond Labs",
+      "spawn_location_id": "01KC7A1R65YVQ5BD5H9QCMQH71",
+      "pick_number": 10,
+      "actual_pick_number": 10,
+      "x_norm": 0.5,
+      "y_norm": 0.52,
+      "frame_px": [
+        960.0,
+        561.6
+      ],
+      "roi_px": [
+        540.0,
+        561.6
+      ],
+      "canonical_px": [
+        1000.0,
+        1040.0
+      ]
+    },
+    {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    {
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "poi_name": "Grow Towers",
+      "spawn_location_id": "01KC7A1V8S8TPA1B42D0VVRNA6",
+      "pick_number": 11,
+      "actual_pick_number": 11,
+      "x_norm": 0.74,
+      "y_norm": 0.54,
+      "frame_px": [
+        1219.2,
+        583.2
+      ],
+      "roi_px": [
+        799.2,
+        583.2
+      ],
+      "canonical_px": [
+        1480.0,
+        1080.0
+      ]
+    },
+    {
+      "broadcast_tag": "GK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "team_name": "DKK",
+      "team_tag": "GK",
+      "poi_name": "Bonsai Plaza",
+      "spawn_location_id": "01KC7A2J8AN4TT7M8JXNSS55Z2",
+      "pick_number": 14,
+      "actual_pick_number": 14,
+      "x_norm": 0.52,
+      "y_norm": 0.9,
+      "frame_px": [
+        981.6,
+        972.0
+      ],
+      "roi_px": [
+        561.6,
+        972.0
+      ],
+      "canonical_px": [
+        1040.0,
+        1800.0
+      ]
+    },
+    {
+      "broadcast_tag": "GK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "team_name": "DKK",
+      "team_tag": "GK",
+      "poi_name": "Bonsai Plaza",
+      "spawn_location_id": "01KC7A2J8AN4TT7M8JXNSS55Z2",
+      "pick_number": 14,
+      "actual_pick_number": 14,
+      "x_norm": 0.52,
+      "y_norm": 0.9,
+      "frame_px": [
+        981.6,
+        972.0
+      ],
+      "roi_px": [
+        561.6,
+        972.0
+      ],
+      "canonical_px": [
+        1040.0,
+        1800.0
+      ]
+    },
+    {
+      "broadcast_tag": "GK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "team_name": "DKK",
+      "team_tag": "GK",
+      "poi_name": "Bonsai Plaza",
+      "spawn_location_id": "01KC7A2J8AN4TT7M8JXNSS55Z2",
+      "pick_number": 14,
+      "actual_pick_number": 14,
+      "x_norm": 0.52,
+      "y_norm": 0.9,
+      "frame_px": [
+        981.6,
+        972.0
+      ],
+      "roi_px": [
+        561.6,
+        972.0
+      ],
+      "canonical_px": [
+        1040.0,
+        1800.0
+      ]
+    },
+    {
+      "broadcast_tag": "GK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "team_name": "Geekay Esports",
+      "team_tag": "GK",
+      "poi_name": "Bonsai Plaza",
+      "spawn_location_id": "01KC7A2J8AN4TT7M8JXNSS55Z2",
+      "pick_number": 14,
+      "actual_pick_number": 14,
+      "x_norm": 0.52,
+      "y_norm": 0.9,
+      "frame_px": [
+        981.6,
+        972.0
+      ],
+      "roi_px": [
+        561.6,
+        972.0
+      ],
+      "canonical_px": [
+        1040.0,
+        1800.0
+      ]
+    },
+    {
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "poi_name": "Clinic",
+      "spawn_location_id": "01KC7A1HVM9JN6E5S27PXXA5NE",
+      "pick_number": 15,
+      "actual_pick_number": 15,
+      "x_norm": 0.88,
+      "y_norm": 0.47,
+      "frame_px": [
+        1370.4,
+        507.6
+      ],
+      "roi_px": [
+        950.4,
+        507.6
+      ],
+      "canonical_px": [
+        1760.0,
+        940.0
+      ]
+    },
+    {
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "poi_name": "Clinic",
+      "spawn_location_id": "01KC7A1HVM9JN6E5S27PXXA5NE",
+      "pick_number": 15,
+      "actual_pick_number": 15,
+      "x_norm": 0.88,
+      "y_norm": 0.47,
+      "frame_px": [
+        1370.4,
+        507.6
+      ],
+      "roi_px": [
+        950.4,
+        507.6
+      ],
+      "canonical_px": [
+        1760.0,
+        940.0
+      ]
+    },
+    {
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "poi_name": "Clinic",
+      "spawn_location_id": "01KC7A1HVM9JN6E5S27PXXA5NE",
+      "pick_number": 15,
+      "actual_pick_number": 15,
+      "x_norm": 0.88,
+      "y_norm": 0.47,
+      "frame_px": [
+        1370.4,
+        507.6
+      ],
+      "roi_px": [
+        950.4,
+        507.6
+      ],
+      "canonical_px": [
+        1760.0,
+        940.0
+      ]
+    },
+    {
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "poi_name": "Clinic",
+      "spawn_location_id": "01KC7A1HVM9JN6E5S27PXXA5NE",
+      "pick_number": 15,
+      "actual_pick_number": 15,
+      "x_norm": 0.88,
+      "y_norm": 0.47,
+      "frame_px": [
+        1370.4,
+        507.6
+      ],
+      "roi_px": [
+        950.4,
+        507.6
+      ],
+      "canonical_px": [
+        1760.0,
+        940.0
+      ]
+    },
+    {
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "poi_name": "Elysium",
+      "spawn_location_id": "01KC7A2RHVKZ5XXCK58CQ4QE7F",
+      "pick_number": 16,
+      "actual_pick_number": 16,
+      "x_norm": 0.88,
+      "y_norm": 0.34,
+      "frame_px": [
+        1370.4,
+        367.2
+      ],
+      "roi_px": [
+        950.4,
+        367.2
+      ],
+      "canonical_px": [
+        1760.0,
+        680.0
+      ]
+    },
+    {
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "poi_name": "Elysium",
+      "spawn_location_id": "01KC7A2RHVKZ5XXCK58CQ4QE7F",
+      "pick_number": 16,
+      "actual_pick_number": 16,
+      "x_norm": 0.88,
+      "y_norm": 0.34,
+      "frame_px": [
+        1370.4,
+        367.2
+      ],
+      "roi_px": [
+        950.4,
+        367.2
+      ],
+      "canonical_px": [
+        1760.0,
+        680.0
+      ]
+    },
+    {
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "poi_name": "Elysium",
+      "spawn_location_id": "01KC7A2RHVKZ5XXCK58CQ4QE7F",
+      "pick_number": 16,
+      "actual_pick_number": 16,
+      "x_norm": 0.88,
+      "y_norm": 0.34,
+      "frame_px": [
+        1370.4,
+        367.2
+      ],
+      "roi_px": [
+        950.4,
+        367.2
+      ],
+      "canonical_px": [
+        1760.0,
+        680.0
+      ]
+    },
+    {
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "poi_name": "Elysium",
+      "spawn_location_id": "01KC7A2RHVKZ5XXCK58CQ4QE7F",
+      "pick_number": 16,
+      "actual_pick_number": 16,
+      "x_norm": 0.88,
+      "y_norm": 0.34,
+      "frame_px": [
+        1370.4,
+        367.2
+      ],
+      "roi_px": [
+        950.4,
+        367.2
+      ],
+      "canonical_px": [
+        1760.0,
+        680.0
+      ]
+    },
+    {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Oblivion",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Oblivion",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Oblivion",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    {
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "poi_name": "Gardens",
+      "spawn_location_id": "01KC7A1EJKXEKG6C9GMK1Q9RDV",
+      "pick_number": 17,
+      "actual_pick_number": 17,
+      "x_norm": 0.76,
+      "y_norm": 0.44,
+      "frame_px": [
+        1240.8,
+        475.2
+      ],
+      "roi_px": [
+        820.8,
+        475.2
+      ],
+      "canonical_px": [
+        1520.0,
+        880.0
+      ]
+    },
+    {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "S2",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "S2",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "S2",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "S2",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    {
+      "broadcast_tag": "VSN",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "team_name": "Team Vision",
+      "team_tag": "VSN",
+      "poi_name": "Dockyard",
+      "spawn_location_id": "01KC7A1Y7RP1Z7GQX73G88TF9K",
+      "pick_number": 18,
+      "actual_pick_number": 18,
+      "x_norm": 0.18,
+      "y_norm": 0.57,
+      "frame_px": [
+        614.4,
+        615.6
+      ],
+      "roi_px": [
+        194.4,
+        615.6
+      ],
+      "canonical_px": [
+        360.0,
+        1140.0
+      ]
+    },
+    {
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "poi_name": "Gravity Engine",
+      "spawn_location_id": "01KC7A1BG6P8TSZ2TQRTMKDPS7",
+      "pick_number": 19,
+      "actual_pick_number": 19,
+      "x_norm": 0.61,
+      "y_norm": 0.43,
+      "frame_px": [
+        1078.8,
+        464.4
+      ],
+      "roi_px": [
+        658.8,
+        464.4
+      ],
+      "canonical_px": [
+        1220.0,
+        860.0
+      ]
+    },
+    {
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "poi_name": "Gravity Engine",
+      "spawn_location_id": "01KC7A1BG6P8TSZ2TQRTMKDPS7",
+      "pick_number": 19,
+      "actual_pick_number": 19,
+      "x_norm": 0.61,
+      "y_norm": 0.43,
+      "frame_px": [
+        1078.8,
+        464.4
+      ],
+      "roi_px": [
+        658.8,
+        464.4
+      ],
+      "canonical_px": [
+        1220.0,
+        860.0
+      ]
+    },
+    {
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "poi_name": "Gravity Engine",
+      "spawn_location_id": "01KC7A1BG6P8TSZ2TQRTMKDPS7",
+      "pick_number": 19,
+      "actual_pick_number": 19,
+      "x_norm": 0.61,
+      "y_norm": 0.43,
+      "frame_px": [
+        1078.8,
+        464.4
+      ],
+      "roi_px": [
+        658.8,
+        464.4
+      ],
+      "canonical_px": [
+        1220.0,
+        860.0
+      ]
+    },
+    {
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "poi_name": "Gravity Engine",
+      "spawn_location_id": "01KC7A1BG6P8TSZ2TQRTMKDPS7",
+      "pick_number": 19,
+      "actual_pick_number": 19,
+      "x_norm": 0.61,
+      "y_norm": 0.43,
+      "frame_px": [
+        1078.8,
+        464.4
+      ],
+      "roi_px": [
+        658.8,
+        464.4
+      ],
+      "canonical_px": [
+        1220.0,
+        860.0
+      ]
+    },
+    {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    {
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "poi_name": "Phase Driver",
+      "spawn_location_id": "01KC7A28F6KVZDM4R07PCHPATW",
+      "pick_number": 20,
+      "actual_pick_number": 20,
+      "x_norm": 0.38,
+      "y_norm": 0.78,
+      "frame_px": [
+        830.4,
+        842.4
+      ],
+      "roi_px": [
+        410.4,
+        842.4
+      ],
+      "canonical_px": [
+        760.0,
+        1560.0
+      ]
+    },
+    {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite Esports",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite Esports",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite Esports",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite Esports",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    {
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "team_name": "Elite NA",
+      "team_tag": "ELTE",
+      "poi_name": "Fight Night",
+      "spawn_location_id": "01KC7A121V52M9BD78HJ20EDCT",
+      "pick_number": 28,
+      "actual_pick_number": 28,
+      "x_norm": 0.39,
+      "y_norm": 0.3,
+      "frame_px": [
+        841.2,
+        324.0
+      ],
+      "roi_px": [
+        421.2,
+        324.0
+      ],
+      "canonical_px": [
+        780.0,
+        600.0
+      ]
+    },
+    {
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "poi_name": "Stabilizer",
+      "spawn_location_id": "01KC7A0R1XSZZAAJ1TRCDN3140",
+      "pick_number": 29,
+      "actual_pick_number": 29,
+      "x_norm": 0.36,
+      "y_norm": 0.21,
+      "frame_px": [
+        808.8,
+        226.8
+      ],
+      "roi_px": [
+        388.8,
+        226.8
+      ],
+      "canonical_px": [
+        720.0,
+        420.0
+      ]
+    },
+    {
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "poi_name": "Stabilizer",
+      "spawn_location_id": "01KC7A0R1XSZZAAJ1TRCDN3140",
+      "pick_number": 29,
+      "actual_pick_number": 29,
+      "x_norm": 0.36,
+      "y_norm": 0.21,
+      "frame_px": [
+        808.8,
+        226.8
+      ],
+      "roi_px": [
+        388.8,
+        226.8
+      ],
+      "canonical_px": [
+        720.0,
+        420.0
+      ]
+    },
+    {
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "poi_name": "Stabilizer",
+      "spawn_location_id": "01KC7A0R1XSZZAAJ1TRCDN3140",
+      "pick_number": 29,
+      "actual_pick_number": 29,
+      "x_norm": 0.36,
+      "y_norm": 0.21,
+      "frame_px": [
+        808.8,
+        226.8
+      ],
+      "roi_px": [
+        388.8,
+        226.8
+      ],
+      "canonical_px": [
+        720.0,
+        420.0
+      ]
+    },
+    {
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "poi_name": "Stabilizer",
+      "spawn_location_id": "01KC7A0R1XSZZAAJ1TRCDN3140",
+      "pick_number": 29,
+      "actual_pick_number": 29,
+      "x_norm": 0.36,
+      "y_norm": 0.21,
+      "frame_px": [
+        808.8,
+        226.8
+      ],
+      "roi_px": [
+        388.8,
+        226.8
+      ],
+      "canonical_px": [
+        720.0,
+        420.0
+      ]
+    },
+    {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    {
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "poi_name": "Solar Array",
+      "spawn_location_id": "01KC7A2BGPNF2YP5T9XSNV0H4P",
+      "pick_number": 35,
+      "actual_pick_number": 35,
+      "x_norm": 0.61,
+      "y_norm": 0.76,
+      "frame_px": [
+        1078.8,
+        820.8
+      ],
+      "roi_px": [
+        658.8,
+        820.8
+      ],
+      "canonical_px": [
+        1220.0,
+        1520.0
+      ]
+    },
+    {
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "poi_name": "Carrier",
+      "spawn_location_id": "01KC79RPMPXKVFMXEA7ATPMZAR",
+      "pick_number": 36,
+      "actual_pick_number": 36,
+      "x_norm": 0.26,
+      "y_norm": 0.28,
+      "frame_px": [
+        700.8,
+        302.4
+      ],
+      "roi_px": [
+        280.8,
+        302.4
+      ],
+      "canonical_px": [
+        520.0,
+        560.0
+      ]
+    },
+    {
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "poi_name": "Carrier",
+      "spawn_location_id": "01KC79RPMPXKVFMXEA7ATPMZAR",
+      "pick_number": 36,
+      "actual_pick_number": 36,
+      "x_norm": 0.26,
+      "y_norm": 0.28,
+      "frame_px": [
+        700.8,
+        302.4
+      ],
+      "roi_px": [
+        280.8,
+        302.4
+      ],
+      "canonical_px": [
+        520.0,
+        560.0
+      ]
+    },
+    {
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "poi_name": "Carrier",
+      "spawn_location_id": "01KC79RPMPXKVFMXEA7ATPMZAR",
+      "pick_number": 36,
+      "actual_pick_number": 36,
+      "x_norm": 0.26,
+      "y_norm": 0.28,
+      "frame_px": [
+        700.8,
+        302.4
+      ],
+      "roi_px": [
+        280.8,
+        302.4
+      ],
+      "canonical_px": [
+        520.0,
+        560.0
+      ]
+    },
+    {
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "poi_name": "Carrier",
+      "spawn_location_id": "01KC79RPMPXKVFMXEA7ATPMZAR",
+      "pick_number": 36,
+      "actual_pick_number": 36,
+      "x_norm": 0.26,
+      "y_norm": 0.28,
+      "frame_px": [
+        700.8,
+        302.4
+      ],
+      "roi_px": [
+        280.8,
+        302.4
+      ],
+      "canonical_px": [
+        520.0,
+        560.0
+      ]
+    },
+    {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    },
+    {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    },
+    {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    },
+    {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    },
+    {
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "poi_name": "Icarus",
+      "spawn_location_id": "01KC7A2NCK1GX9QHJA2R86E7JA",
+      "pick_number": 38,
+      "actual_pick_number": 38,
+      "x_norm": 0.69,
+      "y_norm": 0.87,
+      "frame_px": [
+        1165.2,
+        939.6
+      ],
+      "roi_px": [
+        745.2,
+        939.6
+      ],
+      "canonical_px": [
+        1380.0,
+        1740.0
+      ]
+    }
+  ]
+}

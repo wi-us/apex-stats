@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import JSZip from "jszip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +20,11 @@ import {
   pickMinimapZone,
   refineBoxesByPeaks,
 } from "@/lib/plate-detector";
+
+async function loadJSZip() {
+  const mod = await import("jszip");
+  return mod.default ?? mod;
+}
 
 export const Route = createFileRoute("/admin/dataset")({
   component: () => (
@@ -103,6 +107,7 @@ function DatasetBuilder() {
   const onZipUpload = useCallback(async (file: File) => {
     setBusy("Распаковка ZIP…");
     try {
+      const JSZip = await loadJSZip();
       const zip = await JSZip.loadAsync(file);
       const items: FrameItem[] = [];
       const entries = Object.values(zip.files).filter(
@@ -229,6 +234,7 @@ function DatasetBuilder() {
     setBusy("Сборка ZIP…");
     try {
       const batchId = makeBatchId(batchSlug);
+      const JSZip = await loadJSZip();
       const zip = new JSZip();
       const imgDir = zip.folder("images")!;
       const lblDir = zip.folder("labels")!;
@@ -551,7 +557,7 @@ function DatasetBuilder() {
           <section className="space-y-2">
             <Label className="label-eyebrow text-xs">Batch slug</Label>
             <Input value={batchSlug} onChange={(e) => setBatchSlug(e.target.value)} className="h-8 text-xs" />
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               имя: <span className="text-mono">batch_YYYYMMDD-HHMMSS_{batchSlug || "…"}</span>
             </div>
           </section>
@@ -584,7 +590,7 @@ function DatasetBuilder() {
             <SliderRow label={`Expected plate H ${expectedH}px`} value={expectedH} min={8} max={48} onChange={setExpectedH} />
             <SliderRow label={`Erosion ${erosion}px`} value={erosion} min={0} max={3} onChange={setErosion} />
             <SliderRow label={`Max boxes/team ${maxPerTeam}`} value={maxPerTeam} min={1} max={12} onChange={setMaxPerTeam} />
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Если плашки одной команды слипаются — увеличь Erosion (1-2px), а Expected W/H поможет разрезать большой блоб на N кусков.
             </p>
           </section>
@@ -600,7 +606,7 @@ function DatasetBuilder() {
             <Button size="sm" variant="outline" disabled={!active || !!busy} onClick={refineNow}>
               Refine current frame
             </Button>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Режет/уточняет boxы по столбцам ярких пикселей (текст плашки). Помогает отделить соседних игроков и обрезать края.
             </p>
           </section>
@@ -621,7 +627,7 @@ function DatasetBuilder() {
               ))}
             </div>
             <SliderRow label={`Alpha ${maskAlpha}`} value={maskAlpha} min={40} max={220} onChange={setMaskAlpha} />
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               "active" — маска только выбранной команды (R-панель), "all" — все команды цветом hex.
             </p>
           </section>
@@ -658,7 +664,7 @@ function DatasetBuilder() {
             <Button size="sm" variant={tool === "draw" ? "default" : "outline"} onClick={() => setTool("draw")}>Draw (B)</Button>
             <span className="text-xs text-muted-foreground">click — выбрать, drag углы — ресайз, Shift+click — удалить</span>
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground">Zoom</span>
+              <span className="text-xs text-muted-foreground">Zoom</span>
               <Slider className="w-32" value={[zoom]} min={0.5} max={4} step={0.25} onValueChange={(v) => setZoom(v[0] ?? 1)} />
               <span className="w-8 text-xs tabular-nums">{zoom.toFixed(2)}×</span>
               <span className="text-xs text-muted-foreground">
@@ -690,7 +696,7 @@ function DatasetBuilder() {
         {/* Правая панель */}
         <aside className="flex w-[240px] shrink-0 flex-col gap-1 overflow-y-auto border-l border-border bg-surface p-3">
           <div className="label-eyebrow text-xs">Teams · нажмите для выбора</div>
-          <p className="mb-1 text-[10px] text-muted-foreground">
+          <p className="mb-1 text-xs text-muted-foreground">
             1-9, 0 — слоты 1..10. Shift+1..9 — слоты 11..19. Click — выбрать команду для рисования.
           </p>
           {preset.teams.map((t) => {
@@ -704,7 +710,7 @@ function DatasetBuilder() {
                 <span className="h-3 w-3 shrink-0 rounded-sm border border-border" style={{ backgroundColor: t.hex }} />
                 <span className="w-6 shrink-0 tabular-nums text-muted-foreground">{t.slot}</span>
                 <span className="truncate">{t.name}</span>
-                {cnt > 0 && <span className="ml-auto rounded bg-primary/20 px-1 text-[10px] text-primary tabular-nums">{cnt}</span>}
+                {cnt > 0 && <span className="ml-auto rounded bg-primary/20 px-1 text-xs text-primary tabular-nums">{cnt}</span>}
               </button>
             );
           })}
@@ -717,7 +723,7 @@ function DatasetBuilder() {
 function SliderRow({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
   return (
     <div className="space-y-1">
-      <div className="text-[10px] text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
       <Slider value={[value]} min={min} max={max} step={1} onValueChange={(v) => onChange(v[0] ?? 0)} />
     </div>
   );

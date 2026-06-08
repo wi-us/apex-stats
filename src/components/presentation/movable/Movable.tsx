@@ -80,7 +80,7 @@ export function Movable({
       {editing && !dragAnywhere && (
         <div className="absolute left-0 right-0 z-20 flex h-6 items-center gap-1 px-1" style={{ top: -24 }}>
           <div
-            className="flex h-6 flex-1 cursor-move items-center justify-center rounded-t bg-primary/80 text-[10px] font-bold tracking-wider text-primary-foreground shadow"
+            className="flex h-6 flex-1 cursor-move items-center justify-center rounded-t bg-primary/80 text-xs font-bold tracking-wider text-primary-foreground shadow"
             onPointerDown={onPointerDown("move")}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

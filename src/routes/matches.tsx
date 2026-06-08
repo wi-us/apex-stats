@@ -1,6 +1,8 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { matches, maps, tournaments, matchSeedExtras, getGames, matchDurationSec } from "@/lib/mock-match";
+import { getGames, matchDurationSec } from "@/lib/mock-match";
+import { useAdminStore } from "@/lib/admin-store";
+import { publicMatches, publicMapRows } from "@/lib/public-data";
 import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/matches")({
@@ -27,16 +29,17 @@ function MatchesPage() {
 }
 
 function MatchesList() {
+  const store = useAdminStore();
   const [filter, setFilter] = useState<"all" | Status>("all");
-  const today = new Date("2026-05-18");
+  const today = new Date();
+  const matches = useMemo(() => publicMatches(store.matches), [store.matches]);
+  const maps = useMemo(() => publicMapRows(store.customMaps), [store.customMaps]);
 
   const enriched = useMemo(() => matches.map((m) => {
-    const t = tournaments.find((x) => x.id === m.tournamentId);
+    const t = store.tournaments.find((x) => x.id === m.tournamentId);
     const status: Status = t ? tournamentStatus(t, today) : "finished";
-    const extras = matchSeedExtras[m.id];
-    const full = { ...m, mapIds: extras?.mapIds, gameDurations: extras?.gameDurations };
-    return { m, t, status, games: getGames(full), total: matchDurationSec(full) };
-  }), []);
+    return { m, t, status, games: getGames(m), total: matchDurationSec(m) };
+  }), [matches, store.tournaments, today]);
 
   const counts = {
     all: enriched.length,

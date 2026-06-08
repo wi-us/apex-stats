@@ -1,5 +1,7 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { matches, tournaments, maps, matchSeedExtras, getGames, matchDurationSec } from "@/lib/mock-match";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { getGames, matchDurationSec } from "@/lib/mock-match";
+import { useAdminStore } from "@/lib/admin-store";
+import { publicMapRows } from "@/lib/public-data";
 
 export const Route = createFileRoute("/matches/$matchId")({
   component: MatchDetailPage,
@@ -9,20 +11,24 @@ export const Route = createFileRoute("/matches/$matchId")({
       <Link to="/matches" className="text-xs text-primary hover:underline">← К матчам</Link>
     </div>
   ),
-  loader: ({ params }) => {
-    const m = matches.find((x) => x.id === params.matchId);
-    if (!m) throw notFound();
-    return null;
-  },
 });
 
 function MatchDetailPage() {
   const { matchId } = Route.useParams();
-  const match = matches.find((m) => m.id === matchId)!;
+  const { matches, tournaments, customMaps } = useAdminStore();
+  const maps = publicMapRows(customMaps);
+  const match = matches.find((m) => m.id === matchId);
+  if (!match) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
+        <h1 className="text-lg font-bold">РњР°С‚С‡ РЅРµ РЅР°Р№РґРµРЅ</h1>
+        <Link to="/matches" className="text-xs text-primary hover:underline">в†ђ Рљ РјР°С‚С‡Р°Рј</Link>
+      </div>
+    );
+  }
   const tournament = tournaments.find((t) => t.id === match.tournamentId);
-  const extras = matchSeedExtras[match.id];
-  const games = getGames({ ...match, mapIds: extras?.mapIds, gameDurations: extras?.gameDurations });
-  const total = matchDurationSec({ ...match, mapIds: extras?.mapIds, gameDurations: extras?.gameDurations });
+  const games = getGames(match);
+  const total = matchDurationSec(match);
   const mm = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
   return (

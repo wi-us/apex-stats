@@ -459,9 +459,9 @@ function ProcessesAdmin() {
                     <div className="text-xs font-semibold">{m.name}</div>
                     <div className="mb-2 text-xs text-muted-foreground">{t.name}</div>
                     <div className="mb-2 flex flex-wrap gap-1">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Missing:</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">Missing:</span>
                       {missing.map((k) => (
-                        <span key={k} className="rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-warning">
+                        <span key={k} className="rounded-sm border border-warning/40 bg-warning/10 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-warning">
                           {KIND_SHORT[k]}
                         </span>
                       ))}
@@ -520,7 +520,7 @@ function ProcessesAdmin() {
                         >
                           <td className="px-3 py-2 text-xs">
                             <div className="font-semibold">{KIND_LABELS[p.kind ?? "minimap"]}</div>
-                            {p.live && <span className="mt-0.5 inline-block rounded-sm bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">LIVE</span>}
+                            {p.live && <span className="mt-0.5 inline-block rounded-sm bg-destructive px-1.5 py-0.5 text-xs font-bold text-destructive-foreground">LIVE</span>}
                           </td>
                           <td className="px-3 py-2 text-xs">
                             <button onClick={(e) => { e.stopPropagation(); setExpanded(isOpen ? null : p.id); }} className="font-semibold hover:text-primary">
@@ -533,10 +533,10 @@ function ProcessesAdmin() {
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {firstMap?.name ?? <span className="text-muted-foreground">—</span>}
-                            {p.maps.length > 1 && <span className="ml-1 text-mono text-[10px] text-muted-foreground">+{p.maps.length - 1}</span>}
+                            {p.maps.length > 1 && <span className="ml-1 text-mono text-xs text-muted-foreground">+{p.maps.length - 1}</span>}
                           </td>
                           <td className="px-3 py-2"><span className={`rounded-sm px-1.5 py-0.5 text-xs uppercase ${STATUS_COLORS[p.status]}`}>{p.status}</span>
-                            {p.needsReview && <span className="ml-1 rounded-sm border border-warning/40 bg-warning/10 px-1 text-[10px] font-semibold uppercase tracking-wider text-warning">review</span>}
+                            {p.needsReview && <span className="ml-1 rounded-sm border border-warning/40 bg-warning/10 px-1 text-xs font-semibold uppercase tracking-wider text-warning">review</span>}
                           </td>
                           <td className="px-3 py-2 w-44">
                             <ProgressMini status={p.status} prog={prog} />
@@ -550,7 +550,7 @@ function ProcessesAdmin() {
                           </td>
                           <td className="px-3 py-2 text-mono text-xs text-muted-foreground">
                             {p.startedAt ? relTime(p.startedAt) : "—"}
-                            {p.startedAt && <div className="text-[10px] opacity-70">{durationLabel(p.startedAt, p.finishedAt)}</div>}
+                            {p.startedAt && <div className="text-xs opacity-70">{durationLabel(p.startedAt, p.finishedAt)}</div>}
                           </td>
                           <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
                             <StatusActions process={p} onAction={(a) => onAction(p, a)} />
@@ -1001,13 +1001,13 @@ function ProgressMini({
     <div>
       <div className="flex items-baseline justify-between">
         <span className="text-mono text-xs font-semibold">{prog.pct}%</span>
-        <span className="text-mono text-[10px] text-muted-foreground">
+        <span className="text-mono text-xs text-muted-foreground">
           {prog.framesDone} / {prog.framesTotal}f
         </span>
       </div>
       <Progress value={prog.pct} className="h-1 mt-0.5" />
       {status === "running" && prog.etaSec !== null && (
-        <div className="text-mono text-[10px] text-muted-foreground">ETA {mmss(prog.etaSec)}</div>
+        <div className="text-mono text-xs text-muted-foreground">ETA {mmss(prog.etaSec)}</div>
       )}
     </div>
   );
@@ -1115,7 +1115,7 @@ function ProcessDetailPanel({
         <DetailSection title="Source video">
           <div className="text-mono text-[11px] break-all text-muted-foreground">{process.streamUrl || "—"}</div>
           {process.videoTitle && <div className="mt-1 text-xs">{process.videoTitle}</div>}
-          {process.videoChannel && <div className="text-[10px] text-muted-foreground">{process.videoChannel}</div>}
+          {process.videoChannel && <div className="text-xs text-muted-foreground">{process.videoChannel}</div>}
         </DetailSection>
 
         <DetailSection title="Progress">

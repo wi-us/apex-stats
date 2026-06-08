@@ -159,7 +159,7 @@ export function Slide11({ editing }: SlideProps) {
               <div key={i} className="mb-1 grid grid-cols-[1.4fr_1fr_0.8fr] items-center gap-2 rounded-md border border-border bg-surface-2/40 px-2 py-1.5 text-[12px]">
                 <span className="font-mono text-cyan">{v}</span>
                 <span className="text-muted-foreground">—</span>
-                <span className="text-right text-[10px] font-bold uppercase tracking-wider text-destructive">Удалить</span>
+                <span className="text-right text-xs font-bold uppercase tracking-wider text-destructive">Удалить</span>
               </div>
             ))}
           </div>
@@ -239,7 +239,7 @@ export function Slide12({ editing }: SlideProps) {
           <Block className="p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">Графики камеры: сравнение и анализ скачков</span>
-              <div className="flex gap-2 text-[10px]">
+              <div className="flex gap-2 text-xs">
                 <span className="rounded bg-primary/15 px-2 py-0.5 text-primary">Step zoom</span>
                 <span className="rounded bg-surface-2 px-2 py-0.5 text-muted-foreground">Шум кольца</span>
                 <span className="rounded bg-surface-2 px-2 py-0.5 text-muted-foreground">Баланс</span>

@@ -109,7 +109,7 @@ const matchStatusStyle: Record<MatchStatus, string> = {
 };
 function MatchStatusBadge({ s }: { s: MatchStatus }) {
   return (
-    <span className={`rounded-sm border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${matchStatusStyle[s]}`}>
+    <span className={`rounded-sm border px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider ${matchStatusStyle[s]}`}>
       {s}
     </span>
   );
@@ -378,7 +378,7 @@ function TournamentsAdmin() {
                                             params={{ matchId: m.id } as never}
                                             className="flex items-center gap-2 px-2 py-1 text-xs hover:bg-muted"
                                           >
-                                            <span className="w-12 shrink-0 text-mono text-[10px] tabular-nums text-muted-foreground">{when || "—"}</span>
+                                            <span className="w-12 shrink-0 text-mono text-xs tabular-nums text-muted-foreground">{when || "—"}</span>
                                             <span className="flex-1 truncate font-semibold">{m.name}</span>
                                             <span className="hidden truncate text-muted-foreground sm:inline-block sm:max-w-[40%]">{names}</span>
                                             <MatchStatusBadge s={ms} />

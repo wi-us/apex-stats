@@ -1,0 +1,1044 @@
+{
+  "series_id": "01KH2HK109T8T08WHXMJ1B4412",
+  "series_name": "Group A vs C",
+  "vod_url": "https://www.youtube.com/watch?v=qTOTsX6bJvQ",
+  "db_path": "data\\algs.sqlite",
+  "video_time_sync": {
+    "notes": "video_time_sec is always frame_idx / fps. Fill match_offsets later if you need game_time.",
+    "match_offsets": []
+  },
+  "teams": [
+    {
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "name": "Team Vision",
+      "tag": "VSN",
+      "version_id": "01KMRS79YKDA6PJNVX9SHW8R7X",
+      "series_position": 1,
+      "points": 67,
+      "kills": 35,
+      "aliases": [
+        "Team Vision",
+        "VSN",
+        "TeamVision"
+      ],
+      "slot": null
+    },
+    {
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "name": "JD GAMING",
+      "tag": "JDG",
+      "version_id": "01KNQT32HA41APD7AYEGYNPJ9V",
+      "series_position": 2,
+      "points": 51,
+      "kills": 22,
+      "aliases": [
+        "JD GAMING",
+        "JDG",
+        "JDGAMING"
+      ],
+      "slot": 16
+    },
+    {
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "name": "ShopifyRebellion",
+      "tag": "SR",
+      "version_id": "01KMRS7BD93VB0PAXHWBEEFDX2",
+      "series_position": 3,
+      "points": 50,
+      "kills": 26,
+      "aliases": [
+        "ShopifyRebellion",
+        "SR"
+      ],
+      "slot": 19
+    },
+    {
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "name": "Sentinels",
+      "tag": "SEN",
+      "version_id": "01KPTHD46ZCJAY0RWXTX2P0QTK",
+      "series_position": 4,
+      "points": 45,
+      "kills": 20,
+      "aliases": [
+        "Sentinels",
+        "SEN"
+      ],
+      "slot": 6
+    },
+    {
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "name": "Buckle Boys",
+      "tag": "BB",
+      "version_id": "01KMYJ002VDT6AQ1CKM2JAWG8T",
+      "series_position": 5,
+      "points": 43,
+      "kills": 21,
+      "aliases": [
+        "Buckle Boys",
+        "BB",
+        "BuckleBoys"
+      ],
+      "slot": 11
+    },
+    {
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "name": "Crazy Thieves",
+      "tag": "CRT",
+      "version_id": "01KMRS7CVWFYJV5KH00VC542Q6",
+      "series_position": 6,
+      "points": 41,
+      "kills": 21,
+      "aliases": [
+        "Crazy Thieves",
+        "CRT",
+        "CrazyThieves"
+      ],
+      "slot": 12
+    },
+    {
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "name": "Team Liquid",
+      "tag": "TL",
+      "version_id": "01KMRS7C30H49Z61FKDNTK4AVP",
+      "series_position": 7,
+      "points": 37,
+      "kills": 19,
+      "aliases": [
+        "Team Liquid",
+        "TL",
+        "TeamLiquid"
+      ],
+      "slot": 9
+    },
+    {
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "name": "NinjasinPyjamas",
+      "tag": "NIP",
+      "version_id": "01KMRS7A54Z95KDWD8YPBEHGC3",
+      "series_position": 8,
+      "points": 37,
+      "kills": 16,
+      "aliases": [
+        "NinjasinPyjamas",
+        "NIP"
+      ],
+      "slot": 4
+    },
+    {
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "name": "Free Thinkers",
+      "tag": "FREE",
+      "version_id": "01KMRS7G2KHZX3W14B94Q1XE9B",
+      "series_position": 9,
+      "points": 36,
+      "kills": 22,
+      "aliases": [
+        "Free Thinkers",
+        "FREE",
+        "FreeThinkers"
+      ],
+      "slot": 2
+    },
+    {
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "name": "ROC Esports",
+      "tag": "ROC",
+      "version_id": "01KMRS7GCJ2T3VQB7T3E35G159",
+      "series_position": 10,
+      "points": 36,
+      "kills": 18,
+      "aliases": [
+        "ROC Esports",
+        "ROC",
+        "ROCEsports"
+      ],
+      "slot": 18
+    },
+    {
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "name": "Geekay Esports",
+      "tag": "GK",
+      "version_id": "01KMRS79WK7BZ31CTR1XSKEP6Z",
+      "series_position": 11,
+      "points": 34,
+      "kills": 17,
+      "aliases": [
+        "Geekay Esports",
+        "GK",
+        "GeekayEsports"
+      ],
+      "slot": null
+    },
+    {
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "name": "GODLIKE",
+      "tag": "GODL",
+      "version_id": "01KNTAD3X9F4HTMRCQY51DZNN1",
+      "series_position": 12,
+      "points": 33,
+      "kills": 14,
+      "aliases": [
+        "GODLIKE",
+        "GODL"
+      ],
+      "slot": null
+    },
+    {
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "name": "DINOS",
+      "tag": "DINO",
+      "version_id": "01KMRS7BA6FQ417F4TFDAGD4XD",
+      "series_position": 13,
+      "points": 27,
+      "kills": 19,
+      "aliases": [
+        "DINOS",
+        "DINO"
+      ],
+      "slot": 13
+    },
+    {
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "name": "REVIVAL",
+      "tag": "REV",
+      "version_id": "01KMRS7EGNCXJ3C4S1MGX05EJD",
+      "series_position": 14,
+      "points": 26,
+      "kills": 14,
+      "aliases": [
+        "REVIVAL",
+        "REV"
+      ],
+      "slot": 17
+    },
+    {
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "name": "Source Gaming",
+      "tag": "SRC",
+      "version_id": "01KMRS7A73DS5XWP3EBQ1SW2TR",
+      "series_position": 15,
+      "points": 24,
+      "kills": 11,
+      "aliases": [
+        "Source Gaming",
+        "SRC",
+        "SourceGaming"
+      ],
+      "slot": 7
+    },
+    {
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "name": "GAMBLERS",
+      "tag": "GMBL",
+      "version_id": "01KMRS7EE2V0QJNMCJ0S1DNHGJ",
+      "series_position": 16,
+      "points": 22,
+      "kills": 15,
+      "aliases": [
+        "GAMBLERS",
+        "GMBL"
+      ],
+      "slot": 15
+    },
+    {
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "name": "Full XI",
+      "tag": "FXI",
+      "version_id": "01KMRS7H0542V1ZJJAYQYH4PRB",
+      "series_position": 17,
+      "points": 17,
+      "kills": 9,
+      "aliases": [
+        "Full XI",
+        "FXI",
+        "FullXI"
+      ],
+      "slot": 3
+    },
+    {
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "name": "THUGGETS",
+      "tag": "THUG",
+      "version_id": "01KMRS7CETNJHYWGQ6XCE0YKT9",
+      "series_position": 18,
+      "points": 15,
+      "kills": 8,
+      "aliases": [
+        "THUGGETS",
+        "THUG"
+      ],
+      "slot": 10
+    },
+    {
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "name": "Elite NA",
+      "tag": "ELTE",
+      "version_id": "01KN2ZCZGEVKFMD1TR872BTD38",
+      "series_position": 19,
+      "points": 14,
+      "kills": 10,
+      "aliases": [
+        "Elite NA",
+        "ELTE",
+        "EliteNA"
+      ],
+      "slot": 1
+    },
+    {
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "name": "Team Nemesis",
+      "tag": "NMSS",
+      "version_id": "01KMRS7B66EH1H4JJB2CYMDMH9",
+      "series_position": 20,
+      "points": 13,
+      "kills": 7,
+      "aliases": [
+        "Team Nemesis",
+        "NMSS",
+        "TeamNemesis"
+      ],
+      "slot": null
+    }
+  ],
+  "slot_colors": [],
+  "slot_to_team": {},
+  "blacklist_text": [
+    "BAROMETER",
+    "DEVASTATED",
+    "LAUNCH PAD",
+    "ZEUS STATION",
+    "COMMAND CENTER",
+    "CASCADE FALLS",
+    "STORM CATCHER",
+    "CHECKPOINT",
+    "THE WALL",
+    "THE MILL",
+    "RING CLOSING",
+    "CHARACTER SELECTION",
+    "CHAMPION",
+    "ELIMINATED",
+    "STARTING IN"
+  ],
+  "matches": [
+    {
+      "id": "01KH2J3KTFV7HBTX90C16GXR43",
+      "match_number": 1,
+      "map_id_ulid": "01J6M00SDXM1G05TA8D96559MJ",
+      "started_at": "2026-04-26T22:00:42.067Z",
+      "play_started_at": "2026-04-26T22:01:44.000Z",
+      "completed_at": "2026-04-26T22:19:58.000Z"
+    },
+    {
+      "id": "01KH2J3KTF4G8WSS36G889AJYF",
+      "match_number": 2,
+      "map_id_ulid": "01J6M00SDXM1G05TA8D96559MJ",
+      "started_at": "2026-04-26T22:26:08.848Z",
+      "play_started_at": "2026-04-26T22:27:11.000Z",
+      "completed_at": "2026-04-26T22:46:42.000Z"
+    },
+    {
+      "id": "01KH2J3KTF6RTH3P79X652WMPW",
+      "match_number": 3,
+      "map_id_ulid": "01J6M00SDXM1G05TA8D96559MJ",
+      "started_at": "2026-04-26T22:52:55.143Z",
+      "play_started_at": "2026-04-26T22:53:57.000Z",
+      "completed_at": "2026-04-26T23:13:49.000Z"
+    },
+    {
+      "id": "01KH2J3KTG0EK1JVPBEQ61J0Z5",
+      "match_number": 4,
+      "map_id_ulid": "01J6508ZVM8PZKJ9VSKA9SF33P",
+      "started_at": "2026-04-26T23:36:41.649Z",
+      "play_started_at": "2026-04-26T23:37:44.000Z",
+      "completed_at": "2026-04-26T23:57:27.000Z"
+    },
+    {
+      "id": "01KH2J3KTGVXH73H20MM2Q6N24",
+      "match_number": 5,
+      "map_id_ulid": "01J6508ZVM8PZKJ9VSKA9SF33P",
+      "started_at": "2026-04-27T00:04:04.539Z",
+      "play_started_at": "2026-04-27T00:05:06.000Z",
+      "completed_at": "2026-04-27T00:24:45.000Z"
+    },
+    {
+      "id": "01KH2J3KTG4FGJZH3W1ZFZP301",
+      "match_number": 6,
+      "map_id_ulid": "01J6508ZVM8PZKJ9VSKA9SF33P",
+      "started_at": "2026-04-27T00:33:00.872Z",
+      "play_started_at": "2026-04-27T00:34:04.000Z",
+      "completed_at": "2026-04-27T00:52:56.000Z"
+    }
+  ],
+  "broadcast_tag_aliases": {
+    "ELTE": [
+      "ELTE",
+      "Elite Esports",
+      "Elite NA"
+    ],
+    "FREE": [
+      "FREE",
+      "Free Thinkers"
+    ],
+    "FXI": [
+      "FXI",
+      "Full XI"
+    ],
+    "NIP": [
+      "NIP",
+      "NinjasinPyjamas"
+    ],
+    "S2": [
+      "S2",
+      "Team Vision",
+      "VSN"
+    ],
+    "SEN": [
+      "SEN",
+      "Sentinels"
+    ],
+    "SRC": [
+      "SRC",
+      "Source Gaming"
+    ],
+    "STAL": [
+      "STAL",
+      "Stallions",
+      "NMSS"
+    ],
+    "TL": [
+      "TL",
+      "Team Liquid"
+    ],
+    "THUG": [
+      "THUG",
+      "THUGGETS"
+    ],
+    "BB": [
+      "BB",
+      "Buckle Boys"
+    ],
+    "CRT": [
+      "CRT",
+      "Crazy Thieves"
+    ],
+    "DINO": [
+      "DINO",
+      "DINOS"
+    ],
+    "DKK": [
+      "DKK",
+      "Geekay Esports",
+      "GK"
+    ],
+    "GMBL": [
+      "GMBL",
+      "GAMBLERS"
+    ],
+    "JDG": [
+      "JDG",
+      "JD GAMING"
+    ],
+    "REV": [
+      "REV",
+      "REVIVAL"
+    ],
+    "ROC": [
+      "ROC",
+      "ROC Esports"
+    ],
+    "SR": [
+      "SR",
+      "ShopifyRebellion"
+    ],
+    "BRGR": [
+      "BRGR",
+      "Team Burger",
+      "GODL"
+    ]
+  },
+  "hud_team_order": {
+    "1": "ELTE",
+    "2": "FREE",
+    "3": "FXI",
+    "4": "NIP",
+    "5": "S2",
+    "6": "SEN",
+    "7": "SRC",
+    "8": "STAL",
+    "9": "TL",
+    "10": "THUG",
+    "11": "BB",
+    "12": "CRT",
+    "13": "DINO",
+    "14": "DKK",
+    "15": "GMBL",
+    "16": "JDG",
+    "17": "REV",
+    "18": "ROC",
+    "19": "SR",
+    "20": "BRGR"
+  },
+  "team_color_profiles": [
+    {
+      "hud_index": 1,
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_name": "Elite NA",
+      "team_tag": "ELTE",
+      "hex": "#11758e",
+      "h": [
+        91,
+        101
+      ],
+      "s": [
+        195,
+        255
+      ],
+      "v": [
+        92,
+        192
+      ],
+      "aliases": [
+        "ELITEESPORTS",
+        "ELITENA",
+        "ELTE",
+        "Elite Esports",
+        "Elite NA",
+        "EliteNA"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 2,
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "hex": "#1e4262",
+      "h": [
+        101,
+        108
+      ],
+      "s": [
+        168,
+        197
+      ],
+      "v": [
+        83,
+        96
+      ],
+      "aliases": [
+        "FREE",
+        "FREETHINKERS",
+        "Free Thinkers",
+        "FreeThinkers"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 3,
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "hex": "#325bcc",
+      "h": [
+        109,
+        114
+      ],
+      "s": [
+        128,
+        255
+      ],
+      "v": [
+        154,
+        254
+      ],
+      "aliases": [
+        "FULLXI",
+        "FXI",
+        "Full XI",
+        "FullXI"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 4,
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "hex": "#452d5e",
+      "h": [
+        131,
+        139
+      ],
+      "s": [
+        120,
+        145
+      ],
+      "v": [
+        77,
+        111
+      ],
+      "aliases": [
+        "NINJASINPYJAMAS",
+        "NIP",
+        "NinjasinPyjamas"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 5,
+      "broadcast_tag": "S2",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_name": "Team Vision",
+      "team_tag": "VSN",
+      "hex": "#8a3c8d",
+      "h": [
+        143,
+        154
+      ],
+      "s": [
+        102,
+        190
+      ],
+      "v": [
+        97,
+        185
+      ],
+      "aliases": [
+        "S2",
+        "TEAMVISION",
+        "Team Vision",
+        "TeamVision",
+        "VSN"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 6,
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "hex": "#a11e46",
+      "h": [
+        169,
+        172
+      ],
+      "s": [
+        186,
+        228
+      ],
+      "v": [
+        141,
+        181
+      ],
+      "aliases": [
+        "SEN",
+        "SENTINELS",
+        "Sentinels"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 7,
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "hex": "#962866",
+      "h": [
+        159,
+        166
+      ],
+      "s": [
+        172,
+        202
+      ],
+      "v": [
+        112,
+        187
+      ],
+      "aliases": [
+        "SOURCEGAMING",
+        "SRC",
+        "Source Gaming",
+        "SourceGaming"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 8,
+      "broadcast_tag": "STAL",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_name": "Team Nemesis",
+      "team_tag": "NMSS",
+      "hex": "#93081f",
+      "h": [
+        170,
+        180
+      ],
+      "s": [
+        226,
+        255
+      ],
+      "v": [
+        113,
+        180
+      ],
+      "aliases": [
+        "NMSS",
+        "STAL",
+        "STALLIONS",
+        "Stallions",
+        "TEAMNEMESIS",
+        "Team Nemesis",
+        "TeamNemesis"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 9,
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "hex": "#c35331",
+      "h": [
+        5,
+        12
+      ],
+      "s": [
+        170,
+        230
+      ],
+      "v": [
+        160,
+        235
+      ],
+      "aliases": [
+        "TEAMLIQUID",
+        "TL",
+        "Team Liquid",
+        "TeamLiquid"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 10,
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "hex": "#6e1c16",
+      "h": [
+        0,
+        3
+      ],
+      "s": [
+        180,
+        230
+      ],
+      "v": [
+        72,
+        120
+      ],
+      "aliases": [
+        "THUG",
+        "THUGGETS"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 11,
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "hex": "#923e14",
+      "h": [
+        7,
+        12
+      ],
+      "s": [
+        203,
+        237
+      ],
+      "v": [
+        131,
+        161
+      ],
+      "aliases": [
+        "BB",
+        "BUCKLEBOYS",
+        "Buckle Boys",
+        "BuckleBoys"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 12,
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "hex": "#704607",
+      "h": [
+        16,
+        19
+      ],
+      "s": [
+        222,
+        255
+      ],
+      "v": [
+        97,
+        127
+      ],
+      "aliases": [
+        "CRAZYTHIEVES",
+        "CRT",
+        "Crazy Thieves",
+        "CrazyThieves"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 13,
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "hex": "#be7a22",
+      "h": [
+        14,
+        19
+      ],
+      "s": [
+        164,
+        255
+      ],
+      "v": [
+        173,
+        207
+      ],
+      "aliases": [
+        "DINO",
+        "DINOS"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 14,
+      "broadcast_tag": "DKK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_name": "Geekay Esports",
+      "team_tag": "GK",
+      "hex": "#8b760f",
+      "h": [
+        22,
+        30
+      ],
+      "s": [
+        140,
+        255
+      ],
+      "v": [
+        116,
+        153
+      ],
+      "aliases": [
+        "DKK",
+        "GEEKAYESPORTS",
+        "GK",
+        "Geekay Esports",
+        "GeekayEsports"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 15,
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "hex": "#6f7a0f",
+      "h": [
+        31,
+        41
+      ],
+      "s": [
+        190,
+        255
+      ],
+      "v": [
+        108,
+        155
+      ],
+      "aliases": [
+        "GAMBLERS",
+        "GMBL"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 16,
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "hex": "#434e0d",
+      "h": [
+        34,
+        39
+      ],
+      "s": [
+        195,
+        255
+      ],
+      "v": [
+        60,
+        105
+      ],
+      "aliases": [
+        "JD GAMING",
+        "JDG",
+        "JDGAMING"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 17,
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "hex": "#6b8741",
+      "h": [
+        37,
+        47
+      ],
+      "s": [
+        116,
+        147
+      ],
+      "v": [
+        102,
+        167
+      ],
+      "aliases": [
+        "REV",
+        "REVIVAL"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 18,
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "hex": "#38773b",
+      "h": [
+        57,
+        61
+      ],
+      "s": [
+        94,
+        159
+      ],
+      "v": [
+        78,
+        143
+      ],
+      "aliases": [
+        "ROC",
+        "ROC Esports",
+        "ROCESPORTS",
+        "ROCEsports"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 19,
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "hex": "#2d4f1c",
+      "h": [
+        46,
+        53
+      ],
+      "s": [
+        142,
+        189
+      ],
+      "v": [
+        63,
+        95
+      ],
+      "aliases": [
+        "SHOPIFYREBELLION",
+        "SR",
+        "ShopifyRebellion"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 20,
+      "broadcast_tag": "BRGR",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_name": "GODLIKE",
+      "team_tag": "GODL",
+      "hex": "#0d6758",
+      "h": [
+        79,
+        90
+      ],
+      "s": [
+        188,
+        255
+      ],
+      "v": [
+        82,
+        123
+      ],
+      "aliases": [
+        "BRGR",
+        "GODL",
+        "GODLIKE",
+        "TEAMBURGER",
+        "Team Burger"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    }
+  ],
+  "color_conflicts": {
+    "BB": [
+      "THUG"
+    ],
+    "THUG": [
+      "BB"
+    ]
+  },
+  "template_check_defaults": {
+    "template_check_mode": "conflicts_only",
+    "min_text_confirm_score": 0.55,
+    "text_check_margin": 0.18,
+    "unknown_on_unconfirmed_conflict": true
+  },
+  "tracking_defaults": {
+    "aggregation": "median",
+    "spatial_gate": 180,
+    "max_jump": 240,
+    "reject_jumps": true,
+    "cluster_radius": 140,
+    "max_cluster_items": 3,
+    "carry": 2,
+    "carry_decay": 0.72
+  }
+}

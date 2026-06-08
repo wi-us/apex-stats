@@ -6,9 +6,9 @@
 # Что делает:
 #   - сканит $VideosDir на *.mp4
 #   - для каждого видео: match_id = имя файла без расширения
-#   - запускает detect_plates.py -> $DetectOut/{match_id}/detections.json
+#   - запускает detect_plates.py -> scripts/tracking/matches/{match_id}/detect_plates/detections.json
 #   - параллельно до $MaxJobs (дефолт 5, потолок 15)
-#   - логи каждой задачи: $DetectOut/_logs/{match_id}.log
+#   - логи каждой задачи: scripts/tracking/matches/_logs/detect_plates/{match_id}.log
 #
 # После него -> batch_extract.ps1 -OnlyExtract
 
@@ -16,7 +16,7 @@ param(
   [string]$VideosDir   = "scripts/tracking/videos_in",
   [string]$Hsv         = "scripts/tracking/configs/hsv_presets.storm-point.json",
   [string]$Zones       = "scripts/tracking/configs/zones.vod.json",
-  [string]$DetectOut   = "scripts/tracking/modules/recognize_tags/_detect_cache",
+  [string]$DetectOut   = "scripts/tracking/matches",
   [double]$SampleFps   = 1.0,
   [int]   $MaxJobs     = 5,
   [switch]$Force,
@@ -44,7 +44,7 @@ if ($videos.Count -eq 0) {
   exit 1
 }
 
-$logDir = Join-Path $DetectOut "_logs"
+$logDir = Join-Path $DetectOut "_logs/detect_plates"
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 Write-Host "[info] видео=$($videos.Count)  MaxJobs=$MaxJobs" -ForegroundColor Cyan
@@ -85,7 +85,7 @@ foreach ($v in $videos) {
   }
   $matchId  = [IO.Path]::GetFileNameWithoutExtension($v.Name)
   $videoRel = Resolve-Path -Relative $v.FullName
-  $detDir   = Join-Path $DetectOut $matchId
+  $detDir   = Join-Path (Join-Path $DetectOut $matchId) "detect_plates"
   $detJson  = Join-Path $detDir "detections.json"
   $logFile  = Join-Path $logDir "${matchId}.log"
   if (Test-Path $logFile) { Remove-Item $logFile -Force }
@@ -115,5 +115,5 @@ $jobs | Remove-Job
 
 Write-Host ""
 Write-Host "[done] ok=$ok  skip=$skip  fail=$fail  всего=$($videos.Count)" -ForegroundColor Green
-Write-Host "       детекции: $DetectOut/{match_id}/detections.json"
+Write-Host "       детекции: $DetectOut/{match_id}/detect_plates/detections.json"
 Write-Host "       дальше:   batch_extract.ps1 -OnlyExtract -MaxJobs 5"

@@ -567,7 +567,7 @@ function ZonesAdmin() {
                         <>
                           <button
                             onClick={() => setTeamsCollapsed((v) => !v)}
-                            className="mt-1 mb-1 flex w-full items-center justify-between rounded-sm border border-border bg-surface px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                            className="mt-1 mb-1 flex w-full items-center justify-between rounded-sm border border-border bg-surface px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
                             <span>Teams ({teamTags.length})</span>
                             <span>{teamsCollapsed ? "▸" : "▾"}</span>
                           </button>
@@ -692,7 +692,7 @@ function ZonesAdmin() {
               <div className="mb-2 flex items-center justify-between">
                 <div className="label-eyebrow">Multi-select · {selectedIds.size}</div>
                 <button onClick={() => { setSelSet(new Set()); }}
-                  className="rounded-sm border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                  className="rounded-sm border border-border bg-surface px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground">
                   Clear
                 </button>
               </div>
@@ -719,7 +719,7 @@ function ZonesAdmin() {
                 className="mt-2 w-full rounded-sm border border-border bg-surface-2 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-muted">
                 Download selection.json
               </button>
-              <div className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
                 Ctrl+ЛКМ — добавить / убрать
               </div>
             </div>
@@ -831,7 +831,7 @@ function ZonesAdmin() {
                   if (next.has(t.id)) next.delete(t.id); else next.add(t.id);
                   return next;
                 })}
-                className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                   hiddenTags.has(t.id) ? "border-border/50 bg-surface text-muted-foreground/50 line-through" : "border-border bg-surface-2 text-foreground"
                 }`}>
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: t.color, opacity: hiddenTags.has(t.id) ? 0.3 : 1 }} />
@@ -877,7 +877,7 @@ function ZonesAdmin() {
                       <div className="absolute inset-0" style={{ boxShadow: `inset 0 0 0 1px ${c}` }} />
                     </div>
                   </button>
-                  <span className="text-mono flex-1 text-[10px] uppercase text-muted-foreground">{z.w}×{z.h}</span>
+                  <span className="text-mono flex-1 text-xs uppercase text-muted-foreground">{z.w}×{z.h}</span>
                   <div className="grid shrink-0 grid-cols-2 gap-0.5">
                     <button onClick={() => patchMeta(z.id, { hidden: !m.hidden })} title={m.hidden ? "Show" : "Hide"}
                       className="grid h-6 w-6 place-items-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground">

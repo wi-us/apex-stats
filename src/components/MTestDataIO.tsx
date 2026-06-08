@@ -90,7 +90,7 @@ export function MTestDataIO() {
                 <div key={m.key} className="flex items-center justify-between gap-2 rounded border border-border/60 p-1.5">
                   <div className="min-w-0">
                     <div className="truncate">{m.label}{overridden && <span className="ml-1 text-primary">●</span>}</div>
-                    <div className="truncate text-[10px] text-muted-foreground">{m.filename}</div>
+                    <div className="truncate text-xs text-muted-foreground">{m.filename}</div>
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <button
@@ -115,7 +115,7 @@ export function MTestDataIO() {
             onClick={resetAll}
             className="mt-2 w-full rounded border border-border px-2 py-1 text-muted-foreground hover:bg-accent"
           >Reset to bundled</button>
-          {status && <div className="mt-2 text-[10px] text-primary">{status}</div>}
+          {status && <div className="mt-2 text-xs text-primary">{status}</div>}
         </div>
       )}
     </div>

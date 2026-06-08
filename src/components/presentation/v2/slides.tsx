@@ -438,7 +438,7 @@ function V2Slide6({ editing }: P) {
                 {rows.map((r, j) => (
                   <tr key={j}>
                     <td className="py-0.5 pr-1">
-                      {r[0] && <span className="rounded px-1 text-[10px] font-bold"
+                      {r[0] && <span className="rounded px-1 text-xs font-bold"
                         style={{ background: r[0] === "PK" ? `${ACCENT}25` : "#1a17141a", color: r[0] === "PK" ? ACCENT : MUTED }}>{r[0]}</span>}
                     </td>
                     <td className="py-0.5">{r[1]}</td>
@@ -664,7 +664,7 @@ function V2Slide11({ editing }: P) {
             {vars.map((v, i) => (
               <li key={i} className="flex items-center justify-between border-b pb-1" style={{ borderColor: "#1a17141a" }}>
                 <span style={{ color: ACCENT }}>{v}</span>
-                <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: MUTED }}>Удалить</span>
+                <span className="text-xs uppercase tracking-[0.2em]" style={{ color: MUTED }}>Удалить</span>
               </li>
             ))}
           </ul>

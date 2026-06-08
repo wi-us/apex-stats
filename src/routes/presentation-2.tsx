@@ -55,8 +55,8 @@ function PresentationV2() {
         <Link to="/" className="text-[11px] font-bold uppercase tracking-wider opacity-70 hover:opacity-100">← Home</Link>
         <Link to="/presentation" className="text-[11px] font-bold uppercase tracking-wider opacity-70 hover:opacity-100">Версия HUD →</Link>
         <div className="text-[11px] font-bold uppercase tracking-wider">Apex Stats · Издание</div>
-        <div className="ml-2 text-[10px] font-mono opacity-60">{i + 1} / {slides.length}</div>
-        <div className="ml-auto flex items-center gap-2 text-[10px] uppercase tracking-wider opacity-80">
+        <div className="ml-2 text-xs font-mono opacity-60">{i + 1} / {slides.length}</div>
+        <div className="ml-auto flex items-center gap-2 text-xs uppercase tracking-wider opacity-80">
           <button onClick={() => setEditing((v) => !v)}
             className={"flex items-center gap-1.5 rounded-sm border px-2 py-1 transition " + (editing ? "border-[#d4541c] bg-[#d4541c]/20 text-[#d4541c]" : "border-white/15 bg-white/5 hover:bg-white/10")}
             title="Toggle edit (E)">
@@ -93,7 +93,7 @@ function PresentationV2() {
               className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm backdrop-blur transition hover:bg-white/20 disabled:opacity-30">›</button>
             <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md border border-white/15 bg-black/60 px-4 py-2 text-center backdrop-blur">
               <div className="text-[11px] font-bold uppercase tracking-wider">{cur.title}</div>
-              <div className="text-[10px] opacity-70">{cur.subtitle}</div>
+              <div className="text-xs opacity-70">{cur.subtitle}</div>
             </div>
           </div>
           <footer className="flex h-24 shrink-0 items-center gap-2 overflow-x-auto border-t border-white/10 px-3 py-2" style={{ background: "#15110e" }}>
@@ -119,11 +119,11 @@ function PresentationV2() {
                 <div className="pointer-events-none absolute inset-0">
                   <sl.Component editing={false} />
                 </div>
-                <span className="absolute left-2 top-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">{idx + 1}</span>
+                <span className="absolute left-2 top-2 rounded-sm bg-black/70 px-1.5 py-0.5 text-xs font-bold text-white">{idx + 1}</span>
               </div>
               <div className="border-t border-white/10 p-3">
                 <div className="text-[11px] font-bold uppercase tracking-wider">{sl.title}</div>
-                <div className="mt-0.5 text-[10px] opacity-70">{sl.subtitle}</div>
+                <div className="mt-0.5 text-xs opacity-70">{sl.subtitle}</div>
               </div>
             </button>
           ))}

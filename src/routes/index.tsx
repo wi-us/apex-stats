@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { tournaments, matches, maps, teams, matchSeedExtras, getGames, type Match } from "@/lib/mock-match";
+import { getGames } from "@/lib/mock-match";
+import { useAdminStore } from "@/lib/admin-store";
+import { publicMatches, publicMapRows } from "@/lib/public-data";
 import { TeamLogo } from "@/components/admin/TeamLogo";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { BrandMark } from "@/components/BrandMark";
@@ -10,11 +12,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: () => (
-    <RouteGuard min="user">
-      <Hub />
-    </RouteGuard>
-  ),
+  component: IndexRouteComponent,
   head: () => ({
     meta: [
       { title: "APEX STATS — VOD Analytics Hub" },
@@ -22,6 +20,14 @@ export const Route = createFileRoute("/")({
     ],
   }),
 });
+
+function IndexRouteComponent() {
+  return (
+    <RouteGuard min="user">
+      <Hub />
+    </RouteGuard>
+  );
+}
 
 /* ----------------------------- processing model ---------------------------- */
 
@@ -37,7 +43,10 @@ type MatchProcessing = {
 };
 
 /** Deterministic mock status from match id — replace with real metadata later. */
-function processingFor(m: Match): MatchProcessing {
+function processingFor(m: { id: string; completedAt?: string | null; seriesStatus?: string | null }): MatchProcessing {
+  if (m.completedAt || m.seriesStatus === "completed") {
+    return { trajectory: "ready", rings: "ready", events: "ready", overall: "ready", analyzedHint: "ALGS" };
+  }
   const seed = m.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const variants: Array<Pick<MatchProcessing, "trajectory" | "rings" | "events">> = [
     { trajectory: "ready", rings: "ready", events: "ready" },
@@ -96,25 +105,29 @@ function OverallBadge({ state }: { state: PipelineState }) {
 /* ---------------------------------- page ---------------------------------- */
 
 function Hub() {
+  const store = useAdminStore();
+  const matches = useMemo(() => publicMatches(store.matches), [store.matches]);
+  const maps = useMemo(() => publicMapRows(store.customMaps), [store.customMaps]);
+  const { tournaments, teams } = store;
 
   const stats = useMemo(() => ({
     tournaments: tournaments.length,
     matches: matches.length,
-    games: matches.reduce((s, m) => s + getGames({ ...m, ...matchSeedExtras[m.id] }).length, 0),
+    games: matches.reduce((s, m) => s + getGames(m).length, 0),
     maps: maps.length,
     teams: teams.length,
-  }), []);
+  }), [tournaments.length, matches, maps.length, teams.length]);
 
   // Featured = the most recent ready (or any) match; rest in the grid.
   const featured = useMemo(() => {
     const ready = matches.find((m) => processingFor(m).overall === "ready");
     return ready ?? matches[0];
-  }, []);
+  }, [matches]);
   const recentMatches = useMemo(
     () => matches.filter((m) => m.id !== featured?.id).slice(0, 4),
-    [featured],
+    [matches, featured],
   );
-  const topTeams = useMemo(() => [...teams].sort((a, b) => a.placement - b.placement).slice(0, 8), []);
+  const topTeams = useMemo(() => [...teams].slice(0, 8), [teams]);
 
   const liveTeamIds = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -128,7 +141,7 @@ function Hub() {
       for (const id of tids) ids.add(id);
     }
     return ids;
-  }, []);
+  }, [matches, teams, tournaments]);
 
   // Tournament-level rollups
   const tournamentStats = useMemo(() => {
@@ -138,8 +151,7 @@ function Hub() {
       const ready = procs.filter((p) => p.overall === "ready").length;
       const mapIds = new Set<string>();
       tMatches.forEach((m) => {
-        const extras = matchSeedExtras[m.id];
-        getGames({ ...m, mapIds: extras?.mapIds, gameDurations: extras?.gameDurations }).forEach((g) => mapIds.add(g.mapId));
+        getGames(m).forEach((g) => mapIds.add(g.mapId));
       });
       const lastReady = tMatches.find((m, i) => procs[i].overall === "ready");
       return {
@@ -153,10 +165,10 @@ function Hub() {
         openMatch: lastReady ?? tMatches[0],
       };
     });
-  }, []);
+  }, [matches, tournaments]);
 
   const featuredProc = featured ? processingFor(featured) : null;
-  const featuredGames = featured ? getGames({ ...featured, ...matchSeedExtras[featured.id] }) : [];
+  const featuredGames = featured ? getGames(featured) : [];
   const featuredMap = featuredGames[0] ? maps.find((x) => x.id === featuredGames[0].mapId) : null;
   const featuredTournament = featured ? tournaments.find((t) => t.id === featured.tournamentId) : null;
 
@@ -247,7 +259,7 @@ function Hub() {
           <SectionHead title="Последние матчи" subtitle="Готовы к просмотру и анализу" badge={<><Activity className="h-3 w-3" /> {matches.length}</>} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {recentMatches.map((m, i) => {
-              const gs = getGames({ ...m, ...matchSeedExtras[m.id] });
+              const gs = getGames(m);
               const mp = maps.find((x) => x.id === gs[0].mapId);
               const t = tournaments.find((x) => x.id === m.tournamentId);
               const proc = processingFor(m);
@@ -330,7 +342,7 @@ function Hub() {
                   {/* Match list */}
                   <ul className="mt-3 space-y-1.5">
                     {tMatches.slice(0, 3).map((m) => {
-                      const gs = getGames({ ...m, ...matchSeedExtras[m.id] });
+                      const gs = getGames(m);
                       const mp = maps.find((x) => x.id === gs[0].mapId);
                       const proc = processingFor(m);
                       return (

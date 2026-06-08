@@ -34,9 +34,16 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# track_teams.py лежит в соседнем модуле — добавим его в sys.path,
-# чтобы можно было запускать find_cuts.py из любой папки.
-_TT_DIR = Path(__file__).resolve().parent.parent / "track_teams"
+# Windows PowerShell can default to cp1251/cp866; argparse help contains
+# symbols outside that codepage.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+# Registration helpers still live in the archived legacy tracker.
+_TT_DIR = Path(__file__).resolve().parent.parent / "_archived" / "track_teams"
 if str(_TT_DIR) not in sys.path:
     sys.path.insert(0, str(_TT_DIR))
 

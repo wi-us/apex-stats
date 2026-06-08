@@ -1,0 +1,550 @@
+{
+  "source": "configs\\hsv_presets.storm-point.json",
+  "mode": "hsv_range_profiles",
+  "team_color_profiles": [
+    {
+      "hud_index": 1,
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_name": "Elite NA",
+      "team_tag": "ELTE",
+      "hex": "#11758e",
+      "h": [
+        91,
+        101
+      ],
+      "s": [
+        195,
+        255
+      ],
+      "v": [
+        92,
+        192
+      ],
+      "aliases": [
+        "ELITEESPORTS",
+        "ELITENA",
+        "ELTE",
+        "Elite Esports",
+        "Elite NA",
+        "EliteNA"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 2,
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "hex": "#1e4262",
+      "h": [
+        101,
+        108
+      ],
+      "s": [
+        168,
+        197
+      ],
+      "v": [
+        83,
+        96
+      ],
+      "aliases": [
+        "FREE",
+        "FREETHINKERS",
+        "Free Thinkers",
+        "FreeThinkers"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 3,
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "hex": "#325bcc",
+      "h": [
+        109,
+        114
+      ],
+      "s": [
+        128,
+        255
+      ],
+      "v": [
+        154,
+        254
+      ],
+      "aliases": [
+        "FULLXI",
+        "FXI",
+        "Full XI",
+        "FullXI"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 4,
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "hex": "#452d5e",
+      "h": [
+        131,
+        139
+      ],
+      "s": [
+        120,
+        145
+      ],
+      "v": [
+        77,
+        111
+      ],
+      "aliases": [
+        "NINJASINPYJAMAS",
+        "NIP",
+        "NinjasinPyjamas"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 5,
+      "broadcast_tag": "S2",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_name": "Team Vision",
+      "team_tag": "VSN",
+      "hex": "#8a3c8d",
+      "h": [
+        143,
+        154
+      ],
+      "s": [
+        102,
+        190
+      ],
+      "v": [
+        97,
+        185
+      ],
+      "aliases": [
+        "S2",
+        "TEAMVISION",
+        "Team Vision",
+        "TeamVision",
+        "VSN"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 6,
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "hex": "#a11e46",
+      "h": [
+        169,
+        172
+      ],
+      "s": [
+        186,
+        228
+      ],
+      "v": [
+        141,
+        181
+      ],
+      "aliases": [
+        "SEN",
+        "SENTINELS",
+        "Sentinels"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 7,
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "hex": "#962866",
+      "h": [
+        159,
+        166
+      ],
+      "s": [
+        172,
+        202
+      ],
+      "v": [
+        112,
+        187
+      ],
+      "aliases": [
+        "SOURCEGAMING",
+        "SRC",
+        "Source Gaming",
+        "SourceGaming"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 8,
+      "broadcast_tag": "STAL",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_name": "Team Nemesis",
+      "team_tag": "NMSS",
+      "hex": "#93081f",
+      "h": [
+        170,
+        180
+      ],
+      "s": [
+        226,
+        255
+      ],
+      "v": [
+        113,
+        180
+      ],
+      "aliases": [
+        "NMSS",
+        "STAL",
+        "STALLIONS",
+        "Stallions",
+        "TEAMNEMESIS",
+        "Team Nemesis",
+        "TeamNemesis"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 9,
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "hex": "#c35331",
+      "h": [
+        5,
+        12
+      ],
+      "s": [
+        170,
+        230
+      ],
+      "v": [
+        160,
+        235
+      ],
+      "aliases": [
+        "TEAMLIQUID",
+        "TL",
+        "Team Liquid",
+        "TeamLiquid"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 10,
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "hex": "#6e1c16",
+      "h": [
+        0,
+        3
+      ],
+      "s": [
+        180,
+        230
+      ],
+      "v": [
+        72,
+        120
+      ],
+      "aliases": [
+        "THUG",
+        "THUGGETS"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 11,
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "hex": "#923e14",
+      "h": [
+        7,
+        12
+      ],
+      "s": [
+        203,
+        237
+      ],
+      "v": [
+        131,
+        161
+      ],
+      "aliases": [
+        "BB",
+        "BUCKLEBOYS",
+        "Buckle Boys",
+        "BuckleBoys"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 12,
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "hex": "#704607",
+      "h": [
+        16,
+        19
+      ],
+      "s": [
+        222,
+        255
+      ],
+      "v": [
+        97,
+        127
+      ],
+      "aliases": [
+        "CRAZYTHIEVES",
+        "CRT",
+        "Crazy Thieves",
+        "CrazyThieves"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 13,
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "hex": "#be7a22",
+      "h": [
+        14,
+        19
+      ],
+      "s": [
+        164,
+        255
+      ],
+      "v": [
+        173,
+        207
+      ],
+      "aliases": [
+        "DINO",
+        "DINOS"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 14,
+      "broadcast_tag": "DKK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_name": "Geekay Esports",
+      "team_tag": "GK",
+      "hex": "#8b760f",
+      "h": [
+        22,
+        30
+      ],
+      "s": [
+        140,
+        255
+      ],
+      "v": [
+        116,
+        153
+      ],
+      "aliases": [
+        "DKK",
+        "GEEKAYESPORTS",
+        "GK",
+        "Geekay Esports",
+        "GeekayEsports"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 15,
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "hex": "#6f7a0f",
+      "h": [
+        31,
+        41
+      ],
+      "s": [
+        190,
+        255
+      ],
+      "v": [
+        108,
+        155
+      ],
+      "aliases": [
+        "GAMBLERS",
+        "GMBL"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 16,
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "hex": "#434e0d",
+      "h": [
+        34,
+        39
+      ],
+      "s": [
+        195,
+        255
+      ],
+      "v": [
+        60,
+        105
+      ],
+      "aliases": [
+        "JD GAMING",
+        "JDG",
+        "JDGAMING"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 17,
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "hex": "#6b8741",
+      "h": [
+        37,
+        47
+      ],
+      "s": [
+        116,
+        147
+      ],
+      "v": [
+        102,
+        167
+      ],
+      "aliases": [
+        "REV",
+        "REVIVAL"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 18,
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "hex": "#38773b",
+      "h": [
+        57,
+        61
+      ],
+      "s": [
+        94,
+        159
+      ],
+      "v": [
+        78,
+        143
+      ],
+      "aliases": [
+        "ROC",
+        "ROC Esports",
+        "ROCESPORTS",
+        "ROCEsports"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 19,
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "hex": "#2d4f1c",
+      "h": [
+        46,
+        53
+      ],
+      "s": [
+        142,
+        189
+      ],
+      "v": [
+        63,
+        95
+      ],
+      "aliases": [
+        "SHOPIFYREBELLION",
+        "SR",
+        "ShopifyRebellion"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    },
+    {
+      "hud_index": 20,
+      "broadcast_tag": "BRGR",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_name": "GODLIKE",
+      "team_tag": "GODL",
+      "hex": "#0d6758",
+      "h": [
+        79,
+        90
+      ],
+      "s": [
+        188,
+        255
+      ],
+      "v": [
+        82,
+        123
+      ],
+      "aliases": [
+        "BRGR",
+        "GODL",
+        "GODLIKE",
+        "TEAMBURGER",
+        "Team Burger"
+      ],
+      "source": "hsv_preset:hsv_presets.storm-point.json"
+    }
+  ],
+  "color_conflicts": {
+    "BB": [
+      "THUG"
+    ],
+    "THUG": [
+      "BB"
+    ]
+  }
+}

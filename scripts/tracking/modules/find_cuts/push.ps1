@@ -25,8 +25,8 @@ param(
   [double]$Threshold = 90,
   [double]$Start = 0,
   [double]$End = -1,
-  [string]$Config = "scripts/tracking/modules/track_teams/config.example.yaml",
-  [string]$Out = "scripts/tracking/modules/find_cuts/reports",
+  [string]$Config = "scripts/tracking/modules/_archived/track_teams/config.example.yaml",
+  [string]$Out = "",
   [switch]$NoPush
 )
 
@@ -40,6 +40,11 @@ $env:PYTHONUTF8 = "1"
 $repo = (git rev-parse --show-toplevel).Trim()
 if (-not $repo) { throw "Не вижу git-репозитория." }
 Set-Location $repo
+
+if ($Out -eq "") {
+  $matchId = [IO.Path]::GetFileNameWithoutExtension($Video)
+  $Out = "scripts/tracking/matches/$matchId/find_cuts"
+}
 
 if (Test-Path $Out) {
   Get-ChildItem $Out -Recurse -Force | Where-Object { $_.Name -ne ".gitkeep" } |

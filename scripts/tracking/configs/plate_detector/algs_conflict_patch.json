@@ -1,0 +1,22 @@
+{
+  "color_conflicts": {
+    "BB": ["THUG"],
+    "THUG": ["BB"]
+  },
+  "template_check_defaults": {
+    "template_check_mode": "conflicts_only",
+    "min_text_confirm_score": 0.55,
+    "text_check_margin": 0.18,
+    "unknown_on_unconfirmed_conflict": true
+  },
+  "tracking_defaults": {
+    "aggregation": "median",
+    "spatial_gate": 180,
+    "max_jump": 240,
+    "reject_jumps": true,
+    "cluster_radius": 140,
+    "max_cluster_items": 3,
+    "carry": 2,
+    "carry_decay": 0.72
+  }
+}

@@ -9,12 +9,14 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-*
 dist-ssr
 .output
 .vinxi
 .tanstack/**
 .nitro
 *.local
+data/local-auth.json
 
 # Wrangler / Cloudflare
 .wrangler/
@@ -24,6 +26,7 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+.chrome-cdp-profile-*/
 .DS_Store
 *.suo
 *.ntvs*
@@ -57,3 +60,20 @@ Thumbs.db
 # --- Matrix-прогоны track_teams: коммитим логи и tracks_*.json ---
 !scripts/tracking/modules/track_teams/reports/matrix/
 !scripts/tracking/modules/track_teams/reports/matrix/**
+
+# --- Integrated plate_detector local artifacts ---
+scripts/tracking/modules/plate_detector/_archive/
+scripts/tracking/modules/plate_detector/clips/
+scripts/tracking/modules/plate_detector/videos/
+scripts/tracking/modules/plate_detector/runs/
+scripts/tracking/modules/plate_detector/outputs/
+scripts/tracking/modules/plate_detector/reports/
+scripts/tracking/modules/plate_detector/loops/
+scripts/tracking/modules/plate_detector/dataset_strict*/
+scripts/tracking/modules/plate_detector/hard_negatives/
+scripts/tracking/modules/plate_detector/images/
+scripts/tracking/modules/plate_detector/labels/
+scripts/tracking/modules/plate_detector/data/*.sqlite
+scripts/tracking/modules/plate_detector/*.zip
+scripts/tracking/matches/*
+!scripts/tracking/matches/README.md

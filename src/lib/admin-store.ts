@@ -4,10 +4,12 @@ import {
   matches as seedMatches,
   matchSeedExtras,
   tournaments as seedTournaments,
+  maps as seedMaps,
   type Team,
   type Tournament,
   type MatchFull,
 } from "@/lib/mock-match";
+import { getAlgsSnapshotBundle } from "@/lib/algs-snapshot";
 
 export type PolygonTag = "forbidden" | "safe";
 export type Polygon = {
@@ -101,6 +103,16 @@ type State = {
   customMaps: CustomMap[];
 };
 
+type AlgsBootstrapBundle = {
+  teams: Team[];
+  tournaments: Tournament[];
+  matches: MatchFull[];
+  maps: CustomMap[];
+};
+
+const CUSTOM_MAPS_KEY = "admin:customMaps";
+const ALGS_BUNDLE_CACHE_KEY = "admin:algsBundle";
+
 // Seed: каждый match содержит N games (через mapIds/gameDurations). Все 20 команд участвуют.
 const initialMatches: MatchFull[] = seedMatches.map((m) => {
   const extras = matchSeedExtras[m.id];
@@ -114,17 +126,94 @@ const initialMatches: MatchFull[] = seedMatches.map((m) => {
   };
 });
 
+const testTournamentIds = new Set(seedTournaments.filter((t) => t.id.startsWith("test-")).map((t) => t.id));
+const testMatchIds = new Set(initialMatches.filter((m) => m.id.startsWith("m-test")).map((m) => m.id));
+const snapshotBundle = getAlgsSnapshotBundle();
+
+function loadCachedAlgsBundle(): AlgsBootstrapBundle | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(ALGS_BUNDLE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<AlgsBootstrapBundle>;
+    if (!Array.isArray(parsed.teams) || !Array.isArray(parsed.tournaments) || !Array.isArray(parsed.matches) || !Array.isArray(parsed.maps)) {
+      return null;
+    }
+    return {
+      teams: parsed.teams,
+      tournaments: parsed.tournaments,
+      matches: parsed.matches,
+      maps: parsed.maps,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function persistAlgsBundle(bundle: AlgsBootstrapBundle) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(ALGS_BUNDLE_CACHE_KEY, JSON.stringify(bundle));
+  } catch {
+    /* cache is optional */
+  }
+}
+
+function mergeById<T extends { id: string }>(primary: T[], secondary: T[]): T[] {
+  const byId = new Map<string, T>();
+  for (const item of secondary) byId.set(item.id, item);
+  for (const item of primary) byId.set(item.id, item);
+  return Array.from(byId.values());
+}
+
+function normalizeMapKey(map: Pick<CustomMap, "id" | "name">): string {
+  const seed = seedMaps.find((item) => item.id === map.id);
+  const name = seed?.name ?? map.name ?? map.id;
+  return name
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function isSeedMapId(id: string): boolean {
+  return seedMaps.some((map) => map.id === id);
+}
+
+function mergeCustomMaps(snapshotMaps: CustomMap[], savedMaps: CustomMap[]): CustomMap[] {
+  const byKey = new Map<string, CustomMap>();
+  for (const item of [...snapshotMaps, ...savedMaps]) {
+    const key = normalizeMapKey(item);
+    const prev = byKey.get(key);
+    const preferItemId = !prev || isSeedMapId(item.id) || !isSeedMapId(prev.id);
+    byKey.set(key, {
+      id: preferItemId ? item.id : prev.id,
+      name: item.name || prev?.name || item.id,
+      image: item.image || prev?.image || "",
+    });
+  }
+  return Array.from(byKey.values());
+}
+
+const cachedBundle = loadCachedAlgsBundle();
+const bootstrapBundle = cachedBundle ?? snapshotBundle;
+
 let state: State = {
-  teams: seedTeams,
-  matches: initialMatches,
-  tournaments: seedTournaments,
+  teams: bootstrapBundle.teams.length > 0 ? bootstrapBundle.teams : seedTeams,
+  matches: mergeById(
+    initialMatches.filter((m) => testMatchIds.has(m.id)),
+    bootstrapBundle.matches.length > 0 ? bootstrapBundle.matches : initialMatches,
+  ),
+  tournaments: mergeById(
+    seedTournaments.filter((t) => testTournamentIds.has(t.id)),
+    bootstrapBundle.tournaments.length > 0 ? bootstrapBundle.tournaments : seedTournaments,
+  ),
   polygons: [],
   zones: { vod: initialVod, vod2: initialVod2, camera: initialCamera },
   processes: [],
-  customMaps: loadCustomMaps(),
+  customMaps: mergeCustomMaps(bootstrapBundle.maps, loadCustomMaps()),
 };
 
-const CUSTOM_MAPS_KEY = "admin:customMaps";
 function loadCustomMaps(): CustomMap[] {
   if (typeof window === "undefined") return [];
   try {
@@ -199,20 +288,25 @@ export function replaceFromAlgs(payload: {
   matches: MatchFull[];
   maps: CustomMap[];
 }) {
-  const byId = new Map<string, CustomMap>(state.customMaps.map((m) => [m.id, m]));
-  for (const m of payload.maps) {
-    const prev = byId.get(m.id);
-    byId.set(m.id, { ...prev, ...m, image: m.image || prev?.image || "" });
-  }
-  const customMaps = Array.from(byId.values());
+  const customMaps = mergeCustomMaps(payload.maps, state.customMaps);
   persistCustomMaps(customMaps);
   state = {
     ...state,
     teams: payload.teams.length > 0 ? payload.teams : state.teams,
-    tournaments: payload.tournaments.length > 0 ? payload.tournaments : state.tournaments,
-    matches: payload.matches.length > 0 ? payload.matches : state.matches,
+    tournaments: payload.tournaments.length > 0
+      ? mergeById(seedTournaments.filter((t) => testTournamentIds.has(t.id)), payload.tournaments)
+      : state.tournaments,
+    matches: payload.matches.length > 0
+      ? mergeById(initialMatches.filter((m) => testMatchIds.has(m.id)), payload.matches)
+      : state.matches,
     customMaps,
   };
+  persistAlgsBundle({
+    teams: state.teams,
+    tournaments: state.tournaments.filter((t) => !testTournamentIds.has(t.id)),
+    matches: state.matches.filter((m) => !testMatchIds.has(m.id)),
+    maps: customMaps,
+  });
   emit();
 }
 

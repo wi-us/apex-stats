@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, CheckCircle2, XCircle, Loader2, RotateCw, Bug, ExternalLink, History, AlertTriangle, Palette, Shapes, Video, Database, RefreshCw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { fetchAlgsBundle } from "@/lib/algs-fetchers";
 import { replaceFromAlgs, useAdminStore } from "@/lib/admin-store";
+import { isSupabaseEnabled } from "@/lib/runtime-config";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
@@ -22,7 +23,6 @@ const toolGroups = [
       { to: "/admin/hsv",      title: "HSV",          desc: "Team color calibration" },
       { to: "/admin/zones",    title: "HUD Zones",    desc: "Markup HUD areas on a 1920×1080 frame" },
       { to: "/admin/polygons", title: "Map Polygons", desc: "Forbidden / safe map areas" },
-      { to: "/admin/camera",   title: "Camera",       desc: "Observer camera tracking" },
     ],
   },
   {
@@ -32,13 +32,6 @@ const toolGroups = [
       { to: "/admin/minimap",   title: "Minimap Locator", desc: "Detect & align minimap to full map" },
     ],
   },
-  {
-    label: "System",
-    items: [
-      { to: "/admin/schema",   title: "Database Schema", desc: "DB schema editor" },
-      { to: "/admin/diagrams", title: "Diagrams",        desc: "Flowcharts for reports" },
-    ],
-  },
 ] as const;
 
 type TaskStatus = "processing" | "completed" | "failed" | "queued";
@@ -46,7 +39,6 @@ type TaskStatus = "processing" | "completed" | "failed" | "queued";
 const activeTasks: { id: string; title: string; subtitle: string; status: TaskStatus; progress?: number; icon: typeof Video }[] = [
   { id: "job-124", title: "Video analysis · Game 2", subtitle: "Storm Point · ALGS Pro League", status: "processing", progress: 42, icon: Video },
   { id: "job-123", title: "Minimap Locator · Game 1", subtitle: "World's Edge", status: "completed", icon: Shapes },
-  { id: "job-122", title: "Camera calibration · TSM POV", subtitle: "frame 00:14:32", status: "failed", icon: Palette },
   { id: "job-121", title: "HSV profile · Group B", subtitle: "queued · 6 teams", status: "queued", progress: 0, icon: Palette },
 ];
 
@@ -55,7 +47,6 @@ const recentActions: { id: string; text: string; time: string; kind: "info" | "o
   { id: "a2", text: "Completed video job #124", time: "9 min ago", kind: "ok" },
   { id: "a3", text: "Added polygon forbidden_21 on World's Edge", time: "23 min ago", kind: "info" },
   { id: "a4", text: "Error: no_minimap detected on 18 frames", time: "41 min ago", kind: "err" },
-  { id: "a5", text: "Camera calibration drift > 4px on TSM POV", time: "1 hr ago", kind: "warn" },
 ];
 
 function AdminDashboard() {
@@ -193,7 +184,6 @@ function ActionRow({ action }: { action: typeof recentActions[number] }) {
 }
 
 const SYNC_KEY = "admin:algsSync:at";
-const STALE_MS = 60 * 60 * 1000; // 1h
 
 function AlgsSyncCard() {
   const { teams, tournaments, matches, customMaps } = useAdminStore();
@@ -204,9 +194,12 @@ function AlgsSyncCard() {
     const raw = window.localStorage.getItem(SYNC_KEY);
     return raw ? Number(raw) : null;
   });
-  const ranOnce = useRef(false);
-
   const doSync = async () => {
+    if (!isSupabaseEnabled) {
+      setStatus("err");
+      setError("Supabase is disabled. Set VITE_SUPABASE_ENABLED=true to read algs_* tables.");
+      return;
+    }
     setStatus("loading");
     setError(null);
     try {
@@ -222,15 +215,6 @@ function AlgsSyncCard() {
     }
   };
 
-  // Auto-sync once per session if data is stale.
-  useEffect(() => {
-    if (ranOnce.current) return;
-    ranOnce.current = true;
-    // Always auto-sync on dashboard mount (manual button still available as fallback).
-    void doSync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const ago = lastSync ? formatAgo(Date.now() - lastSync) : "never";
 
   return (
@@ -241,9 +225,13 @@ function AlgsSyncCard() {
             <Database className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <div className="text-sm font-bold uppercase tracking-wider">ALGS Data Sync</div>
+            <div className="text-sm font-bold uppercase tracking-wider">ALGS Database Sync</div>
             <div className="text-xs text-muted-foreground">
-              Tournaments, Teams, Matches, Maps · last sync: <span className="text-mono">{ago}</span>
+              {isSupabaseEnabled ? (
+                <>Reads Supabase algs_* tables · last sync: <span className="text-mono">{ago}</span></>
+              ) : (
+                <>Supabase disabled · using local snapshot/cache</>
+              )}
             </div>
           </div>
         </div>
@@ -253,11 +241,11 @@ function AlgsSyncCard() {
           </div>
           <button
             onClick={doSync}
-            disabled={status === "loading"}
+            disabled={!isSupabaseEnabled || status === "loading"}
             className="text-mono inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-primary/20 disabled:opacity-60"
           >
             <RefreshCw className={`h-3 w-3 ${status === "loading" ? "animate-spin" : ""}`} />
-            {status === "loading" ? "Syncing…" : "Sync now"}
+            {!isSupabaseEnabled ? "Supabase off" : status === "loading" ? "Syncing…" : "Read DB now"}
           </button>
         </div>
       </div>
@@ -267,7 +255,7 @@ function AlgsSyncCard() {
         </div>
       )}
       {status === "ok" && (
-        <div className="mt-2 text-xs text-emerald-400">Synced from ALGS database.</div>
+        <div className="mt-2 text-xs text-emerald-400">Synced from ALGS database. No external API parsing was run.</div>
       )}
     </section>
   );

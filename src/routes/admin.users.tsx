@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  listUserAccounts,
   createUserAccount,
   setUserRole,
   deleteUserAccount,
@@ -14,6 +15,7 @@ import {
   deleteInvite,
 } from "@/lib/invites.functions";
 import type { AppRole } from "@/lib/auth";
+import { isSupabaseEnabled } from "@/lib/runtime-config";
 
 export const Route = createFileRoute("/admin/users")({
   component: () => (
@@ -33,6 +35,7 @@ type Row = {
 
 function UsersPage() {
   const create = useServerFn(createUserAccount);
+  const list = useServerFn(listUserAccounts);
   const setRole = useServerFn(setUserRole);
   const del = useServerFn(deleteUserAccount);
 
@@ -49,6 +52,16 @@ function UsersPage() {
 
   async function load() {
     setLoading(true);
+    if (!isSupabaseEnabled) {
+      try {
+        const r = await list();
+        setRows((r.users ?? []) as Row[]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load");
+      }
+      setLoading(false);
+      return;
+    }
     const [{ data: profiles, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
       supabase.from("profiles").select("id, email, display_name, created_at"),
       supabase.from("user_roles").select("user_id, role"),
@@ -266,7 +279,7 @@ type InviteRow = {
   email: string;
   role: AppRole;
   token: string;
-  expires_at: string;
+  expires_at: string | null;
   used_at: string | null;
   created_at: string;
   max_uses?: number;
@@ -282,9 +295,13 @@ function InvitesTab() {
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<AppRole>("user");
   const [days, setDays] = useState(7);
+  const [neverExpires, setNeverExpires] = useState(false);
   const [maxUses, setMaxUses] = useState(1);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const isLocalInviteOrigin =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
   async function load() {
     setLoading(true);
@@ -308,9 +325,10 @@ function InvitesTab() {
     setBusy(true);
     setError(null);
     try {
-      await invCreate({ data: { role, expires_in_days: days, max_uses: maxUses } });
+      await invCreate({ data: { role, expires_in_days: days, never_expires: neverExpires, max_uses: maxUses } });
       setRole("user");
       setDays(7);
+      setNeverExpires(false);
       setMaxUses(1);
       await load();
     } catch (err) {
@@ -349,7 +367,7 @@ function InvitesTab() {
     const used = r.uses_count ?? 0;
     const max = r.max_uses ?? 1;
     if (used >= max) return { label: "Used up", cls: "text-muted-foreground" };
-    if (new Date(r.expires_at).getTime() < Date.now())
+    if (r.expires_at && new Date(r.expires_at).getTime() < Date.now())
       return { label: "Expired", cls: "text-destructive" };
     return { label: "Active", cls: "text-primary" };
   }
@@ -361,6 +379,11 @@ function InvitesTab() {
         <p className="mb-3 text-xs text-muted-foreground">
           Anyone with this link can self-register up to the configured number of times. They choose their own email and password.
         </p>
+        {isLocalInviteOrigin && (
+          <div className="mb-3 rounded-sm border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200">
+            Local invites are stored in the local auth database. For public links, create the invite on https://apex.wi-us.ru/admin/users.
+          </div>
+        )}
         <form onSubmit={onCreate} className="grid gap-3 md:grid-cols-5">
           <Field label="Role">
             <select
@@ -384,14 +407,29 @@ function InvitesTab() {
             />
           </Field>
           <Field label="Expires (days)">
-            <input
-              type="number"
-              min={1}
-              max={30}
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value) || 7)}
-              className="h-9 w-full rounded-sm border border-border bg-surface-2 px-2 text-xs outline-none focus:border-primary"
-            />
+            <div className="flex">
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={days}
+                disabled={neverExpires}
+                onChange={(e) => setDays(Number(e.target.value) || 7)}
+                className="h-9 min-w-0 flex-1 rounded-l-sm border border-border bg-surface-2 px-2 text-xs outline-none focus:border-primary disabled:opacity-50"
+              />
+              <button
+                type="button"
+                aria-pressed={neverExpires}
+                title="Never expires"
+                onClick={() => setNeverExpires((value) => !value)}
+                className={
+                  "h-9 w-10 rounded-r-sm border border-l-0 border-border text-base font-bold " +
+                  (neverExpires ? "bg-primary text-primary-foreground" : "bg-surface-2 text-muted-foreground hover:text-foreground")
+                }
+              >
+                ∞
+              </button>
+            </div>
           </Field>
           <div className="flex items-end md:col-span-2">
             <button
@@ -440,7 +478,7 @@ function InvitesTab() {
                     </td>
                     <td className={`px-3 py-2 font-bold ${s.cls}`}>{s.label}</td>
                     <td className="px-3 py-2 text-muted-foreground">
-                      {new Date(r.expires_at).toLocaleString()}
+                      {r.expires_at ? new Date(r.expires_at).toLocaleString() : "Never"}
                     </td>
                     <td className="px-3 py-2">
                       <button

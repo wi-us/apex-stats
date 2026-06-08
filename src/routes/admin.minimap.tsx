@@ -400,7 +400,7 @@ function MinimapAdmin() {
               <div className="grid grid-cols-5 gap-2">
                 {["Frame", "Minimap crop", "Processed", "Match on map", "Top candidates"].map((lbl) => (
                   <div key={lbl} className="hud-panel aspect-square overflow-hidden bg-black">
-                    <div className="border-b border-border bg-surface px-2 py-1 label-eyebrow text-[10px]">{lbl}</div>
+                    <div className="border-b border-border bg-surface px-2 py-1 label-eyebrow text-xs">{lbl}</div>
                     <div className="flex h-full items-center justify-center text-xs text-muted-foreground">no data</div>
                   </div>
                 ))}

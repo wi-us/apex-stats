@@ -1,0 +1,827 @@
+{
+  "source_image": "test_frames\\match5_hud.jpg",
+  "zones": "zones.vod.json",
+  "config": "configs\\01KH2HK109T8T08WHXMJ1B4412.json",
+  "profiles": [
+    {
+      "hud_index": 1,
+      "broadcast_tag": "ELTE",
+      "team_id": "01KKX6TB0GXSA1T51XH4J90BCB",
+      "team_name": "Elite NA",
+      "team_tag": "ELTE",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 294,
+        "w": 75,
+        "h": 70
+      },
+      "median_hsv": [
+        94.0,
+        239.0,
+        149.0
+      ],
+      "hsv_range": {
+        "h": [
+          91,
+          97
+        ],
+        "s": [
+          204,
+          255
+        ],
+        "v": [
+          121,
+          176
+        ]
+      },
+      "median_bgr": [
+        149,
+        130,
+        9
+      ],
+      "pixels": 4809,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 2,
+      "broadcast_tag": "FREE",
+      "team_id": "01KKCH1ZQ2PBZQ3NRKKV8QTVV5",
+      "team_name": "Free Thinkers",
+      "team_tag": "FREE",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 376,
+        "w": 73,
+        "h": 70
+      },
+      "median_hsv": [
+        103.0,
+        187.0,
+        104.0
+      ],
+      "hsv_range": {
+        "h": [
+          100,
+          106
+        ],
+        "s": [
+          161,
+          213
+        ],
+        "v": [
+          76,
+          131
+        ]
+      },
+      "median_bgr": [
+        104,
+        71,
+        28
+      ],
+      "pixels": 4710,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 3,
+      "broadcast_tag": "FXI",
+      "team_id": "01KMF09WG9A551ZCYGZWWKPCXZ",
+      "team_name": "Full XI",
+      "team_tag": "FXI",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 451,
+        "w": 73,
+        "h": 70
+      },
+      "median_hsv": [
+        111.0,
+        215.0,
+        202.0
+      ],
+      "hsv_range": {
+        "h": [
+          108,
+          114
+        ],
+        "s": [
+          190,
+          238
+        ],
+        "v": [
+          172,
+          230
+        ]
+      },
+      "median_bgr": [
+        202,
+        84,
+        32
+      ],
+      "pixels": 4733,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 4,
+      "broadcast_tag": "NIP",
+      "team_id": "01KHPRETW5SA96GN6HXY5N6V2F",
+      "team_name": "NinjasinPyjamas",
+      "team_tag": "NIP",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 529,
+        "w": 74,
+        "h": 70
+      },
+      "median_hsv": [
+        134.0,
+        142.0,
+        95.0
+      ],
+      "hsv_range": {
+        "h": [
+          131,
+          137
+        ],
+        "s": [
+          115,
+          165
+        ],
+        "v": [
+          67,
+          122
+        ]
+      },
+      "median_bgr": [
+        95,
+        42,
+        67
+      ],
+      "pixels": 4775,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 5,
+      "broadcast_tag": "S2",
+      "team_id": "01KHPREWRGXCYNBGJVNSGD6ZBY",
+      "team_name": "Team Vision",
+      "team_tag": "VSN",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 610,
+        "w": 76,
+        "h": 70
+      },
+      "median_hsv": [
+        149.0,
+        154.0,
+        111.0
+      ],
+      "hsv_range": {
+        "h": [
+          146,
+          152
+        ],
+        "s": [
+          126,
+          179
+        ],
+        "v": [
+          83,
+          139
+        ]
+      },
+      "median_bgr": [
+        111,
+        44,
+        109
+      ],
+      "pixels": 4924,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 6,
+      "broadcast_tag": "SEN",
+      "team_id": "01KHPREXDFYWX2GJ7Z1VNARJDV",
+      "team_name": "Sentinels",
+      "team_tag": "SEN",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 687,
+        "w": 74,
+        "h": 70
+      },
+      "median_hsv": [
+        162.0,
+        186.0,
+        172.0
+      ],
+      "hsv_range": {
+        "h": [
+          159,
+          165
+        ],
+        "s": [
+          163,
+          211
+        ],
+        "v": [
+          144,
+          200
+        ]
+      },
+      "median_bgr": [
+        120,
+        46,
+        172
+      ],
+      "pixels": 4797,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 7,
+      "broadcast_tag": "SRC",
+      "team_id": "01KHPRETPJ9HJ2RJYZKCJJDMGS",
+      "team_name": "Source Gaming",
+      "team_tag": "SRC",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 763,
+        "w": 75,
+        "h": 70
+      },
+      "median_hsv": [
+        169.0,
+        214.0,
+        173.0
+      ],
+      "hsv_range": {
+        "h": [
+          166,
+          172
+        ],
+        "s": [
+          185,
+          237
+        ],
+        "v": [
+          143,
+          202
+        ]
+      },
+      "median_bgr": [
+        80,
+        28,
+        173
+      ],
+      "pixels": 4872,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 8,
+      "broadcast_tag": "STAL",
+      "team_id": "01KHPRETY9SBG2WNXQYHXJHNVS",
+      "team_name": "Team Nemesis",
+      "team_tag": "NMSS",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 841,
+        "w": 74,
+        "h": 70
+      },
+      "median_hsv": [
+        179.0,
+        254.0,
+        191.0
+      ],
+      "hsv_range": {
+        "h": [
+          176,
+          179
+        ],
+        "s": [
+          228,
+          255
+        ],
+        "v": [
+          160,
+          219
+        ]
+      },
+      "median_bgr": [
+        10,
+        1,
+        191
+      ],
+      "pixels": 4813,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 9,
+      "broadcast_tag": "TL",
+      "team_id": "01KHPREWNWEZSQCQDGZVAF5CCW",
+      "team_name": "Team Liquid",
+      "team_tag": "TL",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 920,
+        "w": 74,
+        "h": 70
+      },
+      "median_hsv": [
+        6.0,
+        210.0,
+        193.0
+      ],
+      "hsv_range": {
+        "h": [
+          3,
+          9
+        ],
+        "s": [
+          187,
+          234
+        ],
+        "v": [
+          165,
+          222
+        ]
+      },
+      "median_bgr": [
+        34,
+        67,
+        193
+      ],
+      "pixels": 4800,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 10,
+      "broadcast_tag": "THUG",
+      "team_id": "01KHPREYST26ZBGYJRQ03Z93B6",
+      "team_name": "THUGGETS",
+      "team_tag": "THUG",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 0,
+        "y": 1001,
+        "w": 70,
+        "h": 70
+      },
+      "median_hsv": [
+        4.0,
+        215.0,
+        120.0
+      ],
+      "hsv_range": {
+        "h": [
+          1,
+          7
+        ],
+        "s": [
+          189,
+          239
+        ],
+        "v": [
+          91,
+          147
+        ]
+      },
+      "median_bgr": [
+        19,
+        31,
+        120
+      ],
+      "pixels": 4510,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 11,
+      "broadcast_tag": "BB",
+      "team_id": "01KHPREX1EC5Z0DQ4472BPDS5H",
+      "team_name": "Buckle Boys",
+      "team_tag": "BB",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1488,
+        "y": 294,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        9.0,
+        231.0,
+        158.0
+      ],
+      "hsv_range": {
+        "h": [
+          6,
+          12
+        ],
+        "s": [
+          201,
+          254
+        ],
+        "v": [
+          126,
+          184
+        ]
+      },
+      "median_bgr": [
+        15,
+        59,
+        158
+      ],
+      "pixels": 4873,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 12,
+      "broadcast_tag": "CRT",
+      "team_id": "01KHPREWX8J5GD5QTZ62E4VRVD",
+      "team_name": "Crazy Thieves",
+      "team_tag": "CRT",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1488,
+        "y": 373,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        19.0,
+        248.0,
+        117.0
+      ],
+      "hsv_range": {
+        "h": [
+          16,
+          22
+        ],
+        "s": [
+          215,
+          255
+        ],
+        "v": [
+          89,
+          145
+        ]
+      },
+      "median_bgr": [
+        3,
+        75,
+        117
+      ],
+      "pixels": 4946,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 13,
+      "broadcast_tag": "DINO",
+      "team_id": "01KHPREX5NAJ267Q5TT8TPA6QF",
+      "team_name": "DINOS",
+      "team_tag": "DINO",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1487,
+        "y": 452,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        16.0,
+        227.0,
+        202.0
+      ],
+      "hsv_range": {
+        "h": [
+          13,
+          19
+        ],
+        "s": [
+          195,
+          250
+        ],
+        "v": [
+          173,
+          229
+        ]
+      },
+      "median_bgr": [
+        22,
+        121,
+        202
+      ],
+      "pixels": 4961,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 14,
+      "broadcast_tag": "DKK",
+      "team_id": "01KHPREYPK26VSEXTX14Y1H1GT",
+      "team_name": "Geekay Esports",
+      "team_tag": "GK",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1486,
+        "y": 531,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        25.0,
+        248.0,
+        150.0
+      ],
+      "hsv_range": {
+        "h": [
+          22,
+          28
+        ],
+        "s": [
+          218,
+          255
+        ],
+        "v": [
+          122,
+          177
+        ]
+      },
+      "median_bgr": [
+        4,
+        124,
+        150
+      ],
+      "pixels": 4883,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 15,
+      "broadcast_tag": "GMBL",
+      "team_id": "01KMF09W3Z969XWBAX9PV7GJK0",
+      "team_name": "GAMBLERS",
+      "team_tag": "GMBL",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1487,
+        "y": 607,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        33.0,
+        232.0,
+        146.0
+      ],
+      "hsv_range": {
+        "h": [
+          30,
+          36
+        ],
+        "s": [
+          187,
+          255
+        ],
+        "v": [
+          119,
+          173
+        ]
+      },
+      "median_bgr": [
+        13,
+        146,
+        132
+      ],
+      "pixels": 4947,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 16,
+      "broadcast_tag": "JDG",
+      "team_id": "01KHPREX931TTBJDXH1AN6D121",
+      "team_name": "JD GAMING",
+      "team_tag": "JDG",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1487,
+        "y": 685,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        34.0,
+        240.0,
+        86.0
+      ],
+      "hsv_range": {
+        "h": [
+          31,
+          37
+        ],
+        "s": [
+          193,
+          255
+        ],
+        "v": [
+          60,
+          113
+        ]
+      },
+      "median_bgr": [
+        5,
+        86,
+        75
+      ],
+      "pixels": 4921,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 17,
+      "broadcast_tag": "REV",
+      "team_id": "01KMF09WJ9SD8N953QP9QBJECX",
+      "team_name": "REVIVAL",
+      "team_tag": "REV",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1488,
+        "y": 763,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        44.0,
+        139.0,
+        150.0
+      ],
+      "hsv_range": {
+        "h": [
+          41,
+          47
+        ],
+        "s": [
+          107,
+          162
+        ],
+        "v": [
+          123,
+          177
+        ]
+      },
+      "median_bgr": [
+        69,
+        150,
+        112
+      ],
+      "pixels": 4905,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 18,
+      "broadcast_tag": "ROC",
+      "team_id": "01KHPREWJ40HYNJSHV1D5GWDGY",
+      "team_name": "ROC Esports",
+      "team_tag": "ROC",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1488,
+        "y": 842,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        59.0,
+        154.0,
+        135.0
+      ],
+      "hsv_range": {
+        "h": [
+          56,
+          62
+        ],
+        "s": [
+          124,
+          179
+        ],
+        "v": [
+          108,
+          162
+        ]
+      },
+      "median_bgr": [
+        54,
+        135,
+        58
+      ],
+      "pixels": 4911,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 19,
+      "broadcast_tag": "SR",
+      "team_id": "01KHPREWVFQ8KJBCB3AY6Q42T2",
+      "team_name": "ShopifyRebellion",
+      "team_tag": "SR",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1487,
+        "y": 919,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        50.0,
+        178.0,
+        89.0
+      ],
+      "hsv_range": {
+        "h": [
+          47,
+          53
+        ],
+        "s": [
+          135,
+          204
+        ],
+        "v": [
+          62,
+          115
+        ]
+      },
+      "median_bgr": [
+        27,
+        89,
+        47
+      ],
+      "pixels": 4910,
+      "quality": 1.0
+    },
+    {
+      "hud_index": 20,
+      "broadcast_tag": "BRGR",
+      "team_id": "01KHPREXADNBT3YBAPQC8K39C8",
+      "team_name": "GODLIKE",
+      "team_tag": "GODL",
+      "db_name": null,
+      "db_tag": null,
+      "sample_box": {
+        "x": 1487,
+        "y": 1000,
+        "w": 85,
+        "h": 70
+      },
+      "median_hsv": [
+        83.0,
+        253.0,
+        115.0
+      ],
+      "hsv_range": {
+        "h": [
+          80,
+          86
+        ],
+        "s": [
+          207,
+          255
+        ],
+        "v": [
+          87,
+          141
+        ]
+      },
+      "median_bgr": [
+        87,
+        115,
+        1
+      ],
+      "pixels": 4945,
+      "quality": 1.0
+    }
+  ]
+}

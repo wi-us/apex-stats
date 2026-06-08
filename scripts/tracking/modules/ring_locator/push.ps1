@@ -6,7 +6,7 @@ param(
   [string]$MinimapZone = "camera roi",
   [string]$Canonical = "storm_point",
   [int]$MaxRing = 3,
-  [string]$Out = "scripts/tracking/modules/ring_locator/reports",
+  [string]$Out = "",
   [switch]$NoPush
 )
 $ErrorActionPreference = "Stop"
@@ -15,6 +15,10 @@ chcp 65001 > $null
 $env:PYTHONUTF8 = "1"
 $repo = (git rev-parse --show-toplevel).Trim()
 Set-Location $repo
+if ($Out -eq "") {
+  $matchId = [IO.Path]::GetFileNameWithoutExtension($Video)
+  $Out = "scripts/tracking/matches/$matchId/ring_locator"
+}
 if (Test-Path $Out) {
   Get-ChildItem $Out -Recurse -Force | Where-Object { $_.Name -ne ".gitkeep" } |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue

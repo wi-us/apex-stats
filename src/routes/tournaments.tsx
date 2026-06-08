@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { tournaments, matches, maps, matchSeedExtras, getGames } from "@/lib/mock-match";
+import { getGames } from "@/lib/mock-match";
+import { useAdminStore } from "@/lib/admin-store";
+import { publicMatches, publicMapRows } from "@/lib/public-data";
 import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/tournaments")({
@@ -14,8 +16,12 @@ export const Route = createFileRoute("/tournaments")({
 });
 
 function TournamentsPage() {
+  const store = useAdminStore();
   const [filter, setFilter] = useState<"all" | "live" | "upcoming" | "finished">("all");
-  const today = new Date("2026-05-18");
+  const today = new Date();
+  const matches = useMemo(() => publicMatches(store.matches), [store.matches]);
+  const maps = useMemo(() => publicMapRows(store.customMaps), [store.customMaps]);
+  const { tournaments } = store;
   const withStatus = useMemo(() => {
     return tournaments.map((t) => {
       const start = new Date(t.startDate);
@@ -24,7 +30,7 @@ function TournamentsPage() {
         today < start ? "upcoming" : today > end ? "finished" : "live";
       return { ...t, status };
     });
-  }, []);
+  }, [tournaments, today]);
   const filtered = filter === "all" ? withStatus : withStatus.filter((t) => t.status === filter);
   const counts = {
     all: withStatus.length,
@@ -94,8 +100,7 @@ function TournamentsPage() {
                       <div className="text-mono mt-0.5 text-xs text-muted-foreground">{t.startDate} → {t.endDate}</div>
                       <ul className="mt-3 space-y-1">
                         {tMatches.map((m) => {
-                          const extras = matchSeedExtras[m.id];
-                          const games = getGames({ ...m, mapIds: extras?.mapIds, gameDurations: extras?.gameDurations });
+                          const games = getGames(m);
                           return (
                             <li key={m.id}>
                               <Link to="/matches/$matchId" params={{ matchId: m.id }}

@@ -385,7 +385,7 @@ function PolygonsAdmin() {
             <div className="label-eyebrow text-xs">Polygons on {map?.name}</div>
           </div>
           <div className="flex flex-col gap-2 border-b border-border px-4 py-3">
-            <div className="label-eyebrow text-[10px] text-muted-foreground">Import / Export</div>
+            <div className="label-eyebrow text-xs text-muted-foreground">Import / Export</div>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={exportJson}
