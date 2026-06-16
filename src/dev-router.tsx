@@ -102,11 +102,9 @@ const AdminTournamentsRoute = childRoute(AdminTournamentsRouteImport, "/tourname
 const AdminUsersRoute = childRoute(AdminUsersRouteImport, "/users", "/users", AdminRoute);
 
 const AdminDatasetRoute = lazyChildRoute("/dataset", AdminRoute, () => import("./routes/admin.dataset"));
-const AdminDiagramsRoute = lazyChildRoute("/diagrams", AdminRoute, () => import("./routes/admin.diagrams"));
 const AdminHsvRoute = lazyChildRoute("/hsv", AdminRoute, () => import("./routes/admin.hsv"));
 const AdminMinimapRoute = lazyChildRoute("/minimap", AdminRoute, () => import("./routes/admin.minimap"));
 const AdminPoiRoute = lazyChildRoute("/poi", AdminRoute, () => import("./routes/admin.poi"));
-const AdminSchemaRoute = lazyChildRoute("/schema", AdminRoute, () => import("./routes/admin.schema"));
 const AdminTrackingLabRoute = lazyChildRoute("/tracking-lab", AdminRoute, () => import("./routes/admin.tracking-lab"));
 const AdminZonesRoute = lazyChildRoute("/zones", AdminRoute, () => import("./routes/admin.zones"));
 
@@ -123,7 +121,6 @@ const routeTree = DevRootRoute._addFileChildren({
   AdminRoute: AdminRoute._addFileChildren({
     AdminIndexRoute,
     AdminDatasetRoute,
-    AdminDiagramsRoute,
     AdminHsvRoute,
     AdminMapsRoute: AdminMapsRoute._addFileChildren({ AdminMapsMapIdRoute }),
     AdminMatchesRoute: AdminMatchesRoute._addFileChildren({ AdminMatchesMatchIdRoute }),
@@ -131,7 +128,6 @@ const routeTree = DevRootRoute._addFileChildren({
     AdminPoiRoute,
     AdminPolygonsRoute,
     AdminProcessesRoute,
-    AdminSchemaRoute,
     AdminTeamsRoute: AdminTeamsRoute._addFileChildren({ AdminTeamsTeamIdRoute }),
     AdminTournamentsRoute,
     AdminTrackingLabRoute,

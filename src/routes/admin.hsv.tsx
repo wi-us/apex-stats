@@ -15,6 +15,7 @@ import worldsEdgeSample from "@/assets/hsv-samples/worlds-edge.png";
 import stormPointSample from "@/assets/hsv-samples/storm-point.png";
 import eDistrictSample from "@/assets/hsv-samples/e-district.png";
 import olympusSample from "@/assets/hsv-samples/olympus.png";
+import { loadAdminSetting, saveAdminSetting } from "@/lib/admin-settings-client";
 
 export const Route = createFileRoute("/admin/hsv")({
   component: HsvAdmin,
@@ -26,6 +27,14 @@ export const Route = createFileRoute("/admin/hsv")({
 type Range3 = [number, number];
 type Preset = { h: Range3; s: Range3; v: Range3 };
 type PickedColor = { r: number; g: number; b: number; h: number; s: number; v: number };
+type LensMode = "normal" | "red" | "white";
+type HsvLens = { enabled: boolean; hsv: Preset };
+type HsvSettings = {
+  version: 1;
+  presets: Record<string, Preset>;
+  savedColors: Record<string, string>;
+  lenses: { red: HsvLens; white: HsvLens };
+};
 
 type Frame = { id: string; name: string; image: string };
 
@@ -35,6 +44,18 @@ const DEFAULT_FRAMES: Frame[] = [
   { id: "e-district",  name: "E-District",  image: eDistrictSample },
   { id: "olympus",     name: "Olympus",     image: olympusSample },
 ];
+
+const HSV_SETTINGS_KEY = "admin-hsv";
+const DEFAULT_LENSES: HsvSettings["lenses"] = {
+  red: {
+    enabled: true,
+    hsv: { h: [0, 18], s: [80, 255], v: [70, 255] },
+  },
+  white: {
+    enabled: true,
+    hsv: { h: [0, 179], s: [0, 70], v: [150, 255] },
+  },
+};
 
 function rgbToHsvCv(r: number, g: number, b: number): [number, number, number] {
   const rn = r / 255, gn = g / 255, bn = b / 255;
@@ -96,6 +117,33 @@ function presetCenterHex(p: Preset): string {
   return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
 }
 
+function isRange3(value: unknown): value is Range3 {
+  return Array.isArray(value) && value.length === 2 && value.every((n) => typeof n === "number" && Number.isFinite(n));
+}
+
+function isPreset(value: unknown): value is Preset {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Partial<Preset>;
+  return isRange3(maybe.h) && isRange3(maybe.s) && isRange3(maybe.v);
+}
+
+function normalizeLens(value: unknown, fallback: HsvLens): HsvLens {
+  if (!value || typeof value !== "object") return fallback;
+  const raw = value as Partial<HsvLens> & { hShift?: number; sScale?: number; vScale?: number; weight?: number };
+  if (isPreset(raw.hsv)) {
+    return {
+      enabled: typeof raw.enabled === "boolean" ? raw.enabled : fallback.enabled,
+      hsv: raw.hsv,
+    };
+  }
+
+  // Migration path for the previous numeric correction lens format.
+  return {
+    ...fallback,
+    enabled: typeof raw.enabled === "boolean" ? raw.enabled : fallback.enabled,
+  };
+}
+
 function rangeOverlap(a: Range3, b: Range3): number {
   const lo = Math.max(a[0], b[0]);
   const hi = Math.min(a[1], b[1]);
@@ -121,6 +169,10 @@ function presetOverlap(a: Preset, b: Preset): number {
   const va = rangeWidth(a.h) * rangeWidth(a.s) * rangeWidth(a.v);
   const vb = rangeWidth(b.h) * rangeWidth(b.s) * rangeWidth(b.v);
   return Math.round((vol / Math.min(va, vb)) * 100);
+}
+
+function hsvInPreset(h: number, s: number, v: number, p: Preset): boolean {
+  return h >= p.h[0] && h <= p.h[1] && s >= p.s[0] && s <= p.s[1] && v >= p.v[0] && v <= p.v[1];
 }
 
 /** Build a 3D histogram + summed-area-volume of the current frame's HSV pixels.
@@ -248,16 +300,21 @@ function HsvAdmin() {
 
   // Presets are stored per (team, frame) so each map keeps its own calibration.
   const presetKey = (tid: string, fid: string) => `${tid}|${fid}`;
-  const [presets, setPresets] = useState<Record<string, Preset>>(() => {
+  const buildDefaultPresets = () => {
     const init: Record<string, Preset> = {};
     for (const t of teams) for (const f of DEFAULT_FRAMES) init[presetKey(t.id, f.id)] = presetFromColor(t.color);
     return init;
-  });
-  const [savedColors, setSavedColors] = useState<Record<string, string>>(() => {
+  };
+  const buildDefaultSavedColors = () => {
     const init: Record<string, string> = {};
     for (const t of teams) for (const f of DEFAULT_FRAMES) init[presetKey(t.id, f.id)] = t.color;
     return init;
-  });
+  };
+  const [presets, setPresets] = useState<Record<string, Preset>>(buildDefaultPresets);
+  const [savedColors, setSavedColors] = useState<Record<string, string>>(buildDefaultSavedColors);
+  const [lenses, setLenses] = useState<HsvSettings["lenses"]>(DEFAULT_LENSES);
+  const [activeLens, setActiveLens] = useState<LensMode>("normal");
+  const [settingsStatus, setSettingsStatus] = useState("loading settings...");
 
   const [frames, setFrames] = useState<Frame[]>(DEFAULT_FRAMES);
   const [frameId, setFrameId] = useState<string>(DEFAULT_FRAMES[0].id);
@@ -276,6 +333,38 @@ function HsvAdmin() {
   };
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    const defaults: HsvSettings = {
+      version: 1,
+      presets: buildDefaultPresets(),
+      savedColors: buildDefaultSavedColors(),
+      lenses: DEFAULT_LENSES,
+    };
+    loadAdminSetting<HsvSettings>(HSV_SETTINGS_KEY)
+      .then((saved) => {
+        if (cancelled) return;
+        if (saved?.version === 1) {
+          setPresets({ ...defaults.presets, ...(saved.presets ?? {}) });
+          setSavedColors({ ...defaults.savedColors, ...(saved.savedColors ?? {}) });
+          setLenses({
+            red: normalizeLens(saved.lenses?.red, DEFAULT_LENSES.red),
+            white: normalizeLens(saved.lenses?.white, DEFAULT_LENSES.white),
+          });
+          setSettingsStatus("loaded from server");
+          return;
+        }
+        void saveAdminSetting(HSV_SETTINGS_KEY, defaults);
+        setSettingsStatus("default profile saved");
+      })
+      .catch((error) => {
+        if (!cancelled) setSettingsStatus(`settings unavailable: ${(error as Error).message}`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const team = teamList.find((t) => t.id === teamId)!;
   const frame = frames.find((f) => f.id === frameId) ?? frames[0];
   const k = presetKey(teamId, frame.id);
@@ -285,6 +374,27 @@ function HsvAdmin() {
 
   const setPreset = (p: Partial<Preset>) =>
     setPresets((prev) => ({ ...prev, [k]: { ...(prev[k] ?? preset), ...p } }));
+
+  const saveHsvSettings = async () => {
+    const nextColors = { ...savedColors, [k]: presetCenterHex(preset) };
+    const payload: HsvSettings = {
+      version: 1,
+      presets,
+      savedColors: nextColors,
+      lenses,
+    };
+    setSavedColors(nextColors);
+    setSettingsStatus("saving...");
+    try {
+      await saveAdminSetting(HSV_SETTINGS_KEY, payload);
+      setSettingsStatus("saved to server");
+    } catch (error) {
+      setSettingsStatus(`save failed: ${(error as Error).message}`);
+    }
+  };
+
+  const updateLens = (name: "red" | "white", patch: Partial<HsvLens>) =>
+    setLenses((prev) => ({ ...prev, [name]: { ...prev[name], ...patch } }));
 
   // Compute conflicts vs other teams.
   const conflicts = useMemo(() => {
@@ -453,7 +563,21 @@ function HsvAdmin() {
     let overlapPixels = 0;
     const total = W * H;
 
-    if (!compareAll) {
+    if (activeLens !== "normal") {
+      const lens = lenses[activeLens];
+      const tint: [number, number, number] = activeLens === "red" ? [255, 91, 45] : [210, 238, 255];
+      for (let i = 0; i < src.data.length; i += 4) {
+        const [h, s, v] = rgbToHsvCv(src.data[i], src.data[i + 1], src.data[i + 2]);
+        const ok = lens.enabled && hsvInPreset(h, s, v, lens.hsv);
+        if (ok) detected++;
+        if (ok) {
+          out.data[i] = tint[0]; out.data[i + 1] = tint[1]; out.data[i + 2] = tint[2];
+        } else {
+          out.data[i] = 12; out.data[i + 1] = 12; out.data[i + 2] = 12;
+        }
+        out.data[i + 3] = 255;
+      }
+    } else if (!compareAll) {
       const [hL, hU] = preset.h, [sL, sU] = preset.s, [vL, vU] = preset.v;
       const others = teamList
         .filter((t) => t.id !== teamId)
@@ -509,7 +633,7 @@ function HsvAdmin() {
     }
     mctx.putImageData(out, 0, 0);
     setMaskStats({ detected, total, overlapPct: detected > 0 ? Math.round((overlapPixels / detected) * 100) : 0 });
-  }, [preset, presets, imgReady, compareAll, teamId, teamList, frame.id, savedColors]);
+  }, [preset, presets, imgReady, compareAll, teamId, teamList, frame.id, savedColors, activeLens, lenses]);
 
   const onPreviewClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const off = sampleCanvasRef.current;
@@ -554,7 +678,11 @@ function HsvAdmin() {
   if (detectedPct < 0.1) { status = { label: "too narrow", tone: "warn" }; noise = "low"; }
   else if (detectedPct > 12) { status = { label: "too wide", tone: "bad" }; noise = "high"; }
   else if (detectedPct > 6) { status = { label: "noisy", tone: "warn" }; noise = "medium"; }
-  if (maskStats.overlapPct > 25) status = { label: "conflicts", tone: "bad" };
+  if (activeLens === "normal" && maskStats.overlapPct > 25) status = { label: "conflicts", tone: "bad" };
+
+  const activeLensLabel =
+    activeLens === "normal" ? "Normal team HSV" : activeLens === "red" ? "Red filter lens" : "White filter lens";
+  const activeLensTone = activeLens === "red" ? "text-primary" : activeLens === "white" ? "text-sky-300" : "text-muted-foreground";
 
   const applyImport = (rows: PendingImport["rows"], targetFrame: string, switchTo: boolean) => {
     const nextPresets: Record<string, Preset> = { ...presets };
@@ -596,6 +724,7 @@ function HsvAdmin() {
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={onUpload} />
         </div>
+        <div className="ml-auto text-mono text-xs uppercase text-muted-foreground">{settingsStatus}</div>
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -690,8 +819,10 @@ function HsvAdmin() {
 
             <div className="hud-panel p-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="label-eyebrow text-xs">{compareAll ? "All teams mask" : "Binary HSV mask"}</span>
-                <span className="text-mono text-xs text-muted-foreground">live</span>
+                <span className="label-eyebrow text-xs">
+                  {activeLens === "normal" ? (compareAll ? "All teams mask" : "Binary HSV mask") : `${activeLensLabel} mask`}
+                </span>
+                <span className={`text-mono text-xs ${activeLensTone}`}>live</span>
               </div>
               <div className="relative w-full overflow-hidden rounded-sm border border-border bg-background">
                 <canvas ref={maskRef} className="block w-full" />
@@ -701,7 +832,7 @@ function HsvAdmin() {
               <div className="mt-3 grid grid-cols-4 gap-2">
                 <Stat label="Detected" value={`${maskStats.detected.toLocaleString()} px`} sub={`${detectedPct.toFixed(2)}%`} />
                 <Stat label="Noise" value={noise} />
-                <Stat label="Overlap" value={`${maskStats.overlapPct}%`} sub={!compareAll ? "(red pixels)" : ""} />
+                <Stat label="Overlap" value={activeLens === "normal" ? `${maskStats.overlapPct}%` : "n/a"} sub={activeLens === "normal" && !compareAll ? "(red pixels)" : ""} />
                 <Stat label="Status" value={status.label} tone={status.tone} />
               </div>
             </div>
@@ -730,6 +861,42 @@ function HsvAdmin() {
             <Range label="Saturation" min={0} max={255} value={preset.s} onChange={(s) => setPreset({ s: s as Range3 })} />
             <Range label="Value" min={0} max={255} value={preset.v} onChange={(v) => setPreset({ v: v as Range3 })} />
 
+            <div className="mt-5 border-t border-border pt-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="label-eyebrow text-xs">Ring filter lenses</div>
+                  <div className="text-xs text-muted-foreground">
+                    Switch the live preview between the team HSV mask and separate red / white filter masks.
+                  </div>
+                </div>
+                <div className="inline-flex rounded-sm border border-border bg-background p-0.5">
+                  {(["normal", "red", "white"] as const).map((name) => (
+                    <button
+                      key={name}
+                      onClick={() => setActiveLens(name)}
+                      className={`rounded-sm px-2.5 py-1 text-xs font-semibold uppercase tracking-wider ${
+                        activeLens === name ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {name === "normal" ? "Normal" : name === "red" ? "Red filter" : "White filter"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {activeLens === "normal" ? (
+                <div className="rounded-sm border border-border bg-surface-2 p-3 text-xs text-muted-foreground">
+                  Normal preview uses the selected team's HSV range above. Red and white filter lenses have their own HSV ranges and are saved with the same server profile.
+                </div>
+              ) : (
+                <LensRangeControl
+                  mode={activeLens}
+                  lens={lenses[activeLens]}
+                  onChange={(patch) => updateLens(activeLens, patch)}
+                />
+              )}
+            </div>
+
             <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
               <button
                 onClick={() => setPresets((p) => ({ ...p, [k]: presetFromColor(team.color) }))}
@@ -740,14 +907,15 @@ function HsvAdmin() {
                 Save as new profile
               </button>
               <button
-                onClick={() => setSavedColors((s) => ({ ...s, [k]: presetCenterHex(preset) }))}
+                onClick={() => void saveHsvSettings()}
                 className="rounded-sm bg-primary px-5 py-2 text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-md hover:brightness-110">
-                Save preset
+                Save to server
               </button>
               <button
                 onClick={() => {
                   const exported = {
                     frame: frame.id,
+                    lenses,
                     teams: teamList.map((t, i) => {
                       const p = presets[presetKey(t.id, frame.id)] ?? presetFromColor(t.color);
                       return {
@@ -949,6 +1117,85 @@ function Stat({ label, value, sub, tone }: { label: string; value: string; sub?:
       <div className="label-eyebrow text-xs">{label}</div>
       <div className={`text-mono text-sm font-bold tabular-nums ${toneCls}`}>{value}</div>
       {sub && <div className="text-mono text-xs text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}
+
+function LensRangeControl({
+  mode,
+  lens,
+  onChange,
+}: {
+  mode: "red" | "white";
+  lens: HsvLens;
+  onChange: (patch: Partial<HsvLens>) => void;
+}) {
+  const title = mode === "red" ? "Red filter HSV range" : "White filter HSV range";
+  const description =
+    mode === "red"
+      ? "Highlights red/orange pixels caused by the outside-ring overlay and damage flashes."
+      : "Highlights low-saturation, high-value pixels caused by the white safe-zone filter.";
+  const setHsv = (patch: Partial<Preset>) => onChange({ hsv: { ...lens.hsv, ...patch } });
+
+  return (
+    <div className="rounded-sm border border-border bg-surface-2 p-3">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="label-eyebrow text-xs">{title}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{description}</div>
+        </div>
+        <label className="inline-flex items-center gap-2 rounded-sm border border-border bg-background px-2 py-1 text-xs font-semibold uppercase tracking-wider">
+          <input
+            type="checkbox"
+            checked={lens.enabled}
+            onChange={(e) => onChange({ enabled: e.target.checked })}
+          />
+          Enabled
+        </label>
+      </div>
+
+      <HsvRangePreview preset={lens.hsv} tone={mode} />
+
+      <div className="mt-3">
+        <Range label="Hue" min={0} max={179} value={lens.hsv.h} onChange={(h) => setHsv({ h: h as Range3 })} />
+        <Range label="Saturation" min={0} max={255} value={lens.hsv.s} onChange={(s) => setHsv({ s: s as Range3 })} />
+        <Range label="Value" min={0} max={255} value={lens.hsv.v} onChange={(v) => setHsv({ v: v as Range3 })} />
+      </div>
+    </div>
+  );
+}
+
+function HsvRangePreview({ preset, tone }: { preset: Preset; tone: "red" | "white" }) {
+  const low = hsvCvToRgb(preset.h[0], preset.s[0], preset.v[0]);
+  const mid = hsvCvToRgb(
+    Math.round((preset.h[0] + preset.h[1]) / 2),
+    Math.round((preset.s[0] + preset.s[1]) / 2),
+    Math.round((preset.v[0] + preset.v[1]) / 2),
+  );
+  const high = hsvCvToRgb(preset.h[1], preset.s[1], preset.v[1]);
+  const toRgb = ([r, g, b]: [number, number, number]) => `rgb(${r}, ${g}, ${b})`;
+  const border = tone === "red" ? "border-primary/40" : "border-sky-300/50";
+
+  return (
+    <div className={`overflow-hidden rounded-sm border ${border} bg-background`}>
+      <div
+        className="h-12"
+        style={{ background: `linear-gradient(90deg, ${toRgb(low)}, ${toRgb(mid)}, ${toRgb(high)})` }}
+      />
+      <div className="grid grid-cols-3 divide-x divide-border border-t border-border text-mono text-xs tabular-nums">
+        <div className="px-2 py-1">
+          <div className="label-eyebrow text-xs">Low</div>
+          H{preset.h[0]} S{preset.s[0]} V{preset.v[0]}
+        </div>
+        <div className="px-2 py-1">
+          <div className="label-eyebrow text-xs">Mid</div>
+          H{Math.round((preset.h[0] + preset.h[1]) / 2)} S{Math.round((preset.s[0] + preset.s[1]) / 2)} V{Math.round((preset.v[0] + preset.v[1]) / 2)}
+        </div>
+        <div className="px-2 py-1">
+          <div className="label-eyebrow text-xs">High</div>
+          H{preset.h[1]} S{preset.s[1]} V{preset.v[1]}
+        </div>
+      </div>
     </div>
   );
 }

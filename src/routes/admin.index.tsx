@@ -245,7 +245,7 @@ function AlgsSyncCard() {
             className="text-mono inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-primary/20 disabled:opacity-60"
           >
             <RefreshCw className={`h-3 w-3 ${status === "loading" ? "animate-spin" : ""}`} />
-            {!isSupabaseEnabled ? "Supabase off" : status === "loading" ? "Syncing…" : "Read DB now"}
+            {!isSupabaseEnabled ? "Sync off" : status === "loading" ? "Syncing…" : "Read DB now"}
           </button>
         </div>
       </div>

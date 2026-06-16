@@ -18,11 +18,20 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { SLOT_COLORS } from "@/lib/team-colors";
+import { loadAdminSetting, saveAdminSetting } from "@/lib/admin-settings-client";
 
 export const Route = createFileRoute("/admin/zones")({ component: ZonesAdmin });
 
 type BuiltinPreset = "vod" | "vod2" | "camera";
 type CustomPreset = { id: string; label: string; mode: ZoneMode; zones: Zone[] };
+type ZonesSettings = {
+  version: 1;
+  zones: { vod: Zone[]; vod2: Zone[]; camera: Zone[] };
+  tags: { id: string; color: string }[];
+  customs: CustomPreset[];
+};
+
+const ZONES_SETTINGS_KEY = "admin-zones";
 
 const BUILTIN: { id: BuiltinPreset; label: string; mode: ZoneMode }[] = [
   { id: "vod",    label: "VOD Stream", mode: "vod" },
@@ -62,6 +71,7 @@ function ZonesAdmin() {
   const [tags, setTags] = useState<{ id: string; color: string }[]>(
     Object.entries(DEFAULT_TAG_COLORS).map(([id, color]) => ({ id, color })),
   );
+  const [settingsStatus, setSettingsStatus] = useState("loading settings...");
   const tagColor = (id: string) => tags.find((t) => t.id === id)?.color ?? "#94a3b8";
 
   const builtin = BUILTIN.find((b) => b.id === activeId);
@@ -174,6 +184,49 @@ function ZonesAdmin() {
   const [importAddTags, setImportAddTags] = useState(true);
   // Свёрнутость группы тегов команд
   const [teamsCollapsed, setTeamsCollapsed] = useState(true);
+
+  const buildZonesSettings = (): ZonesSettings => ({
+    version: 1,
+    zones: store.zones,
+    tags,
+    customs,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    const defaults = buildZonesSettings();
+    loadAdminSetting<ZonesSettings>(ZONES_SETTINGS_KEY)
+      .then((saved) => {
+        if (cancelled) return;
+        if (saved?.version === 1) {
+          if (saved.zones?.vod) setZonesStore("vod", saved.zones.vod);
+          if (saved.zones?.vod2) setZonesStore("vod2", saved.zones.vod2);
+          if (saved.zones?.camera) setZonesStore("camera", saved.zones.camera);
+          if (Array.isArray(saved.tags) && saved.tags.length > 0) setTags(saved.tags);
+          if (Array.isArray(saved.customs)) setCustoms(saved.customs);
+          setSettingsStatus("loaded from server");
+          return;
+        }
+        void saveAdminSetting(ZONES_SETTINGS_KEY, defaults);
+        setSettingsStatus("default zones saved");
+      })
+      .catch((error) => {
+        if (!cancelled) setSettingsStatus(`settings unavailable: ${(error as Error).message}`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const saveZonesSettings = async () => {
+    setSettingsStatus("saving...");
+    try {
+      await saveAdminSetting(ZONES_SETTINGS_KEY, buildZonesSettings());
+      setSettingsStatus("saved to server");
+    } catch (error) {
+      setSettingsStatus(`save failed: ${(error as Error).message}`);
+    }
+  };
 
   const choosePreset = (id: string) => {
     setActiveId(id);
@@ -498,6 +551,7 @@ function ZonesAdmin() {
             </button>
           </div>
         </div>
+        <div className="text-mono shrink-0 text-xs uppercase text-muted-foreground">{settingsStatus}</div>
       </header>
 
       {/* Toolbar */}
@@ -711,9 +765,9 @@ function ZonesAdmin() {
                 <ActionBtn icon={<Files className="h-3 w-3" />} label="Dup" onClick={bulkDuplicate} />
                 <ActionBtn icon={<Trash2 className="h-3 w-3" />} label="Del" onClick={bulkDelete} />
               </div>
-              <button onClick={bulkCopyJson}
+              <button onClick={() => void saveZonesSettings()}
                 className="mt-3 w-full rounded-sm bg-primary px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:brightness-110">
-                Save (copy JSON)
+                Save to server
               </button>
               <button onClick={bulkDownload}
                 className="mt-2 w-full rounded-sm border border-border bg-surface-2 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-muted">
@@ -748,13 +802,9 @@ function ZonesAdmin() {
                 <ActionBtn icon={<Files className="h-3 w-3" />} label="Dup" onClick={() => duplicateZone(selZone)} />
               </div>
               <button
-                onClick={() => {
-                  if (typeof navigator !== "undefined" && navigator.clipboard) {
-                    navigator.clipboard.writeText(JSON.stringify(zones, null, 2)).catch(() => {});
-                  }
-                }}
+                onClick={() => void saveZonesSettings()}
                 className="mt-3 w-full rounded-sm bg-primary px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:brightness-110">
-                Save
+                Save to server
               </button>
               <button
                 onClick={() => {

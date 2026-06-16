@@ -37,8 +37,14 @@ type LocalAuthDb = {
   invites: LocalInvite[];
 };
 
+type LocalSettingsDb = {
+  version: 1;
+  settings: Record<string, { value: unknown; updatedAt: string; updatedBy: string }>;
+};
+
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DB_PATH = join(ROOT, "data", "local-auth.json");
+const SETTINGS_PATH = join(ROOT, "data", "admin-settings.json");
 const COOKIE_NAME = "apex_local_auth";
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const DEFAULT_ADMIN_EMAIL = "admin@apex.local";
@@ -155,6 +161,33 @@ function saveDb(db: LocalAuthDb) {
   renameSync(tmp, DB_PATH);
 }
 
+function loadSettings(): LocalSettingsDb {
+  try {
+    const data = JSON.parse(readFileSync(SETTINGS_PATH, "utf8")) as LocalSettingsDb;
+    if (data.version === 1 && data.settings && typeof data.settings === "object") return data;
+  } catch {
+    // Create below.
+  }
+  const data: LocalSettingsDb = { version: 1, settings: {} };
+  saveSettings(data);
+  return data;
+}
+
+function saveSettings(data: LocalSettingsDb) {
+  mkdirSync(dirname(SETTINGS_PATH), { recursive: true });
+  const tmp = `${SETTINGS_PATH}.tmp`;
+  writeFileSync(tmp, JSON.stringify(data, null, 2), "utf8");
+  renameSync(tmp, SETTINGS_PATH);
+}
+
+function assertSettingKey(value: string) {
+  const key = String(value ?? "").trim();
+  if (!/^[a-z0-9][a-z0-9_-]{1,80}$/i.test(key)) {
+    throw new Error("Invalid settings key.");
+  }
+  return key;
+}
+
 function publicUser(user: LocalUser) {
   return {
     id: user.id,
@@ -244,6 +277,34 @@ async function handle(req: import("node:http").IncomingMessage, res: import("nod
 
     if (req.method === "POST" && path === "/logout") {
       return send(res, 200, { ok: true }, `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`);
+    }
+
+    if (req.method === "GET" && path.startsWith("/settings/")) {
+      assertRole(current, "operator");
+      const key = assertSettingKey(decodeURIComponent(path.slice("/settings/".length)));
+      const settings = loadSettings();
+      const item = settings.settings[key] ?? null;
+      return send(res, 200, {
+        key,
+        value: item?.value ?? null,
+        updated_at: item?.updatedAt ?? null,
+        updated_by: item?.updatedBy ?? null,
+      });
+    }
+
+    if (req.method === "PUT" && path.startsWith("/settings/")) {
+      assertRole(current, "operator");
+      const key = assertSettingKey(decodeURIComponent(path.slice("/settings/".length)));
+      const data = await readJson(req) as { value?: unknown };
+      if (!("value" in data)) throw new Error("Missing settings value.");
+      const settings = loadSettings();
+      settings.settings[key] = {
+        value: data.value,
+        updatedAt: nowIso(),
+        updatedBy: current!.id,
+      };
+      saveSettings(settings);
+      return send(res, 200, { ok: true, key, updated_at: settings.settings[key].updatedAt });
     }
 
     if (req.method === "GET" && path === "/users") {
@@ -392,6 +453,7 @@ export function localAuthServerPlugin(): Plugin {
     name: "apex-local-auth-server",
     configureServer(server: ViteDevServer) {
       loadDb();
+      loadSettings();
       server.middlewares.use("/api/local-auth", (req, res) => {
         void handle(req, res);
       });

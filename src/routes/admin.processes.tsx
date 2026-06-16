@@ -5,6 +5,7 @@ import {
   addProcess,
   updateProcess,
   removeProcess,
+  setProcesses,
   addMatch,
   type AnalysisProcess,
   type ProcessPov,
@@ -15,6 +16,7 @@ import {
 import { maps as allMaps, type Team, type MatchFull } from "@/lib/mock-match";
 import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/admin/TeamLogo";
+import { loadAdminSetting, saveAdminSetting } from "@/lib/admin-settings-client";
 
 export const Route = createFileRoute("/admin/processes")({
   component: ProcessesAdmin,
@@ -41,6 +43,12 @@ const KIND_LABELS: Record<ProcessKind, string> = {
 };
 const KIND_OPTIONS: ProcessKind[] = ["minimap", "camera", "full", "hsv", "ring", "debug_export"];
 const PRESET_OPTIONS = ["Default", "Step zoom", "Smooth observer", "Fast camera", "Low noise"];
+const PROCESSES_SETTINGS_KEY = "admin-processes";
+
+type ProcessesSettings = {
+  version: 1;
+  processes: AnalysisProcess[];
+};
 
 /** Required analyses per match — used to compute "missing" for Suggested. */
 const REQUIRED_KINDS: ProcessKind[] = ["minimap", "camera", "full"];
@@ -232,8 +240,11 @@ function ProcessesAdmin() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   type FilterKey = "all" | "suggested" | "queued" | "running" | "done" | "failed" | "needs_review" | "draft";
   const [statusFilter, setStatusFilter] = useState<FilterKey>("all");
+  const [settingsReady, setSettingsReady] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState("loading processes...");
   const search = Route.useSearch();
   const handledMatchRef = useRef<string | null>(null);
+  const saveTimerRef = useRef<number | null>(null);
 
   const statusCounts = useMemo(() => {
     const c: Record<AnalysisProcess["status"], number> = {
@@ -275,6 +286,44 @@ function ProcessesAdmin() {
   }, [processes, statusFilter]);
 
   const selected = processes.find((p) => p.id === selectedId) ?? null;
+
+  useEffect(() => {
+    let cancelled = false;
+    loadAdminSetting<ProcessesSettings>(PROCESSES_SETTINGS_KEY)
+      .then((saved) => {
+        if (cancelled) return;
+        if (saved?.version === 1 && Array.isArray(saved.processes)) {
+          setProcesses(saved.processes);
+          setSettingsStatus("loaded from server");
+        } else {
+          void saveAdminSetting<ProcessesSettings>(PROCESSES_SETTINGS_KEY, { version: 1, processes });
+          setSettingsStatus("default queue saved");
+        }
+        setSettingsReady(true);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setSettingsStatus(`settings unavailable: ${(error as Error).message}`);
+          setSettingsReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!settingsReady) return;
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      saveAdminSetting<ProcessesSettings>(PROCESSES_SETTINGS_KEY, { version: 1, processes })
+        .then(() => setSettingsStatus("saved to server"))
+        .catch((error) => setSettingsStatus(`save failed: ${(error as Error).message}`));
+    }, 500);
+    return () => {
+      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    };
+  }, [processes, settingsReady]);
 
   const draft = (preset?: Partial<AnalysisProcess>) => {
     const tId = preset?.tournamentId ?? tournaments[0]?.id ?? "";
@@ -421,6 +470,7 @@ function ProcessesAdmin() {
           <h1 className="text-sm font-bold uppercase tracking-wider">Processes</h1>
           <span className="text-xs text-muted-foreground">· operator control center</span>
         </div>
+        <div className="text-mono text-xs uppercase text-muted-foreground">{settingsStatus}</div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">

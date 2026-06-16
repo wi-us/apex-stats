@@ -77,3 +77,9 @@ scripts/tracking/modules/plate_detector/data/*.sqlite
 scripts/tracking/modules/plate_detector/*.zip
 scripts/tracking/matches/*
 !scripts/tracking/matches/README.md
+
+# --- Slot detector local artifacts ---
+scripts/tracking/modules/slot_detector/datasets/
+scripts/tracking/modules/slot_detector/outputs/
+scripts/tracking/modules/slot_detector/runs/
+scripts/tracking/modules/slot_detector/*.pt

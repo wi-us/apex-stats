@@ -31,7 +31,6 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTrackingLabRouteImport } from './routes/admin.tracking-lab'
 import { Route as AdminTournamentsRouteImport } from './routes/admin.tournaments'
 import { Route as AdminTeamsRouteImport } from './routes/admin.teams'
-import { Route as AdminSchemaRouteImport } from './routes/admin.schema'
 import { Route as AdminProcessesRouteImport } from './routes/admin.processes'
 import { Route as AdminPolygonsRouteImport } from './routes/admin.polygons'
 import { Route as AdminPoiRouteImport } from './routes/admin.poi'
@@ -39,7 +38,6 @@ import { Route as AdminMinimapRouteImport } from './routes/admin.minimap'
 import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminMapsRouteImport } from './routes/admin.maps'
 import { Route as AdminHsvRouteImport } from './routes/admin.hsv'
-import { Route as AdminDiagramsRouteImport } from './routes/admin.diagrams'
 import { Route as AdminDatasetRouteImport } from './routes/admin.dataset'
 import { Route as AdminTeamsTeamIdRouteImport } from './routes/admin.teams.$teamId'
 import { Route as AdminMatchesMatchIdRouteImport } from './routes/admin.matches.$matchId'
@@ -155,11 +153,6 @@ const AdminTeamsRoute = AdminTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminSchemaRoute = AdminSchemaRouteImport.update({
-  id: '/schema',
-  path: '/schema',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminProcessesRoute = AdminProcessesRouteImport.update({
   id: '/processes',
   path: '/processes',
@@ -193,11 +186,6 @@ const AdminMapsRoute = AdminMapsRouteImport.update({
 const AdminHsvRoute = AdminHsvRouteImport.update({
   id: '/hsv',
   path: '/hsv',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDiagramsRoute = AdminDiagramsRouteImport.update({
-  id: '/diagrams',
-  path: '/diagrams',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDatasetRoute = AdminDatasetRouteImport.update({
@@ -235,7 +223,6 @@ export interface FileRoutesByFullPath {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/dataset': typeof AdminDatasetRoute
-  '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
@@ -243,7 +230,6 @@ export interface FileRoutesByFullPath {
   '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
-  '/admin/schema': typeof AdminSchemaRoute
   '/admin/teams': typeof AdminTeamsRouteWithChildren
   '/admin/tournaments': typeof AdminTournamentsRoute
   '/admin/tracking-lab': typeof AdminTrackingLabRoute
@@ -271,7 +257,6 @@ export interface FileRoutesByTo {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/dataset': typeof AdminDatasetRoute
-  '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
@@ -279,7 +264,6 @@ export interface FileRoutesByTo {
   '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
-  '/admin/schema': typeof AdminSchemaRoute
   '/admin/teams': typeof AdminTeamsRouteWithChildren
   '/admin/tournaments': typeof AdminTournamentsRoute
   '/admin/tracking-lab': typeof AdminTrackingLabRoute
@@ -309,7 +293,6 @@ export interface FileRoutesById {
   '/teams': typeof TeamsRouteWithChildren
   '/tournaments': typeof TournamentsRoute
   '/admin/dataset': typeof AdminDatasetRoute
-  '/admin/diagrams': typeof AdminDiagramsRoute
   '/admin/hsv': typeof AdminHsvRoute
   '/admin/maps': typeof AdminMapsRouteWithChildren
   '/admin/matches': typeof AdminMatchesRouteWithChildren
@@ -317,7 +300,6 @@ export interface FileRoutesById {
   '/admin/poi': typeof AdminPoiRoute
   '/admin/polygons': typeof AdminPolygonsRoute
   '/admin/processes': typeof AdminProcessesRoute
-  '/admin/schema': typeof AdminSchemaRoute
   '/admin/teams': typeof AdminTeamsRouteWithChildren
   '/admin/tournaments': typeof AdminTournamentsRoute
   '/admin/tracking-lab': typeof AdminTrackingLabRoute
@@ -348,7 +330,6 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/dataset'
-    | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
     | '/admin/matches'
@@ -356,7 +337,6 @@ export interface FileRouteTypes {
     | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
-    | '/admin/schema'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/tracking-lab'
@@ -384,7 +364,6 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/dataset'
-    | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
     | '/admin/matches'
@@ -392,7 +371,6 @@ export interface FileRouteTypes {
     | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
-    | '/admin/schema'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/tracking-lab'
@@ -421,7 +399,6 @@ export interface FileRouteTypes {
     | '/teams'
     | '/tournaments'
     | '/admin/dataset'
-    | '/admin/diagrams'
     | '/admin/hsv'
     | '/admin/maps'
     | '/admin/matches'
@@ -429,7 +406,6 @@ export interface FileRouteTypes {
     | '/admin/poi'
     | '/admin/polygons'
     | '/admin/processes'
-    | '/admin/schema'
     | '/admin/teams'
     | '/admin/tournaments'
     | '/admin/tracking-lab'
@@ -616,13 +592,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTeamsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/schema': {
-      id: '/admin/schema'
-      path: '/schema'
-      fullPath: '/admin/schema'
-      preLoaderRoute: typeof AdminSchemaRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/processes': {
       id: '/admin/processes'
       path: '/processes'
@@ -670,13 +639,6 @@ declare module '@tanstack/react-router' {
       path: '/hsv'
       fullPath: '/admin/hsv'
       preLoaderRoute: typeof AdminHsvRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/diagrams': {
-      id: '/admin/diagrams'
-      path: '/diagrams'
-      fullPath: '/admin/diagrams'
-      preLoaderRoute: typeof AdminDiagramsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/dataset': {
@@ -748,7 +710,6 @@ const AdminTeamsRouteWithChildren = AdminTeamsRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminDatasetRoute: typeof AdminDatasetRoute
-  AdminDiagramsRoute: typeof AdminDiagramsRoute
   AdminHsvRoute: typeof AdminHsvRoute
   AdminMapsRoute: typeof AdminMapsRouteWithChildren
   AdminMatchesRoute: typeof AdminMatchesRouteWithChildren
@@ -756,7 +717,6 @@ interface AdminRouteChildren {
   AdminPoiRoute: typeof AdminPoiRoute
   AdminPolygonsRoute: typeof AdminPolygonsRoute
   AdminProcessesRoute: typeof AdminProcessesRoute
-  AdminSchemaRoute: typeof AdminSchemaRoute
   AdminTeamsRoute: typeof AdminTeamsRouteWithChildren
   AdminTournamentsRoute: typeof AdminTournamentsRoute
   AdminTrackingLabRoute: typeof AdminTrackingLabRoute
@@ -767,7 +727,6 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDatasetRoute: AdminDatasetRoute,
-  AdminDiagramsRoute: AdminDiagramsRoute,
   AdminHsvRoute: AdminHsvRoute,
   AdminMapsRoute: AdminMapsRouteWithChildren,
   AdminMatchesRoute: AdminMatchesRouteWithChildren,
@@ -775,7 +734,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPoiRoute: AdminPoiRoute,
   AdminPolygonsRoute: AdminPolygonsRoute,
   AdminProcessesRoute: AdminProcessesRoute,
-  AdminSchemaRoute: AdminSchemaRoute,
   AdminTeamsRoute: AdminTeamsRouteWithChildren,
   AdminTournamentsRoute: AdminTournamentsRoute,
   AdminTrackingLabRoute: AdminTrackingLabRoute,

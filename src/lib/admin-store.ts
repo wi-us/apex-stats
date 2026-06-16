@@ -338,6 +338,10 @@ export function getMinimapZone(mode: ZoneMode = "vod"): Zone | undefined {
   return state.zones[mode].find((z) => z.tag === "minimap");
 }
 
+export function setProcesses(processes: AnalysisProcess[]) {
+  state = { ...state, processes };
+  emit();
+}
 export function addProcess(p: AnalysisProcess) {
   state = { ...state, processes: [p, ...state.processes] };
   emit();

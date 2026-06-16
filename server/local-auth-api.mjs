@@ -12,6 +12,7 @@ const RANK = { user: 1, operator: 2, administrator: 3 };
 
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
 const DB_PATH = resolve(process.env.AUTH_DB_PATH || "./data/local-auth.json");
+const SETTINGS_PATH = resolve(process.env.ADMIN_SETTINGS_PATH || "./data/admin-settings.json");
 const COOKIE_SECURE = String(process.env.COOKIE_SECURE ?? "true").toLowerCase() !== "false";
 
 function nowIso() {
@@ -142,6 +143,35 @@ function saveDb(db) {
   renameSync(tmp, DB_PATH);
 }
 
+function loadSettings() {
+  try {
+    const data = JSON.parse(readFileSync(SETTINGS_PATH, "utf8"));
+    if (data && typeof data === "object" && data.version === 1 && data.settings && typeof data.settings === "object") {
+      return data;
+    }
+  } catch {
+    // Create below.
+  }
+  const data = { version: 1, settings: {} };
+  saveSettings(data);
+  return data;
+}
+
+function saveSettings(data) {
+  mkdirSync(dirname(SETTINGS_PATH), { recursive: true });
+  const tmp = `${SETTINGS_PATH}.tmp`;
+  writeFileSync(tmp, JSON.stringify(data, null, 2), "utf8");
+  renameSync(tmp, SETTINGS_PATH);
+}
+
+function assertSettingKey(value) {
+  const key = String(value ?? "").trim();
+  if (!/^[a-z0-9][a-z0-9_-]{1,80}$/i.test(key)) {
+    throw new Error("Invalid settings key.");
+  }
+  return key;
+}
+
 function publicUser(user) {
   return {
     id: user.id,
@@ -240,6 +270,34 @@ async function handle(req, res) {
 
     if (req.method === "POST" && path === "/logout") {
       return send(res, 200, { ok: true }, cookie("", 0));
+    }
+
+    if (req.method === "GET" && path.startsWith("/settings/")) {
+      assertRole(current, "operator");
+      const key = assertSettingKey(decodeURIComponent(path.slice("/settings/".length)));
+      const settings = loadSettings();
+      const item = settings.settings[key] ?? null;
+      return send(res, 200, {
+        key,
+        value: item?.value ?? null,
+        updated_at: item?.updatedAt ?? null,
+        updated_by: item?.updatedBy ?? null,
+      });
+    }
+
+    if (req.method === "PUT" && path.startsWith("/settings/")) {
+      assertRole(current, "operator");
+      const key = assertSettingKey(decodeURIComponent(path.slice("/settings/".length)));
+      const data = await readJson(req);
+      if (!("value" in data)) throw new Error("Missing settings value.");
+      const settings = loadSettings();
+      settings.settings[key] = {
+        value: data.value,
+        updatedAt: nowIso(),
+        updatedBy: current.id,
+      };
+      saveSettings(settings);
+      return send(res, 200, { ok: true, key, updated_at: settings.settings[key].updatedAt });
     }
 
     if (req.method === "GET" && path === "/users") {
